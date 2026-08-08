@@ -101,6 +101,10 @@ export function ModuleWheel({
   const velocity = useRef(AUTOPLAY_PX_PER_SEC / 1000);
   const lastMoveY = useRef(0);
   const lastMoveT = useRef(0);
+  /** Último estilo aplicado a cada palabra, para no reescribir lo idéntico. */
+  const lastStyles = useRef(
+    new WeakMap<Element, { blur: number; scale: number; op: number }>(),
+  );
 
   const list = Array.from({ length: COPIES }, () => items).flat();
 
@@ -133,9 +137,28 @@ export function ModuleWheel({
 
       const t = Math.min(dist / mid, 1); // 0 en el centro, 1 en el borde
       if (!reduced) {
-        node.style.transform = `scale(${1.25 - t * 0.4})`;
-        node.style.filter = `blur(${Math.min(t * 4, 3).toFixed(2)}px)`;
-        node.style.opacity = String(1 - t * 0.62);
+        // Se escribe solo lo que CAMBIA de verdad. El valor anterior se
+        // guarda en memoria (un WeakMap), nunca en `dataset`: escribir un
+        // atributo es una mutación del DOM y sale más cara que el estilo
+        // que se quería ahorrar.
+        //
+        // El desenfoque se redondea a medio punto: el ojo no distingue esa
+        // diferencia y el navegador se ahorra recomponer la capa.
+        const blur = Math.round(t * 8) / 2; // pasos de 0,5 px hasta 3
+        const scale = Math.round((1.25 - t * 0.4) * 100) / 100;
+        const op = Math.round((1 - t * 0.62) * 50) / 50;
+        const prev = lastStyles.current.get(node);
+
+        if (!prev || prev.blur !== blur) {
+          node.style.filter = `blur(${Math.min(blur, 3)}px)`;
+        }
+        if (!prev || prev.scale !== scale) {
+          node.style.transform = `scale(${scale})`;
+        }
+        if (!prev || prev.op !== op) {
+          node.style.opacity = String(op);
+        }
+        lastStyles.current.set(node, { blur, scale, op });
       } else {
         node.style.transform = "";
         node.style.filter = "";
@@ -216,6 +239,37 @@ export function ModuleWheel({
     let raf = 0;
     let prev = performance.now();
 
+    /**
+     * El bucle solo corre cuando la sección está a la vista.
+     *
+     * Sin esto giraba SIEMPRE: estando en el hero, cinco secciones más
+     * arriba, esta rueda seguía desenfocando 21 elementos en cada
+     * fotograma. `filter: blur()` es de lo más caro que se le puede pedir a
+     * un móvil, y era trabajo tirado a la basura. En un Android de gama baja
+     * eso se nota en TODA la página, no solo aquí.
+     */
+    let visible = false;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting === visible) return;
+        visible = e.isIntersecting;
+        if (visible) {
+          // Al volver se reinicia el reloj: si no, el primer fotograma tras
+          // reaparecer arrastraría todo el tiempo que estuvo fuera.
+          prev = performance.now();
+          raf = requestAnimationFrame(tick);
+        } else {
+          // Se CANCELA el bucle, no basta con dejarlo sin trabajo: un
+          // `requestAnimationFrame` programado sigue despertando al hilo
+          // principal sesenta veces por segundo.
+          cancelAnimationFrame(raf);
+          raf = 0;
+        }
+      },
+      { rootMargin: "120px" },
+    );
+    io.observe(rail);
+
     const tick = (now: number) => {
       // Se acota el delta: al volver de una pestaña en segundo plano el
       // salto sería de segundos y la rueda pegaría un tirón.
@@ -243,8 +297,13 @@ export function ModuleWheel({
       raf = requestAnimationFrame(tick);
     };
 
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    // No se arranca aquí: lo hace el observador cuando la rueda entra en
+    // pantalla. Si la sección nace fuera de vista, el bucle no llega a
+    // existir.
+    return () => {
+      cancelAnimationFrame(raf);
+      io.disconnect();
+    };
   }, [reduced, paint, wrap]);
 
   // ── Arrastre con ratón y con el dedo ──

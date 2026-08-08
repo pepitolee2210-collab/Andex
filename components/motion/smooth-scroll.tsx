@@ -20,6 +20,19 @@ export function SmoothScroll() {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
     if (reduced.matches) return;
 
+    /**
+     * En táctil ni siquiera se carga.
+     *
+     * Lenis ya tenía `syncTouch: false`, así que en un teléfono no hacía
+     * nada útil — pero seguía descargando su código y manteniendo vivo un
+     * bucle de animación en cada fotograma, gastando batería a cambio de
+     * cero. El scroll nativo del móvil es mejor que cualquier emulación.
+     *
+     * Los efectos ligados al scroll no dependen de esto: usan `useScroll`
+     * de Motion sobre el scroll real, así que en móvil siguen igual.
+     */
+    if (window.matchMedia("(pointer: coarse)").matches) return;
+
     let lenis: import("lenis").default | null = null;
     let rafId = 0;
     let cancelled = false;

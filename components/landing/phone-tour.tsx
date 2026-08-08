@@ -22,7 +22,7 @@
  *    es el paso que más vende, y los puntos siguen funcionando.
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   Bell,
@@ -603,14 +603,35 @@ export function PhoneTour({ copy, className }: PhoneTourProps) {
     steps.community,
   ];
 
+  /**
+   * El recorrido se detiene cuando el hero sale de pantalla.
+   *
+   * Sin esto seguía cambiando de pantalla con el visitante ya cinco
+   * secciones más abajo: cada cambio anima una quincena de elementos que
+   * nadie está viendo. Y peor aún, al volver arriba el recorrido estaría en
+   * un paso cualquiera en vez de donde lo dejó.
+   */
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [onScreen, setOnScreen] = useState(true);
+
   useEffect(() => {
-    if (reduced || paused) return;
+    const node = rootRef.current;
+    if (!node) return;
+    const io = new IntersectionObserver(([e]) => setOnScreen(e.isIntersecting), {
+      rootMargin: "80px",
+    });
+    io.observe(node);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (reduced || paused || !onScreen) return;
     const id = setTimeout(
       () => setIndex((i) => (i + 1) % total),
       DURATIONS[index],
     );
     return () => clearTimeout(id);
-  }, [index, paused, reduced, total]);
+  }, [index, paused, reduced, total, onScreen]);
 
   const goTo = useCallback((i: number) => {
     setIndex(i);
@@ -621,6 +642,7 @@ export function PhoneTour({ copy, className }: PhoneTourProps) {
 
   return (
     <div
+      ref={rootRef}
       className={cn("mx-auto w-full max-w-[19.5rem]", className)}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
