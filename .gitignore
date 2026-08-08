@@ -1,0 +1,30 @@
+# dependencias
+node_modules/
+
+# next.js
+.next/
+out/
+next-env.d.ts
+
+# producción
+build/
+
+# env — nunca subir credenciales
+.env
+.env.local
+.env*.local
+
+# capturas generadas por los guiones de verificación
+# Se regeneran con `npm run simular` y `node tests/capturar-landing.mjs`;
+# son ~17 MB de imágenes que no aportan nada al historial.
+tests/capturas/
+tests/revision-landing/
+
+# misc
+*.tsbuildinfo
+.DS_Store
+*.pem
+npm-debug.log*
+
+# vercel
+.vercel

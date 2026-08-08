@@ -1,0 +1,501 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════
+   ANDEX DESIGN SYSTEM — TOKENS
+   Fuente: ANDEX-PRD-v1.3-FINAL.md §2.1 (paleta), §2.3
+   (espaciado/radios/sombras), §2.6 (modo oscuro).
+
+   REGLA DE ORO (§2.1.1): el teal #12B8A6 y el ámbar #F4B942
+   son colores de SUPERFICIE, nunca de texto. Si un elemento
+   lleva texto encima, el fondo es navy, blanco, crema,
+   teal-deep o un tono -soft.
+
+   Este es el ÚNICO archivo donde se permiten valores hex.
+   ═══════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Marca / estructura (constantes) ── */
+  --navy:        #102A43; /* 14.6:1 sobre blanco ✓ */
+  --navy-hover:  #1B3B5A;
+  --navy-soft:   #EEF2F6;
+  --cream:       #F7F5EF;
+
+  /* ── Tokens semánticos — MODO CLARO ── */
+  --bg:            var(--cream);
+  --surface:       #FFFFFF;
+  --surface-alt:   var(--navy-soft);
+  --text:          var(--navy);
+  --text-muted:    #52708C; /* 5.18:1 ✓ — NUNCA #627D98 (4.28:1 ✗) */
+  --text-disabled: #8A9BAD; /* solo texto no interactivo */
+  --line:          #E4E7EB;
+
+  --teal:        #12B8A6; /* SOLO superficie: barras, iconos, acentos */
+  --teal-deep:   #0F766E; /* botones con texto blanco. 5.47:1 ✓ */
+  --teal-soft:   #E6F7F5;
+  --amber:       #F4B942; /* SOLO fondo de badge; texto encima: navy */
+  --amber-deep:  #9A6B00; /* texto de alerta sobre crema/blanco. 4.69:1 ✓ */
+  --amber-soft:  #FEF6E3;
+
+  --on-accent:   #FFFFFF; /* texto sobre teal-deep */
+  --on-highlight: var(--navy); /* texto sobre ámbar (8.2:1 ✓) */
+
+  --success: #0E7C5A;
+  --warning: #9A6B00;
+  --danger:  #B42318;
+  --info:    #0F766E;
+  --success-soft: #E7F6F0;
+  --danger-soft:  #FDECEA;
+
+  --shadow-sm: 0 1px 3px rgba(16, 42, 67, 0.06);
+  --shadow-md: 0 4px 12px rgba(16, 42, 67, 0.06);
+  --shadow-lg: 0 12px 32px rgba(16, 42, 67, 0.10);
+}
+
+/* ── MODO OSCURO (§2.6) ──
+   Tres estados: data-theme explícito (cookie) gana; sin cookie
+   decide prefers-color-scheme. Mantener AMBOS bloques en sync. */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:            #0B1929;
+    --surface:       #16283D;
+    --surface-alt:   #1E3550;
+    --text:          #E8EDF2;
+    --text-muted:    #9DB2C8;
+    --text-disabled: #6B8199;
+    --line:          #2A4159;
+
+    --teal:        #2DD4BF; /* teal aclarado para fondo oscuro */
+    --teal-deep:   #2DD4BF;
+    --teal-soft:   rgba(45, 212, 191, 0.14);
+    --amber:       #F9CE6B;
+    --amber-deep:  #F9CE6B;
+    --amber-soft:  rgba(249, 206, 107, 0.14);
+
+    --on-accent:    #0B1929; /* texto navy-oscuro sobre teal claro */
+    --on-highlight: #0B1929;
+
+    --success: #34D399;
+    --warning: #F9CE6B;
+    --danger:  #F87171;
+    --info:    #2DD4BF;
+    --success-soft: rgba(52, 211, 153, 0.14);
+    --danger-soft:  rgba(248, 113, 113, 0.14);
+
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
+    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.45);
+  }
+}
+
+[data-theme="dark"] {
+  --bg:            #0B1929;
+  --surface:       #16283D;
+  --surface-alt:   #1E3550;
+  --text:          #E8EDF2;
+  --text-muted:    #9DB2C8;
+  --text-disabled: #6B8199;
+  --line:          #2A4159;
+
+  --teal:        #2DD4BF;
+  --teal-deep:   #2DD4BF;
+  --teal-soft:   rgba(45, 212, 191, 0.14);
+  --amber:       #F9CE6B;
+  --amber-deep:  #F9CE6B;
+  --amber-soft:  rgba(249, 206, 107, 0.14);
+
+  --on-accent:    #0B1929;
+  --on-highlight: #0B1929;
+
+  --success: #34D399;
+  --warning: #F9CE6B;
+  --danger:  #F87171;
+  --info:    #2DD4BF;
+  --success-soft: rgba(52, 211, 153, 0.14);
+  --danger-soft:  rgba(248, 113, 113, 0.14);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+/* ── Mapeo a utilidades Tailwind v4 ──
+   Clases resultantes: bg-page, bg-surface, bg-surface-alt, text-ink,
+   text-muted, text-disabled, border-line, bg-teal / teal-deep / teal-soft,
+   bg-amber / amber-deep / amber-soft, bg-navy / navy-hover / navy-soft,
+   text-on-accent, text-on-highlight, bg-cream, text-success|warning|danger|info,
+   shadow-sm|md|lg, rounded-sm|md|lg|xl, font-heading, font-body,
+   text-display|h1|h2|h3|body-lg|body|label|caption. */
+
+@theme inline {
+  --color-*: initial;
+
+  --color-page:        var(--bg);
+  --color-surface:     var(--surface);
+  --color-surface-alt: var(--surface-alt);
+  --color-ink:         var(--text);
+  --color-muted:       var(--text-muted);
+  --color-disabled:    var(--text-disabled);
+  --color-line:        var(--line);
+
+  --color-teal:       var(--teal);
+  --color-teal-deep:  var(--teal-deep);
+  --color-teal-soft:  var(--teal-soft);
+  --color-amber:      var(--amber);
+  --color-amber-deep: var(--amber-deep);
+  --color-amber-soft: var(--amber-soft);
+
+  --color-navy:       var(--navy);
+  --color-navy-hover: var(--navy-hover);
+  --color-navy-soft:  var(--navy-soft);
+  --color-cream:      var(--cream);
+  --color-white:      #FFFFFF;
+
+  --color-on-accent:    var(--on-accent);
+  --color-on-highlight: var(--on-highlight);
+
+  --color-success:      var(--success);
+  --color-warning:      var(--warning);
+  --color-danger:       var(--danger);
+  --color-info:         var(--info);
+  --color-success-soft: var(--success-soft);
+  --color-danger-soft:  var(--danger-soft);
+
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  /* Radios (§2.3) */
+  --radius-*: initial;
+  --radius-sm:   8px;  /* inputs, chips */
+  --radius-md:   12px; /* botones */
+  --radius-lg:   16px; /* tarjetas de módulo */
+  --radius-xl:   24px; /* modales, hero card */
+  --radius-full: 999px;
+
+  /* Sombras (§2.3) */
+  --shadow-*: initial;
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+
+  /* Tipografía (§2.2) */
+  --font-heading: var(--font-montserrat), var(--font-inter), system-ui, sans-serif;
+  --font-body:    var(--font-inter), system-ui, sans-serif;
+  --font-sans:    var(--font-inter), system-ui, sans-serif;
+
+  /* Escala tipográfica (§2.2.1) — todo en rem, base 16 */
+  --text-*: initial;
+  --text-display: 2.5rem;      /* 40px — hero landing */
+  --text-display--line-height: 1.1;
+  --text-display--font-weight: 700;
+  --text-display-lg: 3rem;     /* 48px — hero desktop */
+  --text-display-lg--line-height: 1.1;
+  --text-display-lg--font-weight: 700;
+  --text-h1: 2rem;             /* 32px */
+  --text-h1--line-height: 1.2;
+  --text-h1--font-weight: 700;
+  --text-h2: 1.5rem;           /* 24px */
+  --text-h2--line-height: 1.3;
+  --text-h2--font-weight: 600;
+  --text-h3: 1.25rem;          /* 20px */
+  --text-h3--line-height: 1.4;
+  --text-h3--font-weight: 600;
+  --text-body-lg: 1.125rem;    /* 18px — instructivos */
+  --text-body-lg--line-height: 1.6;
+  --text-body: 1rem;           /* 16px — MÍNIMO para body, no negociable */
+  --text-body--line-height: 1.6;
+  --text-label: 0.875rem;      /* 14px — etiquetas de formulario */
+  --text-label--line-height: 1.4;
+  --text-label--font-weight: 500;
+  --text-caption: 0.8125rem;   /* 13px — metadatos, timestamps */
+  --text-caption--line-height: 1.4;
+
+  /* Breakpoints (§2.4): 640 / 1024 / 1440. Usar sm:, lg:, xl: */
+  --breakpoint-xl: 1440px;
+}
+
+/* ── Base ── */
+
+@layer base {
+  html {
+    font-family: var(--font-inter), system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-size: 1rem;
+    line-height: 1.6;
+    min-height: 100dvh;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-montserrat), var(--font-inter), system-ui, sans-serif;
+    color: var(--text);
+    text-wrap: balance;
+  }
+
+  /* Piso de accesibilidad (§2.5 / §9): foco de teclado SIEMPRE visible */
+  :focus-visible {
+    outline: 2px solid var(--teal-deep);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: var(--teal-soft);
+    color: var(--text);
+  }
+
+  /* prefers-reduced-motion respetado globalmente (§2.5) */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* ── Componentes (agente diseño) ─────────────────────────
+   Keyframes y clases de los elementos firma (§2.8–2.9) y del
+   UI kit. Cero hex: todo referencia var(--token). Las
+   animaciones se anulan solas con prefers-reduced-motion
+   (bloque global de arriba). */
+
+/* Shimmer del Skeleton (§2.5) */
+@keyframes andex-shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+.andex-shimmer {
+  background-color: var(--surface-alt);
+  background-image: linear-gradient(
+    100deg,
+    var(--surface-alt) 38%,
+    var(--teal-soft) 50%,
+    var(--surface-alt) 62%
+  );
+  background-size: 200% 100%;
+  animation: andex-shimmer 1.6s ease-in-out infinite;
+}
+
+/* Entrada del toast (§2.5) */
+@keyframes andex-toast-in {
+  from { opacity: 0; transform: translateY(0.5rem) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ═══════════════════════════════════════════════════════
+   LA RUTA — variante hero (§2.8)
+   El único elemento memorable del sistema. Todo lo demás
+   se mantiene callado a propósito.
+
+   Una sola secuencia orquestada al cargar, no efectos
+   sueltos: trazan los caminos → florece la convergencia →
+   sube el contenido. Después, la única animación que queda
+   es la respuesta a elegir rama.
+   ═══════════════════════════════════════════════════════ */
+
+/* Nota: el posicionamiento del contenedor lo decide quien lo usa (estático
+   en móvil, absoluto a sangre en escritorio). Este bloque va fuera de
+   @layer, así que una regla `position` aquí ganaría a las utilidades de
+   Tailwind y rompería la composición del hero. */
+
+/* Los caminos se dibujan de izquierda a derecha. `pathLength=1`
+   normaliza el dasharray, así que la misma regla vale para
+   cualquier curva sin recalcular longitudes. */
+@keyframes andex-draw {
+  to { stroke-dashoffset: 0; }
+}
+.laruta-path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: andex-draw 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  transition: opacity 0.45s ease, stroke-width 0.45s ease;
+}
+
+/* Al elegir rama: el camino propio se afirma, el otro baja a un
+   hilo. No desaparece — sigue existiendo, como el camino que el
+   usuario no tomó (§3.2.0: nadie queda excluido de nada). */
+.laruta-path[data-state="on"]  { stroke-width: 3.5; opacity: 1; }
+.laruta-path[data-state="off"] { stroke-width: 1.25; opacity: 0.28; }
+
+/* Carril sin barra de scroll visible. Se usa en la rueda de módulos, donde
+   la barra delataría el truco del bucle infinito. El contenido sigue siendo
+   desplazable con rueda, dedo y teclado. */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* El fotograma del salto de copia del bucle infinito. Sin cortar aquí la
+   transición, las 21 palabras animarían durante 400 ms el cambio de
+   distancia al centro y el bucle se vería como un frenazo. */
+[data-jumping] > * {
+  transition: none !important;
+}
+
+/* Los enlaces del menú saltan a secciones, y la barra fija se comía el
+   arranque de cada una. `scroll-margin-top` reserva su alto, así el
+   antetítulo queda a la vista al aterrizar. Se aplica a toda sección con id
+   para que valga también para los enlaces compartidos. */
+section[id],
+[data-seccion] {
+  scroll-margin-top: 5.5rem;
+}
+
+/* ═══════════════════════════════════════════════════════
+   TELÉFONO DEL HERO
+   El bisel de un teléfono real no es un color plano: es
+   metal, y lo que lo delata es cómo la luz recorre el
+   canto. Se imita con un degradado de dos paradas claras
+   en las esquinas superiores y un tono profundo en medio.
+   Se construye con los tokens de marca —nada de hex— para
+   que el modo oscuro funcione solo.
+   ═══════════════════════════════════════════════════════ */
+
+.mock-frame {
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--navy) 62%, white) 0%,
+    var(--navy) 22%,
+    var(--navy) 78%,
+    color-mix(in srgb, var(--navy) 55%, white) 100%
+  );
+}
+
+/* Botones laterales: asoman por detrás del chasis. */
+.mock-btn {
+  position: absolute;
+  z-index: -1;
+  width: 0.1875rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--navy) 72%, white);
+}
+
+/* Nodo de origen. Va en HTML y no en el SVG porque el espinazo se estira
+   con `preserveAspectRatio: none` y un <circle> saldría ovalado. */
+.laruta-dot {
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: 999px;
+  border: 2.5px solid var(--text);
+  background: var(--bg);
+  transform: translate(-50%, -50%);
+  transition: opacity 0.45s ease, transform 0.35s ease;
+}
+.laruta-dot[data-branch="pre_arrival"] { border-color: var(--teal-deep); }
+.laruta-dot[data-state="on"]  { transform: translate(-50%, -50%) scale(1.3); }
+.laruta-dot[data-state="off"] { opacity: 0.3; }
+
+/* Etiquetas de origen: anotación de mapa, no pie de foto.
+   Versalitas pequeñas y muy espaciadas contra un titular enorme —
+   el contraste de escala es la firma tipográfica del producto. */
+.laruta-label {
+  font-size: 0.8125rem; /* 13px, permitido para metadatos (§2.2.1) */
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+  transition: color 0.35s ease, opacity 0.35s ease;
+}
+.laruta-label[data-state="on"]  { color: var(--text); opacity: 1; }
+.laruta-label[data-state="off"] { opacity: 0.4; }
+
+/* La convergencia llega cuando los caminos la alcanzan. */
+@keyframes andex-fade {
+  to { opacity: 1; }
+}
+.laruta-late {
+  opacity: 0;
+  animation: andex-fade 0.5s ease-out 1.25s forwards;
+}
+
+/* Entrada escalonada del contenido del hero, encadenada a la
+   misma secuencia. `translateY` y `opacity` se componen en GPU:
+   no provoca reflow ni cuenta como desplazamiento de layout. */
+@keyframes andex-rise {
+  from { opacity: 0; transform: translateY(0.75rem); }
+  to   { opacity: 1; transform: none; }
+}
+.andex-rise {
+  opacity: 0;
+  animation: andex-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* El bloque global de :root anula duraciones, pero no los delays:
+     sin esto el contenido tardaría en aparecer aunque no se anime. */
+  .laruta-late,
+  .andex-rise { animation-delay: 0s; opacity: 1; }
+}
+
+/* La Ruta — RouteBar (§2.8, spec exacta).
+   Tamaños en rem para escalar con el ajuste de texto del SO:
+   11px = .6875rem · 13px = .8125rem · 18px = 1.125rem ·
+   halo 5px = .3125rem · conector 1.5px = .09375rem */
+.rb {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+.rb-node {
+  position: relative;
+  flex: none;
+  width: 0.6875rem;
+  height: 0.6875rem;
+  border-radius: 999px;
+  background: var(--line);
+  transition:
+    background-color 0.35s ease,
+    width 0.35s ease,
+    height 0.35s ease,
+    box-shadow 0.35s ease;
+}
+.rb-node[data-state="done"] { background: var(--teal-deep); }
+.rb-node[data-state="now"] {
+  width: 0.8125rem;
+  height: 0.8125rem;
+  background: var(--teal);
+  box-shadow: 0 0 0 0.3125rem var(--teal-soft);
+}
+.rb-node[data-state="seal"] {
+  width: 1.125rem;
+  height: 1.125rem;
+  background: var(--amber);
+  box-shadow: 0 0 0 0.3125rem var(--amber-soft);
+}
+.rb-connector {
+  flex: 1 1 0;
+  min-width: 0.75rem;
+  height: 0.09375rem;
+  background: var(--line);
+  transition: background-color 0.4s ease;
+}
+.rb-connector[data-done="true"] { background: var(--teal-deep); }
+/* Glifo de bifurcación del nodo 2: dos trazos de 11px a ±32°
+   que convergen en el nodo (dos orígenes, un camino). */
+.rb-fork {
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  width: 0.6875rem;
+  height: 0.09375rem;
+  margin-top: -0.046875rem;
+  background: var(--line);
+  transform-origin: right center;
+  transition: background-color 0.4s ease;
+}
+.rb-fork-up   { transform: rotate(32deg); }
+.rb-fork-down { transform: rotate(-32deg); }
+.rb-fork[data-done="true"] { background: var(--teal-deep); }
