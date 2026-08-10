@@ -20,7 +20,13 @@ export type InputProps = Omit<
 > & {
   /** Label visible, obligatorio. */
   label: string;
-  type?: "text" | "email" | "tel" | "password";
+  /**
+   * `date` se añade al inventario de §2.5 por la Bóveda: la fecha de
+   * vencimiento de un permiso de trabajo se teclea mal con demasiada
+   * facilidad, y el selector nativo abre la rueda del sistema operativo, que
+   * en un móvil es mucho más fiable que escribir día, mes y año a mano.
+   */
+  type?: "text" | "email" | "tel" | "password" | "date";
   /** Mensaje de error: qué pasó y cómo resolverlo (§2.7). */
   error?: string;
   /** Texto de ayuda bajo el campo. */

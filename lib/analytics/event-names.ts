@@ -48,6 +48,9 @@ export const ANALYTICS_EVENT_NAMES = [
   "hero_card_dismissed",
   "module_opened",
   "interest_signal_submitted",
+  "vault_scan_started",
+  "vault_document_saved",
+  "vault_portal_opened",
 ] as const satisfies readonly AnalyticsEventName[];
 
 /**

@@ -20,6 +20,9 @@ build/
 tests/capturas/
 tests/revision-landing/
 
+# guiones de verificación de un solo uso y sus capturas
+scratchpad/
+
 # misc
 *.tsbuildinfo
 .DS_Store

@@ -95,6 +95,35 @@ sí con bordes rectos.
 | D50 | **Barra de acción fija en móvil** que aparece al salir el hero, **se esconde al bajar y vuelve al subir**, y desaparece en el cierre. | En un teléfono el CTA del hero se va a los dos dedos de scroll y el siguiente queda muy abajo: durante la mayor parte del recorrido no hay forma de empezar sin volver arriba. Se esconde al bajar porque bajar es leer y subir es buscar; solo aparece cuando el gesto sugiere que la persona busca algo. Se retira en el cierre para no competir con el CTA a pantalla completa que ya hay ahí. Lleva `env(safe-area-inset-bottom)` para no quedar bajo la barra de gestos del iPhone. |
 | D51 | Los efectos ligados al scroll usan `useScroll` con `target` de Motion, **no Lenis**. | Lenis está desactivado en táctil a propósito (el gesto nativo del móvil es mejor y no gasta batería). `useScroll` con `target` funciona con el scroll nativo, así que el movimiento llega al móvil sin reactivar el scroll suave. |
 
+## Bóveda Digital — escáner de documentos (2026-08-08)
+
+El dueño del producto encarga un escáner tipo CamScanner dentro del módulo 1.
+El PRD deja la bóveda fuera de la v1 (§0.3, línea 46); es su decisión revertirlo.
+Siete decisiones de producto, no de implementación:
+
+| # | Decisión | Porqué |
+|---|---|---|
+| **D52** | **Todo el procesado ocurre en el dispositivo. La foto no sale del teléfono en ningún momento.** | §R5 marca los datos migratorios como riesgo alto. Aquí se manejan pasaportes, permisos de trabajo y notificaciones de corte: el expediente completo de una persona. Un servidor que procese esas imágenes es un servidor que puede ser requerido, filtrado o robado. Procesar en el dispositivo elimina esa categoría entera de riesgo — y habilita la única frase que esta audiencia necesita oír: *ni nosotros podemos verlos*. Es el mayor diferenciador frente a CamScanner, que sube todo a su nube. |
+| **D53** | **El PDF sale en tamaño CARTA, no A4**, pese a que el encargo pedía A4. | Los destinatarios son USCIS, cortes de inmigración, el IRS y el DMV: instituciones estadounidenses, donde el papel es Carta (8,5×11"). Un expediente en A4 llega con los márgenes descuadrados y puede recortarse al imprimirse. A4 queda disponible para trámites consulares. |
+| **D54** | **El modo por defecto es COLOR, no blanco y negro.** | Es lo contrario de lo que hacen los escáneres de oficina, y aquí la diferencia es legal: los sellos, las firmas en tinta azul y los hologramas son parte de la prueba. Un umbral de blanco y negro los borra y puede invalidar el documento ante quien lo recibe. La interfaz lo advierte en vez de dejarlo a la suerte. |
+| **D55** | **Sin OpenCV.js.** La detección de bordes es Sobel + Hough sobre una miniatura de 320 px (~150 líneas). | OpenCV.js pesa entre 8 y 11 MB. El público objetivo usa Android de gama baja con datos contados; descargar eso para recortar una foto es indefendible en un producto que se obliga a <300 KB en su portada. |
+| **D56** | **Generador de PDF propio (~200 líneas)** en vez de `pdf-lib` o `jsPDF`. | Esas librerías pesan 250–400 KB. Para incrustar JPEG ya comprimido en páginas de tamaño fijo, el PDF es texto plano con los bytes dentro de un stream `DCTDecode`. Además el JPEG se incrusta **sin recodificar**: el archivo pesa lo mismo que las fotos y no pierde calidad. |
+| **D57** | **Cifrado AES-GCM en IndexedDB con clave no extraíble**, y la interfaz declara con exactitud qué protege y qué no. | Protege los archivos en disco ante un análisis forense del dispositivo — el escenario que de verdad teme esta audiencia. **No** protege frente a alguien que abra la app en el teléfono desbloqueado, y decirlo así es parte del argumento: prometer de más en seguridad es peor que no prometer nada. Para sincronizar en la nube (V2) haría falta derivar la clave de una frase del usuario. |
+| **D58** | Se añade el aviso de **7 días** a los 90/60/30 que pide §5-M1. | Los tres del PRD avisan con tiempo de sobra para empezar un trámite, pero ninguno atrapa a quien lo dejó pasar. El de 7 días es el último recordatorio antes de quedarse sin permiso de trabajo. |
+| **D59** — ⚠️ **APUESTA** | **El escáner se regala entero en la landing**: PDF completo, sin marca de agua, sin registro y sin correo. Lo que se cobra es la bóveda y los avisos. | Es lo contrario del brief original, que pedía exigir el registro para descargar. Razón: "servicio gratis… ahora paga para bajarlo" **es el patrón exacto del que ya estafaron a esta audiencia**, y §3.4.1 obliga a que cada elemento de la página REDUZCA la sospecha. Reteniendo el archivo se gana un correo y se pierde la credibilidad, que es el único activo del producto. Regalándolo, el argumento de venta pasa a ser cierto y decible: *ese PDF suelto se pierde en Descargas y nadie te avisará cuando el documento venza*. **Sin base de evidencia**: no hay investigación previa en el notebook sobre conversión freemium en este segmento; queda como hipótesis a medir con `landing_cta_clicked{cta_position:"scanner"}` frente al resto de posiciones. |
+| **D60** | El chunk del escáner **no entra en la carga inicial** de la landing: `next/dynamic` con `ssr:false`, y el componente sólo se monta al pulsar. | El motor completo (worker, canvas, detección de bordes, generador de PDF) reventaría el tope de 300 KB de §3.1.1 en la primera visita, penalizando a todo el que nunca lo va a usar. Verificado contra `app-build-manifest.json`: la landing se queda en **178 kB** y el chunk `3403` sólo se pide tras el clic. |
+
+**Fallo encontrado por los tests, no por revisión:** el umbral de aviso se buscaba con
+`find` sobre un array descendente `[90,60,30,7]`, así que a 60 días de vencer devolvía
+90. El usuario habría leído "te avisamos con 90 días" cuando le quedaban 8. Corregido
+buscando el umbral vigente, que es el **menor** que aún cubre los días restantes.
+
+**Propuesta abierta (APUESTA):** el encargo limita el escáner a quien paga. Sugiero
+permitir **un documento gratis durante el embudo, sin registro**. La métrica que decide
+el modelo es la conversión (§0.6, meta 8%), y un escáner que funciona al instante, en el
+dispositivo y sin pedir nada es la demostración de valor más barata y convincente que
+tiene este producto. El paywall seguiría gobernando guardar, organizar y las alertas.
+
 ## Verificación ejecutada (2026-08-07)
 
 Hasta este punto nada se había ejecutado: todo eran lecturas de código. Resultados reales:
@@ -139,6 +168,33 @@ panel `pre_arrival`, donde por diseño cambian.
 
 **Sigue sin verificar** (requiere servicios aprovisionados o dispositivo real): las políticas
 RLS contra una base viva, el cobro real de Stripe y el LCP medido en 4G.
+
+## ⚠️ Promesa sin respaldo: "te avisamos 90, 60, 30 y 7 días antes"
+
+**Bloqueante antes de publicar.** Esa frase aparece hoy en dos sitios —el módulo Bóveda
+(`boveda.ts` → `alertPromise`) y la tarjeta de venta del escáner de la landing— y **el
+producto no la cumple** como la lee cualquiera. No hay service worker, no hay push, y
+`EmailJob` en `lib/notifications/email.ts` ni siquiera contempla un tipo de vencimiento.
+Lo único que ocurre hoy es que, **si la persona abre la app**, ve la cuenta atrás. Eso no
+es avisar: avisar es llegar tú a ella.
+
+Y no se arregla con un cron, porque choca de frente con la otra promesa: el documento se
+guarda cifrado en el teléfono y **el servidor nunca lo ve**, así que no puede saber cuándo
+vence. Las dos frases de la landing —*"la foto no sale de tu teléfono"* y *"te avisamos"*—
+no pueden ser ciertas a la vez con la arquitectura actual. Sólo hay tres salidas honestas:
+
+1. **Notificación local en la PWA** — service worker + Notification API, programada en el
+   dispositivo. Respeta el cifrado entero. Coste: exige instalar la PWA (en iOS, añadirla
+   a la pantalla de inicio) y el aviso no llega si el sistema mató el service worker.
+2. **Separar la fecha del documento** — subir al servidor *sólo* `{documento_id, vence_el}`,
+   nunca el archivo, y disparar el correo desde un cron. Funciona siempre, pero deja de ser
+   cierto que "nada sale del teléfono": hay que decir exactamente qué sí sale.
+3. **Bajar la promesa** a lo que hoy es verdad ("verás la cuenta atrás desde 90 días antes")
+   hasta que 1 o 2 estén construidas.
+
+Contradice directamente la razón de D57 —*prometer de más en seguridad es peor que no
+prometer nada*— y va dirigida a un público al que ya le vendieron humo. No publicar la
+landing con esta frase mientras siga sin respaldo.
 
 ## Pendientes de integración (fuera de lo programable hoy)
 

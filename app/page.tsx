@@ -19,6 +19,7 @@ import { SectionHero } from "@/components/landing/section-hero";
 import { SectionTrust } from "@/components/landing/section-trust";
 import { SectionCompare } from "@/components/landing/section-compare";
 import { ModuleWheel } from "@/components/landing/module-wheel";
+import { SectionScanner } from "@/components/landing/section-scanner";
 import { SectionModules } from "@/components/landing/section-modules";
 import { SectionServices } from "@/components/landing/section-services";
 import { SectionPurpose } from "@/components/landing/section-purpose";
@@ -58,6 +59,7 @@ const TRACKED_SECTIONS = [
   "hero",
   "confianza",
   "comparativa",
+  "probar",
   "frentes",
   "modulos",
   "servicios",
@@ -192,6 +194,17 @@ export default async function LandingPage({
             ANDEX antes de enseñar el producto. */}
         <SectionSeam to="page" />
         <SectionCompare copy={t.compare} />
+
+        {/* El visitante acaba de reconocer su propio problema en la sección
+            anterior. Aquí se le resuelve uno, gratis y sin pedirle nada: es
+            la demostración de valor más fuerte de la página, y el sitio
+            donde el argumento de la bóveda deja de ser una promesa. */}
+        <SectionSeam to="surface" />
+        <SectionScanner
+          copy={t.liveScanner}
+          scanCopy={dict.boveda.scan}
+          ctaHref={ROUTES.registro}
+        />
 
         {/* Redoble entre el porqué y el detalle: la rueda nombra los siete
             frentes, y justo debajo la parrilla los explica. Cada palabra es

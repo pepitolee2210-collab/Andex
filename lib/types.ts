@@ -274,7 +274,19 @@ export type AnalyticsEventName =
   | "hero_card_clicked"
   | "hero_card_dismissed"
   | "module_opened"
-  | "interest_signal_submitted";
+  | "interest_signal_submitted"
+  /**
+   * Bóveda Digital. Fuera de la tabla §7.5 porque el módulo entero quedaba
+   * fuera de la v1; se añaden al reactivarlo. Ver docs/DECISIONES.md D59.
+   */
+  | "vault_scan_started" // { source: 'camera' | 'gallery' }
+  | "vault_document_saved" // { folder, page_count, has_expiry }
+  /**
+   * Qué trámite del gobierno se consulta de verdad. §1.2 declara que ese
+   * dato existe para "analizar qué trámites tienen mayor demanda", y es lo
+   * que decide qué módulo se construye después.
+   */
+  | "vault_portal_opened"; // { procedure: 'uscis' | 'eoir' | 'i94' | 'dmv' }
 
 export type AnalyticsProps = Record<
   string,

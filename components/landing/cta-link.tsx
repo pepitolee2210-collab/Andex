@@ -21,6 +21,9 @@ export type CtaPosition =
   | "header"
   | "hero"
   | "modules"
+  // El CTA que aparece tras probar el escáner: mide si demostrar el
+  // producto convierte mejor que describirlo.
+  | "scanner"
   | "services"
   | "pricing_monthly"
   | "pricing_annual"

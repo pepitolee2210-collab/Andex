@@ -7,7 +7,9 @@
 import type { LocationContext, ModuleId, ModuleMeta, ModuleSlug } from "@/lib/types";
 
 export const MODULES: readonly ModuleMeta[] = [
-  { id: 1, slug: "boveda",    iconName: "folder-lock", accentColor: "#0F766E", canonicalOrder: 1, status: "coming_soon" },
+  // La Bóveda ya funciona: escanea, cifra y guarda. Sin este cambio, el
+  // grid del panel le pondría el badge "Pronto" a un módulo operativo.
+  { id: 1, slug: "boveda",    iconName: "folder-lock", accentColor: "#0F766E", canonicalOrder: 1, status: "live" },
   { id: 2, slug: "migracion", iconName: "plane",       accentColor: "#102A43", canonicalOrder: 2, status: "coming_soon" },
   { id: 3, slug: "finanzas",  iconName: "trending-up", accentColor: "#0E7C5A", canonicalOrder: 3, status: "coming_soon" },
   { id: 4, slug: "negocio",   iconName: "building",    accentColor: "#9A6B00", canonicalOrder: 4, status: "coming_soon" },

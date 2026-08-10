@@ -174,6 +174,34 @@ const es = {
     items: ["Empleo", "Academia", "Comunidad", "Bóveda", "Migración", "Finanzas", "Negocios"],
   },
 
+  // ── S4.2 · Pruébalo ahora (escáner en vivo) ─────────────
+  liveScanner: {
+    eyebrow: "Pruébalo ahora",
+    title: "Escanea un documento. Gratis y sin registrarte.",
+    body:
+      "Toma una foto de tu pasaporte o de tu permiso de trabajo y te devolvemos un PDF derecho y legible, listo para presentar.",
+    assurances: [
+      "Sin registro",
+      "Sin tarjeta",
+      "La foto no sale de tu teléfono",
+    ],
+    cta: "Escanear un documento",
+
+    doneTitle: "Listo. Tu PDF ya está descargado.",
+    // El argumento de venta. Funciona porque no retiene nada: describe lo
+    // que le falta al archivo que la persona ya tiene.
+    pitchTitle: "Ahora la parte que de verdad importa",
+    pitchBody:
+      "Ese PDF quedó en tu carpeta de Descargas. Ahí se pierde entre las fotos, y el día que se rompa tu teléfono se va con él. Y cuando ese documento esté por vencer, nadie te va a avisar.",
+    pitchBenefits: [
+      "Se guarda cifrado y lo encuentras cuando lo necesites",
+      "Te avisamos 90, 60, 30 y 7 días antes de que venza",
+      "Todos tus papeles ordenados en un solo lugar",
+    ],
+    pitchCta: "Crear mi cuenta",
+    scanAgain: "Escanear otro",
+  },
+
   // ── S5 · Los 7 módulos ──────────────────────────────────
   modules: {
     eyebrow: "La plataforma",
@@ -515,6 +543,31 @@ const en = {
     title: "Everything an immigrant needs to solve, in one place.",
     listLabel: "The seven ANDEX modules",
     items: ["Jobs", "Academy", "Community", "Vault", "Immigration", "Finances", "Business"],
+  },
+
+  liveScanner: {
+    eyebrow: "Try it now",
+    title: "Scan a document. Free, no signup.",
+    body:
+      "Take a photo of your passport or your work permit and we hand you back a straight, readable PDF, ready to file.",
+    assurances: [
+      "No signup",
+      "No card",
+      "The photo never leaves your phone",
+    ],
+    cta: "Scan a document",
+
+    doneTitle: "Done. Your PDF is downloaded.",
+    pitchTitle: "Now the part that really matters",
+    pitchBody:
+      "That PDF landed in your Downloads folder. It'll get lost among the photos, and the day your phone breaks it goes with it. And when that document is about to expire, nobody will tell you.",
+    pitchBenefits: [
+      "Stored encrypted and easy to find when you need it",
+      "We remind you 90, 60, 30 and 7 days before it expires",
+      "All your papers organized in one place",
+    ],
+    pitchCta: "Create my account",
+    scanAgain: "Scan another",
   },
 
   modules: {
