@@ -285,6 +285,22 @@ const es = {
       cancelLabel: "Cancelar",
     },
 
+    /**
+     * Pantalla de entrega. No descarga sola: en el móvil ese `click()`
+     * automático no llega a ninguna parte, así que la persona pulsa y el
+     * sistema abre su propia hoja para guardar o compartir.
+     */
+    done: {
+      title: "Tu PDF está listo",
+      body: "Guárdalo en tu teléfono o mándalo por donde lo necesites presentar.",
+      shareLabel: "Guardar o compartir",
+      downloadLabel: "Descargar el PDF",
+      openLabel: "Verlo antes de decidir",
+      doneLabel: "Listo",
+      shareFailed:
+        "Tu navegador no dejó abrir el menú de compartir. Usa Descargar el PDF.",
+    },
+
     progress: {
       preparing: "Preparando la foto…",
       savingPage: "Guardando la página…",
@@ -617,6 +633,17 @@ const en = {
       addPageLabel: "Add another page",
       finishLabel: "Create my PDF",
       cancelLabel: "Cancel",
+    },
+
+    done: {
+      title: "Your PDF is ready",
+      body: "Save it to your phone or send it wherever you need to file it.",
+      shareLabel: "Save or share",
+      downloadLabel: "Download the PDF",
+      openLabel: "See it first",
+      doneLabel: "Done",
+      shareFailed:
+        "Your browser wouldn't open the share menu. Use Download the PDF.",
     },
 
     progress: {

@@ -65,8 +65,21 @@ type ButtonAsLink = CommonProps & {
 
 export type ButtonProps = ButtonAsButton | ButtonAsLink;
 
+/**
+ * Qué NO debe pasar por `next/link`.
+ *
+ * Además de las URL absolutas y `mailto:`, entran aquí `blob:` y `data:`:
+ * son archivos generados en el propio navegador —un PDF recién escaneado,
+ * por ejemplo— y el enrutador los trataría como una ruta de la aplicación,
+ * intentaría prefetcharlos y rompería la descarga.
+ */
 function isExternal(href: string): boolean {
-  return /^(https?:)?\/\//.test(href) || href.startsWith("mailto:");
+  return (
+    /^(https?:)?\/\//.test(href) ||
+    href.startsWith("mailto:") ||
+    href.startsWith("blob:") ||
+    href.startsWith("data:")
+  );
 }
 
 export function Button(props: ButtonProps) {

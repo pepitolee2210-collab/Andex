@@ -181,14 +181,77 @@ export async function pagesToPdf(
   return new Blob([bytes.slice().buffer], { type: "application/pdf" });
 }
 
-/** Descarga un blob con el nombre dado. */
+/**
+ * Descarga un blob con el nombre dado.
+ *
+ * El ancla se añade al documento antes de pulsarla: hay motores —varios de
+ * ellos móviles— que ignoran el `click()` de un elemento que no está en el
+ * árbol. Aun así esto NO es fiable en un teléfono; ver `sharePdf`.
+ */
 export function downloadBlob(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
   a.download = filename;
+  a.rel = "noopener";
+  a.style.display = "none";
+  document.body.appendChild(a);
   a.click();
   // Se libera en el siguiente ciclo: revocar de inmediato cancela la
   // descarga en Safari.
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  setTimeout(() => {
+    a.remove();
+    URL.revokeObjectURL(url);
+  }, 1000);
+}
+
+/**
+ * ENTREGA DEL PDF EN EL MÓVIL
+ *
+ * Un `<a download>` no sirve en un teléfono, y hay que decirlo entero:
+ *
+ *  · Safari en iOS **ignora** `download` en las URL de tipo blob. El PDF se
+ *    abre encima de la página, la persona pierde el escáner y no le queda
+ *    ninguna forma de guardarlo.
+ *  · El `click()` sintético llega **después** de `await pagesToPdf(...)`, o
+ *    sea fuera de la ventana de activación del usuario. Los navegadores
+ *    móviles lo descartan como descarga automática no solicitada.
+ *
+ * La vía buena es la hoja de compartir nativa: "Guardar en Archivos",
+ * WhatsApp, correo… que es justo lo que alguien quiere hacer con el permiso
+ * de trabajo recién escaneado. Exige un gesto real, así que sólo puede
+ * llamarse desde el manejador de un botón que la persona haya pulsado.
+ */
+export type PdfDelivery = "shared" | "cancelled" | "unsupported" | "failed";
+
+/** ¿Puede este navegador abrir la hoja de compartir con un archivo? */
+export function canSharePdf(): boolean {
+  if (typeof navigator === "undefined" || !navigator.canShare || !navigator.share) {
+    return false;
+  }
+  try {
+    const probe = new File([new Uint8Array(1)], "p.pdf", { type: "application/pdf" });
+    return navigator.canShare({ files: [probe] });
+  } catch {
+    return false;
+  }
+}
+
+/** Abre la hoja de compartir del sistema. Llamar SIEMPRE desde un gesto. */
+export async function sharePdf(
+  blob: Blob,
+  filename: string,
+  title?: string,
+): Promise<PdfDelivery> {
+  if (!canSharePdf()) return "unsupported";
+  const file = new File([blob], filename, { type: "application/pdf" });
+  try {
+    await navigator.share({ files: [file], title });
+    return "shared";
+  } catch (error) {
+    // Cerrar la hoja sin elegir nada lanza AbortError. No es un fallo:
+    // la persona cambió de idea y no hay que enseñarle un error rojo.
+    if (error instanceof Error && error.name === "AbortError") return "cancelled";
+    return "failed";
+  }
 }

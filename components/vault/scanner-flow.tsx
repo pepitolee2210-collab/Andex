@@ -22,19 +22,25 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Camera,
+  Check,
+  Download,
+  ExternalLink,
   FileDown,
   Images,
   Loader2,
   Plus,
+  Share2,
   ShieldCheck,
   TriangleAlert,
   X,
 } from "lucide-react";
 import { useReducedMotion } from "motion/react";
 import {
+  canSharePdf,
   downloadBlob,
   imageDataFromBlob,
   pagesToPdf,
+  sharePdf,
   toJpeg,
   toThumbnail,
   type EnhanceMode,
@@ -103,6 +109,27 @@ export type ScannerErrorsCopy = {
   discardCancelLabel: string;
 };
 
+/**
+ * Pantalla final. Existe por una razón concreta: en un teléfono la descarga
+ * automática no llega a ninguna parte, así que hace falta un botón real que
+ * la persona pulse para que el sistema abra su hoja de compartir.
+ */
+export type ScannerDoneCopy = {
+  title: string;
+  /** Qué acaba de pasar y qué puede hacer ahora. */
+  body: string;
+  /** Acción principal en móvil: abre la hoja del sistema. */
+  shareLabel: string;
+  /** Acción principal en escritorio, y alternativa en móvil. */
+  downloadLabel: string;
+  /** Abrir el PDF para verlo antes de decidir. */
+  openLabel: string;
+  /** Cierra el escáner. */
+  doneLabel: string;
+  /** Sólo si la hoja de compartir falla de verdad. */
+  shareFailed: string;
+};
+
 export type ScannerFlowCopy = {
   start: ScannerStartCopy;
   camera: ScannerCameraCopy;
@@ -110,6 +137,7 @@ export type ScannerFlowCopy = {
   preview: ScanPreviewCopy;
   list: PageListCopy;
   review: ScannerReviewCopy;
+  done: ScannerDoneCopy;
   progress: ScannerProgressCopy;
   errors: ScannerErrorsCopy;
 };
@@ -127,12 +155,17 @@ export type ScannerFlowProps = {
   documentTitle?: string;
   /** Tamaño inicial de la hoja. Carta por defecto (§ trámites de EE. UU.). */
   defaultPageSize?: PageSizeName;
-  /** Descarga el PDF al terminar. Por defecto, sí. */
+  /**
+   * Si el PDF se lo lleva la persona (landing) en vez de guardarse en la
+   * bóveda. Cuando es `true` el flujo termina en la pantalla de entrega, con
+   * el botón de compartir/descargar; cuando es `false` se llama a
+   * `onComplete` directamente y el archivo sigue su camino dentro de la app.
+   */
   autoDownload?: boolean;
   className?: string;
 };
 
-type Stage = "idle" | "capturing" | "adjusting" | "previewing" | "review";
+type Stage = "idle" | "capturing" | "adjusting" | "previewing" | "review" | "done";
 type Busy = "preparing" | "savingPage" | "buildingPdf";
 type ErrorKind = "image" | "page" | "pdf";
 
@@ -165,6 +198,25 @@ export function ScannerFlow({
   const [pages, setPages] = useState<ScannedPage[]>([]);
   const [pageSize, setPageSize] = useState<PageSizeName>(defaultPageSize);
   const [queueCount, setQueueCount] = useState(0);
+
+  // ── Entrega del PDF ──
+  const [pdf, setPdf] = useState<Blob | null>(null);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [shareFailed, setShareFailed] = useState(false);
+  /**
+   * Se resuelve tras montar, nunca durante el render: `navigator.canShare`
+   * no existe en el servidor y consultarlo en el primer render daría un
+   * HTML distinto al del cliente.
+   */
+  const [canShare, setCanShare] = useState(false);
+  useEffect(() => setCanShare(canSharePdf()), []);
+
+  // El object URL vive mientras la pantalla de entrega esté abierta; si se
+  // suelta antes, el enlace de descarga apunta a nada.
+  useEffect(() => {
+    if (!pdfUrl) return;
+    return () => URL.revokeObjectURL(pdfUrl);
+  }, [pdfUrl]);
 
   /** Fotos elegidas de golpe que todavía no se han ajustado. */
   const queueRef = useRef<Blob[]>([]);
@@ -328,13 +380,30 @@ export function ScannerFlow({
         size: pageSize,
         title: documentTitle ?? fileName,
       });
-      if (autoDownload) downloadBlob(pdf, `${fileName}.pdf`);
-      onComplete(pdf, pages);
+      if (!autoDownload) {
+        // El PDF se queda dentro de la app: no hay nada que entregar.
+        onComplete(pdf, pages);
+        return;
+      }
+      // Se para aquí a propósito. Descargar ahora sería un `click()` fuera
+      // del gesto del usuario, que el móvil descarta; el archivo se entrega
+      // en la pantalla siguiente, cuando la persona pulse.
+      setPdf(pdf);
+      setPdfUrl(URL.createObjectURL(pdf));
+      setStage("done");
     } catch {
       setErrorKind("pdf");
     } finally {
       setBusy(null);
     }
+  }
+
+  async function handleShare() {
+    if (!pdf) return;
+    setShareFailed(false);
+    const result = await sharePdf(pdf, `${fileName}.pdf`, documentTitle ?? fileName);
+    // "cancelled" es la persona cerrando la hoja: no se le enseña un error.
+    if (result === "failed" || result === "unsupported") setShareFailed(true);
   }
 
   function reorderPages(from: number, to: number) {
@@ -559,6 +628,71 @@ export function ScannerFlow({
               >
                 <FileDown aria-hidden="true" className="size-5" />
                 {copy.review.finishLabel}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* ── Entrega ──
+          El PDF ya existe; falta que salga del navegador. En el móvil eso
+          sólo ocurre si la persona pulsa: la hoja de compartir del sistema
+          exige un gesto real, y una descarga automática la descartaría. */}
+      {stage === "done" && pdfUrl ? (
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 py-8 sm:px-6">
+          <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center text-center">
+            <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-teal-soft">
+              <Check aria-hidden="true" className="size-8 text-teal-deep" />
+            </div>
+            <h2 className="mt-5 font-heading text-h2 text-ink">{copy.done.title}</h2>
+            <p className="mt-2 text-body text-muted">{copy.done.body}</p>
+
+            <div className="mt-8 flex flex-col gap-3">
+              {canShare ? (
+                <Button size="lg" fullWidth onClick={() => void handleShare()}>
+                  <Share2 aria-hidden="true" className="size-5" />
+                  {copy.done.shareLabel}
+                </Button>
+              ) : null}
+
+              {/* Un <a download> de verdad, no un click sintético: al ser el
+                  gesto directo de la persona, el navegador lo respeta. Y se
+                  puede mantener pulsado para "guardar enlace". */}
+              <Button
+                href={pdfUrl}
+                download={`${fileName}.pdf`}
+                variant={canShare ? "secondary" : "primary"}
+                size="lg"
+                fullWidth
+              >
+                <Download aria-hidden="true" className="size-5" />
+                {copy.done.downloadLabel}
+              </Button>
+
+              <a
+                href={pdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-11 items-center justify-center gap-2 text-body text-teal-deep underline underline-offset-4 hover:text-ink"
+              >
+                <ExternalLink aria-hidden="true" className="size-4" />
+                {copy.done.openLabel}
+              </a>
+            </div>
+
+            {shareFailed ? (
+              <p role="alert" className="mt-4 text-body text-danger">
+                {copy.done.shareFailed}
+              </p>
+            ) : null}
+
+            <div className="mt-8 border-t border-line pt-5">
+              <Button
+                variant="ghost"
+                fullWidth
+                onClick={() => pdf && onComplete(pdf, pages)}
+              >
+                {copy.done.doneLabel}
               </Button>
             </div>
           </div>

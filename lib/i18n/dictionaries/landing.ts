@@ -187,12 +187,12 @@ const es = {
     ],
     cta: "Escanear un documento",
 
-    doneTitle: "Listo. Tu PDF ya está descargado.",
+    doneTitle: "Listo. Ya tienes tu PDF.",
     // El argumento de venta. Funciona porque no retiene nada: describe lo
     // que le falta al archivo que la persona ya tiene.
     pitchTitle: "Ahora la parte que de verdad importa",
     pitchBody:
-      "Ese PDF quedó en tu carpeta de Descargas. Ahí se pierde entre las fotos, y el día que se rompa tu teléfono se va con él. Y cuando ese documento esté por vencer, nadie te va a avisar.",
+      "Ese PDF ya es tuyo, pero queda suelto entre mil archivos del teléfono. El día que se rompa se va con él. Y cuando ese documento esté por vencer, nadie te va a avisar.",
     pitchBenefits: [
       "Se guarda cifrado y lo encuentras cuando lo necesites",
       "Te avisamos 90, 60, 30 y 7 días antes de que venza",
@@ -557,10 +557,10 @@ const en = {
     ],
     cta: "Scan a document",
 
-    doneTitle: "Done. Your PDF is downloaded.",
+    doneTitle: "Done. Your PDF is yours.",
     pitchTitle: "Now the part that really matters",
     pitchBody:
-      "That PDF landed in your Downloads folder. It'll get lost among the photos, and the day your phone breaks it goes with it. And when that document is about to expire, nobody will tell you.",
+      "That PDF is yours now, but it's loose among a thousand files on your phone. The day it breaks, the file goes with it. And when that document is about to expire, nobody will tell you.",
     pitchBenefits: [
       "Stored encrypted and easy to find when you need it",
       "We remind you 90, 60, 30 and 7 days before it expires",
