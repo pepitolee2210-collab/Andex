@@ -150,7 +150,14 @@ export function Toaster({
       role="region"
       aria-label={regionLabel}
       aria-live="polite"
-      className="pointer-events-none fixed inset-x-4 bottom-4 z-50 flex flex-col items-center gap-2 sm:inset-x-auto sm:bottom-6 sm:right-6 sm:items-end"
+      /* En móvil el aviso va ARRIBA. Abajo es territorio de acciones: la
+         barra de pestañas del panel y los botones fijos de los formularios
+         viven ahí, y un aviso a `bottom-4` se les pone encima. Como lleva
+         `pointer-events-auto` —lo necesita para cerrarse y para pausar el
+         temporizador— se comía el toque: en el paso 1 de la entrevista se
+         pulsaba "Continuar" y no pasaba nada hasta que el aviso se iba.
+         En pantalla ancha no hay conflicto y se queda abajo a la derecha. */
+      className="pointer-events-none fixed inset-x-4 top-4 z-50 flex flex-col items-center gap-2 sm:inset-x-auto sm:bottom-6 sm:right-6 sm:top-auto sm:items-end"
     >
       {items.map((item) => (
         <div

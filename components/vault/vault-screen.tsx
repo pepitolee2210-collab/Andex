@@ -5,18 +5,26 @@
  *
  * El orden de arriba abajo no es estético, es una jerarquía de urgencia:
  *
- *  1. **La privacidad, arriba y visible.** No es un pie de página: es el
- *     argumento que hace que alguien se atreva a subir la foto de su
- *     pasaporte. Incluye el límite real ("protege tu teléfono"), porque en
- *     seguridad prometer de más es peor que no prometer nada, y este público
- *     ya oyó "nivel bancario" de quien lo estafó.
- *  2. **Lo que se vence.** Es lo único de esta pantalla con fecha límite, así
- *     que va antes que las carpetas. Vencido primero, y dentro de cada grupo
- *     lo que vence antes.
- *  3. Las carpetas y sus documentos.
- *  4. El espacio del teléfono, **sólo cuando queda poco** (<15%): enseñarlo
+ *  1. **La acción.** Escanear es el verbo del módulo y está siempre a mano,
+ *     no sólo cuando la bóveda está vacía.
+ *  2. **La privacidad.** Es el argumento que hace que alguien se atreva a
+ *     fotografiar su pasaporte, con su límite real ("protege tu teléfono"):
+ *     en seguridad prometer de más es peor que no prometer nada, y este
+ *     público ya oyó "nivel bancario" de quien lo estafó. Abierta de par en
+ *     par la primera vez —cuando se decide la confianza— y plegada después,
+ *     porque en la visita veinte se interpone entre la persona y sus papeles.
+ *  3. **Lo que se vence**, como aviso corto y accionable.
+ *  4. Las carpetas y sus documentos.
+ *  5. El espacio del teléfono, **sólo cuando queda poco** (<15%): enseñarlo
  *     siempre es ruido; enseñarlo tarde es un guardado que falla sin motivo.
- *  5. La consulta guiada de trámites oficiales.
+ *  6. La consulta guiada de trámites oficiales.
+ *
+ * ── Por qué el aviso de vencimiento NO repite la tarjeta ──
+ * Un documento que vence pronto salía dos veces: entero arriba y entero otra
+ * vez en su carpeta. En un móvil las dos copias caen a dos pantallas de
+ * distancia y se leen como dos documentos distintos. Ahora arriba va una
+ * línea —nombre, cuánto le queda— que lleva a la tarjeta de verdad. El
+ * documento existe en un solo sitio.
  *
  * Los documentos NO salen del dispositivo: se leen de IndexedDB cifrado
  * (`lib/vault/storage`) ya en el navegador. Por eso todo esto es cliente y el
@@ -26,6 +34,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Car,
+  ChevronDown,
+  ChevronRight,
   FolderLock,
   HardDrive,
   House,
@@ -33,6 +43,7 @@ import {
   Lock,
   Plane,
   Receipt,
+  ScanLine,
   ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
@@ -57,6 +68,9 @@ import { TrackerSection } from "./tracker/tracker-section";
 import {
   compareUrgency,
   documentCountText,
+  expiryText,
+  expiryTone,
+  expiryToneClass,
   fill,
   formatBytes,
   isLowOnSpace,
@@ -192,41 +206,87 @@ export function VaultScreen({
   const lowOnSpace = isLowOnSpace(storage);
   const isEmpty = documents !== null && documents.length === 0;
 
+  /** Salta del aviso de vencimiento a la tarjeta real, en su carpeta. */
+  const folderRef = useRef<HTMLElement>(null);
+  function irADocumento(folder: VaultFolderId) {
+    setSelected(folder);
+    // En el fotograma siguiente, cuando la carpeta ya se ha pintado.
+    requestAnimationFrame(() => {
+      folderRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
   return (
     <article className="mx-auto w-full max-w-4xl">
       {/* ── Encabezado del módulo ── */}
-      <header className="flex items-start gap-4">
+      <header className="flex items-start gap-3 sm:gap-4">
         <span
           aria-hidden="true"
-          className="flex size-12 shrink-0 items-center justify-center rounded-md bg-teal-soft text-teal-deep"
+          className="flex size-11 shrink-0 items-center justify-center rounded-md bg-teal-soft text-teal-deep sm:size-12"
         >
-          <ModuleIcon slug="boveda" size={26} />
+          <ModuleIcon slug="boveda" size={24} />
         </span>
         <div className="min-w-0">
-          <h1 className="font-heading text-h1 text-ink">{copy.title}</h1>
-          <p className="mt-1 text-body-lg text-muted">{copy.subtitle}</p>
+          <h1 className="font-heading text-h2 text-ink sm:text-h1">{copy.title}</h1>
+          <p className="mt-1 text-body text-muted sm:text-body-lg">{copy.subtitle}</p>
         </div>
       </header>
 
-      {/* ── Privacidad: el argumento, no el descargo ── */}
-      <section
-        aria-labelledby="boveda-privacidad"
-        className="mt-5 rounded-xl border border-line bg-teal-soft p-4 shadow-sm sm:p-5"
+      {/* ── La acción, siempre a mano ──
+          Antes el botón de escanear vivía dentro del estado vacío, así que
+          desaparecía en cuanto había un documento: la bóveda se quedaba sin
+          forma de añadir el segundo. Ahora es lo primero después del título,
+          que es donde debe estar el verbo del módulo. */}
+      {onScan ? (
+        <Button size="lg" fullWidth onClick={onScan} className="mt-4 sm:w-auto">
+          <ScanLine aria-hidden="true" className="size-5" />
+          {copy.empty.cta}
+        </Button>
+      ) : null}
+
+      {/* ── Privacidad: el argumento, no el descargo ──
+          Abierta cuando la bóveda está vacía —es entonces cuando la persona
+          decide si se fía— y plegada en cuanto hay documentos, para que no se
+          interponga entre ella y sus papeles cada vez que entra. `<details>`
+          lo resuelve sin estado y funciona aunque el JavaScript no cargue. */}
+      {/* Cerrada mientras se leen los documentos, no abierta: si empezara
+          abierta, quien ya tiene papeles la vería desplegarse y plegarse
+          sola en cada carga, moviendo todo lo de abajo. Así el salto ocurre
+          una sola vez, en la primera visita, que es cuando además interesa
+          que se despliegue. */}
+      <details
+        open={isEmpty}
+        className="group mt-4 overflow-hidden rounded-xl border border-line bg-teal-soft shadow-sm"
       >
-        <Badge variant="teal">
-          <Lock aria-hidden="true" className="size-3.5" />
-          {copy.privacy.badge}
-        </Badge>
-        <h2 id="boveda-privacidad" className="mt-3 font-heading text-h2 text-ink">
-          {copy.privacy.headline}
-        </h2>
-        <p className="mt-2 text-body text-ink">{copy.privacy.body}</p>
-        {/* El límite real, con el mismo peso que la promesa. */}
-        <p className="mt-3 flex items-start gap-2.5 border-t border-line pt-3 text-body text-ink">
-          <ShieldCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-teal-deep" />
-          <span className="min-w-0">{copy.privacy.caveat}</span>
-        </p>
-      </section>
+        <summary
+          className={cn(
+            "flex min-h-12 cursor-pointer list-none items-center gap-2 p-4 text-left",
+            "[&::-webkit-details-marker]:hidden",
+            "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-teal-deep",
+          )}
+        >
+          <Lock aria-hidden="true" className="size-4 shrink-0 text-teal-deep" />
+          <span className="min-w-0 flex-1 text-body font-semibold text-ink">
+            {copy.privacy.headline}
+          </span>
+          <ChevronDown
+            aria-hidden="true"
+            className="size-5 shrink-0 text-teal-deep transition-transform duration-200 group-open:rotate-180"
+          />
+        </summary>
+        <div className="px-4 pb-4">
+          <Badge variant="teal">
+            <Lock aria-hidden="true" className="size-3.5" />
+            {copy.privacy.badge}
+          </Badge>
+          <p className="mt-3 text-body text-ink">{copy.privacy.body}</p>
+          {/* El límite real, con el mismo peso que la promesa. */}
+          <p className="mt-3 flex items-start gap-2.5 border-t border-line pt-3 text-body text-ink">
+            <ShieldCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-teal-deep" />
+            <span className="min-w-0">{copy.privacy.caveat}</span>
+          </p>
+        </div>
+      </details>
 
       {documents === null ? (
         <div aria-busy="true" className="mt-6 space-y-3">
@@ -235,25 +295,50 @@ export function VaultScreen({
         </div>
       ) : (
         <>
-          {/* ── Se te vence pronto ── */}
+          {/* ── Se te vence pronto ──
+              Un aviso, no una segunda copia del archivo: una línea por
+              documento con lo único que importa aquí —cuánto le queda— y un
+              toque que baja a su tarjeta. */}
           {urgent.length > 0 ? (
             <section
               aria-labelledby="boveda-vencimientos"
-              // Fondo alterno para que las tarjetas blancas de dentro se
-              // despeguen: esta es la zona que hay que mirar primero.
-              className="mt-6 rounded-xl border border-line bg-surface-alt p-4 sm:p-5"
+              className="mt-6 overflow-hidden rounded-xl border border-amber-deep/30 bg-amber-soft"
             >
-              <h2 id="boveda-vencimientos" className="font-heading text-h2 text-ink">
-                {copy.expiry.label}
-              </h2>
-              <p className="mt-1 text-body text-muted">{copy.expiry.alertPromise}</p>
-              <DocumentList
-                entries={urgent}
-                copy={documentCopy}
-                showFolder
-                onChanged={refresh}
-                className="mt-4"
-              />
+              <div className="px-4 pt-4">
+                <h2 id="boveda-vencimientos" className="font-heading text-h3 text-ink">
+                  {copy.sections.dueSoon}
+                </h2>
+                <p className="mt-1 text-caption text-muted">{copy.expiry.alertPromise}</p>
+              </div>
+              <ul className="mt-3 divide-y divide-line border-t border-line">
+                {urgent.map(({ document, state }) => (
+                  <li key={document.id}>
+                    <button
+                      type="button"
+                      onClick={() => irADocumento(document.folder)}
+                      className="flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-surface/60 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-teal-deep"
+                    >
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-body font-medium text-ink">
+                          {document.name}
+                        </span>
+                        <span
+                          className={cn(
+                            "mt-0.5 block text-caption font-semibold",
+                            expiryToneClass(expiryTone(state)),
+                          )}
+                        >
+                          {expiryText(state, copy.expiry)}
+                        </span>
+                      </span>
+                      <ChevronRight
+                        aria-hidden="true"
+                        className="size-5 shrink-0 text-muted"
+                      />
+                    </button>
+                  </li>
+                ))}
+              </ul>
             </section>
           ) : null}
 
@@ -262,23 +347,33 @@ export function VaultScreen({
                Con la bóveda vacía no se enseñan las cinco carpetas: serían
                cinco controles que no llevan a ningún sitio. Vuelven en cuanto
                haya un documento, con sus pistas de qué guardar en cada una. */
+            /* Sin botón: el de escanear ya está arriba, a un dedo de aquí.
+               Dos llamadas idénticas en la misma pantalla no dan el doble de
+               conversión, sólo obligan a elegir entre dos cosas iguales. */
             <EmptyState
               icon={<FolderLock />}
               title={copy.empty.title}
               description={copy.empty.body}
-              action={onScan ? <Button onClick={onScan}>{copy.empty.cta}</Button> : undefined}
               className="mt-6 rounded-xl border border-dashed border-line bg-surface"
             />
           ) : (
             <>
               {/* ── Las cinco carpetas ──
                   Grupo de botones, no navegación: filtran lo que se ve debajo
-                  y no llevan a otra pantalla, así que no añaden un landmark. */}
+                  y no llevan a otra pantalla, así que no añaden un landmark.
+
+                  Fichas compactas: icono, nombre y cuántos hay. La pista de
+                  qué guardar en cada una ("Pasaporte, matrícula consular…")
+                  se ha bajado al encabezado de la carpeta abierta, que es
+                  donde sirve. Repetida cinco veces aquí arriba ocupaba media
+                  pantalla del teléfono para decir "0 documentos" cuatro
+                  veces. */}
               <div role="group" aria-label={copy.scanner.folderLabel} className="mt-6">
-                <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
                   {VAULT_FOLDERS.map((folder) => {
                     const Icon = FOLDER_ICONS[folder];
                     const active = folder === activeFolder;
+                    const count = counts.get(folder) ?? 0;
                     return (
                       <li key={folder}>
                         <button
@@ -286,33 +381,40 @@ export function VaultScreen({
                           aria-pressed={active}
                           onClick={() => setSelected(folder)}
                           className={cn(
-                            "flex min-h-11 w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors",
+                            "flex min-h-16 w-full flex-col gap-1.5 rounded-lg border p-3 text-left transition-colors",
                             active
                               ? "border-teal-deep bg-teal-soft"
                               : "border-line bg-surface shadow-sm hover:border-muted hover:bg-surface-alt",
                           )}
                         >
-                          <span
-                            aria-hidden="true"
-                            className={cn(
-                              "flex size-9 shrink-0 items-center justify-center rounded-md",
-                              active
-                                ? "bg-surface text-teal-deep"
-                                : "bg-surface-alt text-muted",
-                            )}
-                          >
-                            <Icon className="size-5" />
+                          <span className="flex items-center gap-2">
+                            <Icon
+                              aria-hidden="true"
+                              className={cn(
+                                "size-5 shrink-0",
+                                active ? "text-teal-deep" : "text-muted",
+                              )}
+                            />
+                            {/* El contador sólo aparece si hay algo: un "0"
+                                repetido no informa, sólo llena. */}
+                            {count > 0 ? (
+                              <span
+                                className={cn(
+                                  "ml-auto rounded-full px-2 py-0.5 text-caption font-bold tabular-nums",
+                                  active
+                                    ? "bg-teal-deep text-white"
+                                    : "bg-surface-alt text-muted",
+                                )}
+                              >
+                                {count}
+                              </span>
+                            ) : null}
                           </span>
-                          <span className="min-w-0 flex-1">
-                            <span className="block text-body font-medium text-ink">
-                              {copy.folders[folder].name}
-                            </span>
-                            <span className="mt-0.5 block text-caption text-muted">
-                              {copy.folders[folder].hint}
-                            </span>
-                            <span className="mt-1 block text-caption font-medium text-muted">
-                              {documentCountText(counts.get(folder) ?? 0, copy.list)}
-                            </span>
+                          <span className="block text-caption font-medium leading-snug text-ink">
+                            {copy.folders[folder].name}
+                          </span>
+                          <span className="sr-only">
+                            {documentCountText(count, copy.list)}
                           </span>
                         </button>
                       </li>
@@ -322,11 +424,11 @@ export function VaultScreen({
               </div>
 
               {/* ── Documentos de la carpeta abierta ── */}
-              <section aria-labelledby="boveda-carpeta" className="mt-6">
-                <h2 id="boveda-carpeta" className="font-heading text-h2 text-ink">
+              <section ref={folderRef} aria-labelledby="boveda-carpeta" className="mt-6 scroll-mt-4">
+                <h2 id="boveda-carpeta" className="font-heading text-h3 text-ink">
                   {copy.folders[activeFolder].name}
                 </h2>
-                <p className="mt-1 text-body text-muted">
+                <p className="mt-1 text-caption text-muted">
                   {copy.folders[activeFolder].hint}
                 </p>
 

@@ -286,9 +286,20 @@
 }
 
 /* Entrada del toast (§2.5) */
+/* El aviso entra desde el borde por el que aparece: en móvil cae desde
+   arriba, en pantalla ancha sube desde abajo a la derecha. Redefinir los
+   keyframes dentro de la media query es la forma corta de hacerlo sin
+   añadir una clase más al componente. */
 @keyframes andex-toast-in {
-  from { opacity: 0; transform: translateY(0.5rem) scale(0.98); }
+  from { opacity: 0; transform: translateY(-0.5rem) scale(0.98); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (min-width: 40rem) {
+  @keyframes andex-toast-in {
+    from { opacity: 0; transform: translateY(0.5rem) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
 }
 
 /* ═══════════════════════════════════════════════════════
