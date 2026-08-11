@@ -28,14 +28,19 @@ export type WarpRequest = {
   quad: Quad;
   mode: EnhanceMode;
   /**
-   * Lado mayor máximo de la salida. 2200 px ≈ 200 ppp en una hoja Carta:
-   * más que suficiente para leer y para el OCR de la oficina receptora, y
-   * sin inflar el archivo hasta que no se pueda ni subir.
+   * Lado mayor máximo de la salida. 3300 px es el lado largo de una hoja
+   * Carta a 300 ppp, que es el mínimo con el que un OCR lee letra pequeña
+   * sin inventarse caracteres. Los 2200 de antes eran 200 ppp: se leía, pero
+   * se estaba tirando resolución de una cámara de 12 MP por una constante.
+   *
+   * Es un TOPE, no un objetivo: nunca se amplía por encima de los píxeles
+   * que la foto tenía dentro del cuadrilátero (ver `warpQuad`). Ampliar no
+   * añade detalle, sólo peso y una nitidez falsa.
    */
   maxSide?: number;
 };
 
-const DEFAULT_MAX_SIDE = 2200;
+const DEFAULT_MAX_SIDE = 3300;
 
 // ─── Enderezado ──────────────────────────────────────────
 
@@ -155,63 +160,285 @@ function toGray(data: Uint8ClampedArray, count: number): Float32Array {
 }
 
 /**
+ * Percentiles locales del fondo y de la tinta, calculados en MINIATURA.
+ *
+ * Dropbox resuelve el realce como una ecuación de Poisson, pero lo que
+ * aplica en la práctica es una transformación de **ganancia y
+ * desplazamiento que varía despacio por la imagen**
+ * (dropbox.tech/machine-learning/fast-document-rectification-and-enhancement).
+ * Eso es exactamente lo que se estima aquí: por cada zona, cuánto vale su
+ * papel y cuánto su tinta.
+ *
+ * Se calcula sobre una miniatura y luego se interpola, por dos razones. La
+ * barata: cuesta una fracción. La importante: la iluminación varía despacio
+ * y el texto no, así que estimar a resolución completa mete el propio texto
+ * dentro de la estimación y deja halos claros alrededor de cada letra.
+ */
+const FIELD_SIDE = 48;
+
+/**
+ * Nivel del PAPEL por canal, celda a celda.
+ *
+ * Sólo se estima el papel, nunca la tinta. Intentarlo con la tinta fue un
+ * error medido: una celda con texto y su vecina sin él daban transformaciones
+ * distintas, y la costura entre las dos se veía como un parche rectangular
+ * alrededor de cada párrafo. La iluminación varía despacio; el contenido no.
+ *
+ * Y por canal, no sobre el gris: dividir cada canal por SU propio nivel de
+ * papel es, gratis, un balance de blancos. Con un único factor sacado de la
+ * luminancia el tinte cálido de la bombilla sobrevive intacto y el papel
+ * queda crema, que es la mitad de lo que delata a una foto.
+ */
+type PaperField = { r: Float32Array; g: Float32Array; b: Float32Array; w: number; h: number };
+
+function percentileOf(bucket: number[], p: number): number {
+  bucket.sort((a, b) => a - b);
+  return bucket[Math.min(bucket.length - 1, Math.floor(bucket.length * p))];
+}
+
+function estimatePaper(data: Uint8ClampedArray, w: number, h: number): PaperField {
+  const fw = Math.max(2, Math.min(FIELD_SIDE, w));
+  const fh = Math.max(2, Math.min(FIELD_SIDE, h));
+  const cellW = w / fw;
+  const cellH = h / fh;
+  // `Float32Array<ArrayBuffer>` explícito: sin la anotación, TypeScript
+  // infiere `ArrayBufferLike` y luego rechaza reasignar el resultado de
+  // `blurField`, que sí devuelve un búfer normal.
+  const channels: Float32Array<ArrayBuffer>[] = [
+    new Float32Array(fw * fh),
+    new Float32Array(fw * fh),
+    new Float32Array(fw * fh),
+  ];
+  const buckets = [[] as number[], [] as number[], [] as number[]];
+
+  for (let cy = 0; cy < fh; cy++) {
+    const y0 = Math.round(cy * cellH);
+    const y1 = Math.min(h - 1, Math.round((cy + 1) * cellH));
+    for (let cx = 0; cx < fw; cx++) {
+      const x0 = Math.round(cx * cellW);
+      const x1 = Math.min(w - 1, Math.round((cx + 1) * cellW));
+      for (const b of buckets) b.length = 0;
+
+      const stepX = Math.max(1, Math.round((x1 - x0 + 1) / 16));
+      const stepY = Math.max(1, Math.round((y1 - y0 + 1) / 16));
+      for (let y = y0; y <= y1; y += stepY) {
+        for (let x = x0; x <= x1; x += stepX) {
+          const o = (y * w + x) * 4;
+          buckets[0].push(data[o]);
+          buckets[1].push(data[o + 1]);
+          buckets[2].push(data[o + 2]);
+        }
+      }
+      // Percentil 85, no el máximo: un reflejo especular quemado no puede
+      // decidir cuánto vale el papel de toda una zona.
+      for (let c = 0; c < 3; c++) channels[c][cy * fw + cx] = percentileOf(buckets[c], 0.85);
+    }
+  }
+
+  // Dilatación seguida de desenfoque. La dilatación arregla las celdas que
+  // caen enteras sobre contenido oscuro —la banda azul de la cabecera, una
+  // foto— donde el percentil alto ya no es papel sino tinta: sin esto, esas
+  // celdas pedirían una ganancia enorme y la cabecera saldría lavada. Toman
+  // prestado el nivel de sus vecinas, que sí ven papel.
+  for (let c = 0; c < 3; c++) channels[c] = blurField(dilateField(channels[c], fw, fh), fw, fh);
+
+  return { r: channels[0], g: channels[1], b: channels[2], w: fw, h: fh };
+}
+
+function dilateField(src: Float32Array, w: number, h: number): Float32Array<ArrayBuffer> {
+  const out = new Float32Array(w * h);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      let max = 0;
+      for (let dy = -1; dy <= 1; dy++) {
+        const yy = Math.min(h - 1, Math.max(0, y + dy));
+        for (let dx = -1; dx <= 1; dx++) {
+          const xx = Math.min(w - 1, Math.max(0, x + dx));
+          const v = src[yy * w + xx];
+          if (v > max) max = v;
+        }
+      }
+      out[y * w + x] = max;
+    }
+  }
+  return out;
+}
+
+function blurField(src: Float32Array, w: number, h: number): Float32Array<ArrayBuffer> {
+  const out = new Float32Array(w * h);
+  const R = 2;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      let sum = 0;
+      let n = 0;
+      for (let dy = -R; dy <= R; dy++) {
+        const yy = Math.min(h - 1, Math.max(0, y + dy));
+        for (let dx = -R; dx <= R; dx++) {
+          const xx = Math.min(w - 1, Math.max(0, x + dx));
+          sum += src[yy * w + xx];
+          n++;
+        }
+      }
+      out[y * w + x] = sum / n;
+    }
+  }
+  return out;
+}
+
+/** Lee el campo en coordenadas de la imagen grande, interpolando. */
+function sampleField(field: Float32Array, f: PaperField, x: number, y: number, w: number, h: number): number {
+  const fx = Math.min(f.w - 1, Math.max(0, (x / w) * f.w - 0.5));
+  const fy = Math.min(f.h - 1, Math.max(0, (y / h) * f.h - 0.5));
+  const x0 = Math.floor(fx);
+  const y0 = Math.floor(fy);
+  const x1 = Math.min(f.w - 1, x0 + 1);
+  const y1 = Math.min(f.h - 1, y0 + 1);
+  const tx = fx - x0;
+  const ty = fy - y0;
+  const a = field[y0 * f.w + x0] * (1 - tx) + field[y0 * f.w + x1] * tx;
+  const b = field[y1 * f.w + x0] * (1 - tx) + field[y1 * f.w + x1] * tx;
+  return a * (1 - ty) + b * ty;
+}
+
+/**
  * Deja el documento con aspecto de escaneado.
  *
- * Lo que de verdad arruina una foto de un papel no es el color: es la
- * iluminación desigual —la sombra de la propia mano, el reflejo de la
- * lámpara. Se corrige dividiendo cada píxel por la media de su entorno, que
- * aplana la sombra sin tocar el contenido.
+ * ── Por qué no basta con dividir por la media ──
+ *
+ * La versión anterior sólo multiplicaba: `pixel * (235 / media_local)`. El
+ * problema es de aritmética, no de ajuste: multiplicar aclara el papel **y
+ * la tinta a la vez**. No existe una ganancia que lleve el fondo a blanco y
+ * deje el negro en negro, así que el resultado era una foto aclarada — que
+ * es justo lo que se le nota.
+ *
+ * Ahora se resuelve una recta por píxel con DOS anclas: el nivel del papel
+ * de su zona va a 255, y el de su tinta va a ~0. Eso es la ganancia y el
+ * desplazamiento de Dropbox: el fondo se blanquea y el texto se hunde, en
+ * vez de irse los dos hacia arriba.
+ *
+ * ── Por qué el color se corrige en el VALOR y no en RGB ──
+ *
+ * Aplicar la corrección a los tres canales por igual conserva el tinte
+ * cálido de la bombilla y el papel queda crema. Dropbox convierte a HSV y
+ * respeta tono y saturación *"to prevent color shifts"*. Aquí se hace lo
+ * mismo por la vía corta: la recta se aplica a la luminancia y el color se
+ * reconstruye con la razón original de cada canal. El papel va a blanco y el
+ * sello azul sigue azul, que en este producto es prueba documental (D54).
  */
 export function enhance(image: ImageData, mode: EnhanceMode): ImageData {
   if (mode === "photo") return image;
 
   const { width: w, height: h, data } = image;
   const count = w * h;
-  const gray = toGray(data, count);
+  const paper = estimatePaper(data, w, h);
 
-  // La ventana debe ser bastante mayor que una letra: si se acerca al
-  // tamaño del texto, el algoritmo confunde las propias letras con sombra
-  // y las borra. Un octavo del lado corto funciona en todos los tamaños.
-  const radius = Math.max(8, Math.round(Math.min(w, h) / 8));
-  const mean = localMean(gray, w, h, radius);
+  const fields = [paper.r, paper.g, paper.b];
+
+  /**
+   * Valor normalizado de un canal: el píxel dividido por el nivel de papel
+   * de su zona, en ese mismo canal. El fondo queda blanco y neutro —esto es
+   * el balance de blancos— y la sombra desaparece porque el campo ya la
+   * lleva dentro.
+   *
+   * Se calcula al vuelo y NUNCA se guarda la imagen normalizada entera. Un
+   * `Float32Array(count * 3)` para una hoja a 300 ppp son 14,5 millones de
+   * píxeles por 3 canales por 4 bytes: 174 MB en un solo búfer. En el
+   * Android de gama baja al que apunta este producto eso no es lentitud, es
+   * quedarse sin memoria a mitad del escaneo.
+   */
+  const norm = (i: number, c: number, x: number, y: number): number => {
+    const level = Math.max(sampleField(fields[c], paper, x, y, w, h), 1);
+    return (data[i * 4 + c] / level) * 255;
+  };
+
+  // ── El punto negro, GLOBAL y sacado de una muestra ──
+  // Aquí está la lección de la primera versión: estimado por celda producía
+  // parches visibles alrededor de cada párrafo. Una vez quitada la sombra,
+  // la tinta de un documento es igual de oscura en toda la hoja, así que un
+  // único punto negro da el mismo negro sin costuras. Y con ~20.000
+  // muestras el percentil ya no se mueve: no hace falta recorrerlo todo.
+  const muestras: number[] = [];
+  const paso = Math.max(1, Math.floor(count / 20000));
+  for (let i = 0; i < count; i += paso) {
+    const x = i % w;
+    const y = (i / w) | 0;
+    muestras.push(Math.min(norm(i, 0, x, y), norm(i, 1, x, y), norm(i, 2, x, y)));
+  }
+  // Percentil 2: por debajo hay ruido y motas, no tinta.
+  const negro = Math.min(200, percentileOf(muestras, 0.02)) * 0.92;
+  // Se deja margen: llevar la tinta a 0 exacto quema los grises de un sello
+  // y de una firma a lápiz.
+  const rango = Math.max(60, 255 - negro);
 
   const out = new ImageData(w, h);
   const dst = out.data;
 
-  if (mode === "bw") {
-    for (let i = 0; i < count; i++) {
-      // Umbral relativo (Sauvola simplificado): el 88 % de la media local.
-      // Un umbral fijo pinta de negro cualquier página fotografiada en
-      // penumbra y de blanco cualquiera a plena luz.
-      const on = gray[i] < mean[i] * 0.88 ? 0 : 255;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const i = y * w + x;
       const o = i * 4;
-      dst[o] = dst[o + 1] = dst[o + 2] = on;
+
+      if (mode === "bw" || mode === "gray") {
+        const lum =
+          0.299 * norm(i, 0, x, y) + 0.587 * norm(i, 1, x, y) + 0.114 * norm(i, 2, x, y);
+        const v = ((lum - negro) / rango) * 255;
+        const c = v < 0 ? 0 : v > 255 ? 255 : v;
+        dst[o] = dst[o + 1] = dst[o + 2] = mode === "bw" ? (c < 128 ? 0 : 255) : c;
+        dst[o + 3] = 255;
+        continue;
+      }
+
+      // Color: la misma recta a cada canal por separado. Al normalizar ya
+      // por canal, el azul del sello sigue siendo más azul que rojo, así que
+      // se oscurece sin volverse negro. Aplastarlo sería borrar prueba
+      // documental (D54).
+      for (let c = 0; c < 3; c++) {
+        const v = ((norm(i, c, x, y) - negro) / rango) * 255;
+        dst[o + c] = v < 0 ? 0 : v > 255 ? 255 : v;
+      }
       dst[o + 3] = 255;
     }
-    return out;
   }
 
-  for (let i = 0; i < count; i++) {
-    const o = i * 4;
-    // Ganancia local: lleva la media de la zona a blanco. Se limita a 3x
-    // para que una esquina en sombra profunda no explote en ruido.
-    const gain = Math.min(3, 235 / Math.max(mean[i], 1));
+  return mode === "bw" ? out : sharpen(out);
+}
 
-    if (mode === "gray") {
-      const v = gray[i] * gain;
-      // Curva de contraste alrededor del gris medio: separa el texto del
-      // papel sin llegar a un blanco y negro duro.
-      const c = (v - 128) * 1.15 + 128;
-      const g = c < 0 ? 0 : c > 255 ? 255 : c;
-      dst[o] = dst[o + 1] = dst[o + 2] = g;
-    } else {
+/**
+ * Máscara de desenfoque suave.
+ *
+ * El remuestreo bilineal del enderezado ablanda la imagen, y una foto de
+ * móvil ya venía blanda de origen. Un escaneo se reconoce por el filo del
+ * texto tanto como por el fondo blanco, así que sin este paso el resultado
+ * sigue pareciendo una foto por muy limpio que esté el papel.
+ *
+ * El núcleo es 3x3 y la cantidad, discreta: pasarse genera halos alrededor
+ * de las letras, que delatan el retoque más que la falta de nitidez.
+ */
+const SHARPEN_AMOUNT = 0.6;
+
+function sharpen(image: ImageData): ImageData {
+  const { width: w, height: h, data } = image;
+  const out = new ImageData(w, h);
+  const dst = out.data;
+  dst.set(data);
+
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      const o = (y * w + x) * 4;
       for (let ch = 0; ch < 3; ch++) {
-        const v = data[o + ch] * gain;
-        const c = (v - 128) * 1.12 + 128;
-        dst[o + ch] = c < 0 ? 0 : c > 255 ? 255 : c;
+        const c = data[o + ch];
+        // Media de los cuatro vecinos ortogonales: el desenfoque contra el
+        // que se compara. La diferencia es el detalle que se realza.
+        const blur =
+          (data[o - 4 + ch] +
+            data[o + 4 + ch] +
+            data[o - w * 4 + ch] +
+            data[o + w * 4 + ch]) /
+          4;
+        const v = c + (c - blur) * SHARPEN_AMOUNT;
+        dst[o + ch] = v < 0 ? 0 : v > 255 ? 255 : v;
       }
     }
-    dst[o + 3] = 255;
   }
 
   return out;
