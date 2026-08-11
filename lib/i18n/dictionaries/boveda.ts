@@ -34,6 +34,30 @@ const es = {
     allDocuments: "Tus documentos",
   },
 
+  /**
+   * Buscar y filtrar. A los seis meses una familia tiene veinte papeles
+   * dentro, y "en qué carpeta lo metí" deja de ser una pregunta con
+   * respuesta.
+   */
+  search: {
+    placeholder: "Buscar entre mis documentos",
+    label: "Buscar un documento por su nombre",
+    clear: "Borrar la búsqueda",
+    filters: {
+      all: "Todos",
+      dueSoon: "Vence pronto",
+      noExpiry: "Sin fecha",
+    },
+    resultCount: "{n} resultados",
+    resultCountOne: "1 resultado",
+    noResults: "No encontramos ningún documento con eso.",
+    noResultsHint: "Prueba con una palabra suelta del nombre que le pusiste.",
+    // El aviso que tapa el agujero: un documento sin fecha jamás va a
+    // disparar el aviso por el que se paga el módulo.
+    noExpiryNudge:
+      "Estos no tienen fecha de vencimiento, así que no te vamos a poder avisar. Pónsela con el lápiz.",
+  },
+
   folders: {
     identity: {
       name: "Identificación",
@@ -414,6 +438,23 @@ const en = {
   sections: {
     dueSoon: "Expiring soon",
     allDocuments: "Your documents",
+  },
+
+  search: {
+    placeholder: "Search my documents",
+    label: "Search for a document by name",
+    clear: "Clear the search",
+    filters: {
+      all: "All",
+      dueSoon: "Expiring soon",
+      noExpiry: "No date",
+    },
+    resultCount: "{n} results",
+    resultCountOne: "1 result",
+    noResults: "We didn't find any document matching that.",
+    noResultsHint: "Try a single word from the name you gave it.",
+    noExpiryNudge:
+      "These have no expiry date, so we can't warn you about them. Add one with the pencil.",
   },
 
   folders: {

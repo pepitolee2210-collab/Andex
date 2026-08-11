@@ -201,3 +201,81 @@ export function folderName(folder: VaultFolderId, copy: VaultFoldersCopy): strin
 export function folderHint(folder: VaultFolderId, copy: VaultFoldersCopy): string {
   return copy[folder].hint;
 }
+
+// ─── Buscar y filtrar ────────────────────────────────────
+
+/**
+ * Texto comparable: sin mayúsculas y sin diacríticos.
+ *
+ * ⚠️ SÓLO PARA COMPARAR, jamás para mostrar: rompe la ortografía a
+ * propósito, y enseñar su salida sería escribirle mal su idioma al usuario.
+ *
+ * Quien guardó "Permiso de Trabajo" tiene que encontrarlo escribiendo
+ * "permiso", y quien guardó "Matrícula" escribiendo "matricula". En un
+ * teclado de móvil la tilde se escapa constantemente, y fallar la búsqueda
+ * por un acento sería castigar a la persona por escribir su propio idioma.
+ * NFD separa la letra de su diacrítico y el rango \u0300-\u036f lo borra.
+ *
+ * La Ñ cae en ese mismo barrido y se queda así a conciencia: en español es
+ * una letra aparte, pero buena parte de esta comunidad teclea en un móvil
+ * configurado en inglés, donde la ñ obliga a mantener pulsada la n. Al
+ * plegarla, "compania" encuentra "Compañía". El precio —que "ano" encuentre
+ * también "Año"— no le hace daño a nadie dentro de su propia bóveda.
+ */
+export function normalizeText(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+/**
+ * Coincide si TODAS las palabras aparecen en algún sitio del documento.
+ *
+ * Por palabras sueltas y no por la frase entera, porque nadie recuerda el
+ * nombre exacto que le puso: "permiso trabajo" tiene que encontrar
+ * "Permiso de trabajo (EAD)". Se busca también en la nota, que es donde la
+ * gente escribe el para qué ("el que pidió el abogado").
+ */
+export function matchesQuery(document: VaultDocument, query: string): boolean {
+  const terms = normalizeText(query).split(/\s+/).filter(Boolean);
+  if (terms.length === 0) return true;
+  const haystack = normalizeText(`${document.name} ${document.note ?? ""}`);
+  return terms.every((term) => haystack.includes(term));
+}
+
+/**
+ * Los tres modos de la barra de filtros.
+ *
+ * `noExpiry` no es una curiosidad: un documento guardado sin fecha nunca va a
+ * disparar un aviso, que es justo por lo que se paga el módulo, y hoy no hay
+ * forma de darse cuenta de que están ahí. Este filtro los saca a la luz.
+ */
+export type VaultFilter = "all" | "dueSoon" | "noExpiry";
+
+export function matchesFilter(entry: VaultEntry, filter: VaultFilter): boolean {
+  switch (filter) {
+    case "dueSoon":
+      return isUrgent(entry.state);
+    case "noExpiry":
+      return entry.document.expiresAt === null;
+    case "all":
+      return true;
+  }
+}
+
+/**
+ * Aplica texto y filtro a la vez y devuelve el resultado ya ordenado por
+ * urgencia. No toca la carpeta: buscar es lo contrario de navegar, y quien
+ * escribe "pasaporte" no quiere que le respondan "en esa carpeta no está".
+ */
+export function searchDocuments(
+  entries: readonly VaultEntry[],
+  query: string,
+  filter: VaultFilter,
+): VaultEntry[] {
+  return entries
+    .filter((entry) => matchesFilter(entry, filter) && matchesQuery(entry.document, query))
+    .sort(compareUrgency);
+}

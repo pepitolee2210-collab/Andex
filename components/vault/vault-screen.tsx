@@ -44,7 +44,10 @@ import {
   Plane,
   Receipt,
   ScanLine,
+  Search,
   ShieldCheck,
+  TriangleAlert,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import { moduleBySlug } from "@/lib/catalogs/modules";
@@ -75,10 +78,13 @@ import {
   formatBytes,
   isLowOnSpace,
   isUrgent,
+  matchesFilter,
+  searchDocuments,
   type StorageEstimate,
   type VaultCommonCopy,
   type VaultDocumentCopy,
   type VaultEntry,
+  type VaultFilter,
 } from "./vault-format";
 import type { BovedaDict } from "@/lib/i18n/dictionaries/boveda";
 
@@ -206,6 +212,32 @@ export function VaultScreen({
   const lowOnSpace = isLowOnSpace(storage);
   const isEmpty = documents !== null && documents.length === 0;
 
+  // ── Buscar ──
+  // Buscar y navegar son dos modos, no uno con adornos: mientras hay texto
+  // escrito o un filtro puesto, las carpetas se apartan y se enseña una
+  // lista plana con TODO lo que coincide, venga de donde venga. Quien
+  // escribe "pasaporte" no quiere que le contesten "en esa carpeta no está".
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<VaultFilter>("all");
+  const searching = query.trim().length > 0 || filter !== "all";
+
+  const results = useMemo(
+    () => (searching ? searchDocuments(entries, query, filter) : []),
+    [entries, query, filter, searching],
+  );
+
+  /** Cuántos hay en cada filtro: un contador vacío no se ofrece. */
+  const filterCounts = useMemo(
+    () => ({
+      all: entries.length,
+      dueSoon: entries.filter((e) => matchesFilter(e, "dueSoon")).length,
+      noExpiry: entries.filter((e) => matchesFilter(e, "noExpiry")).length,
+    }),
+    [entries],
+  );
+
+  const FILTERS: readonly VaultFilter[] = ["all", "dueSoon", "noExpiry"];
+
   /** Salta del aviso de vencimiento a la tarjeta real, en su carpeta. */
   const folderRef = useRef<HTMLElement>(null);
   function irADocumento(folder: VaultFolderId) {
@@ -299,7 +331,7 @@ export function VaultScreen({
               Un aviso, no una segunda copia del archivo: una línea por
               documento con lo único que importa aquí —cuánto le queda— y un
               toque que baja a su tarjeta. */}
-          {urgent.length > 0 ? (
+          {urgent.length > 0 && !searching ? (
             <section
               aria-labelledby="boveda-vencimientos"
               className="mt-6 overflow-hidden rounded-xl border border-amber-deep/30 bg-amber-soft"
@@ -342,7 +374,126 @@ export function VaultScreen({
             </section>
           ) : null}
 
-          {isEmpty ? (
+          {/* ── Buscar y filtrar ──
+              No aparece con la bóveda vacía: un buscador sobre cero
+              documentos es un control que promete algo que no existe. */}
+          {!isEmpty ? (
+            <div className="mt-6">
+              <div className="relative">
+                <Search
+                  aria-hidden="true"
+                  className="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-muted"
+                />
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  aria-label={copy.search.label}
+                  placeholder={copy.search.placeholder}
+                  // `min-h-12` para que el dedo acierte, y 16px de tipo para
+                  // que Safari en iPhone no haga zoom al enfocar el campo.
+                  //
+                  // Se oculta la equis nativa de `type="search"`: el
+                  // navegador dibuja la suya y salían dos, una al lado de la
+                  // otra. Se queda la nuestra, que cumple el tamaño mínimo de
+                  // 44px y lleva su etiqueta accesible.
+                  className={cn(
+                    "min-h-12 w-full rounded-lg border border-line bg-surface pl-11 pr-11 text-[1rem] text-ink",
+                    "placeholder:text-muted focus-visible:border-teal-deep focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-teal-deep",
+                    "[&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none",
+                  )}
+                />
+                {query ? (
+                  <button
+                    type="button"
+                    onClick={() => setQuery("")}
+                    aria-label={copy.search.clear}
+                    className="absolute right-1 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface-alt hover:text-ink"
+                  >
+                    <X aria-hidden="true" className="size-4" />
+                  </button>
+                ) : null}
+              </div>
+
+              {/* Filtros por ESTADO, no por carpeta. Al abrir la bóveda con
+                  prisa nadie piensa "esto era Identificación": piensa "qué se
+                  me está venciendo". */}
+              <div role="group" aria-label={copy.expiry.label} className="mt-2 flex flex-wrap gap-2">
+                {FILTERS.map((option) => {
+                  const active = option === filter;
+                  const count = filterCounts[option];
+                  // Un filtro que no puede devolver nada no se ofrece.
+                  if (option !== "all" && count === 0) return null;
+                  return (
+                    <button
+                      key={option}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => setFilter(option)}
+                      className={cn(
+                        "inline-flex min-h-11 items-center gap-1.5 rounded-full border px-4 text-body transition-colors",
+                        active
+                          ? "border-teal-deep bg-teal-deep font-medium text-white"
+                          : "border-line bg-surface text-muted hover:border-muted hover:text-ink",
+                      )}
+                    >
+                      {copy.search.filters[option]}
+                      {option !== "all" ? (
+                        <span
+                          className={cn(
+                            "text-caption font-bold tabular-nums",
+                            active ? "text-white/80" : "text-muted",
+                          )}
+                        >
+                          {count}
+                        </span>
+                      ) : null}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
+          {/* ── Resultados ──
+              Mientras se busca, las carpetas se apartan: sobra el mapa
+              cuando ya se ha dicho lo que se busca. */}
+          {searching ? (
+            <section aria-labelledby="boveda-resultados" className="mt-5">
+              <h2 id="boveda-resultados" className="text-body font-semibold text-ink">
+                {results.length === 1
+                  ? copy.search.resultCountOne
+                  : fill(copy.search.resultCount, { n: results.length })}
+              </h2>
+
+              {/* El empujón que tapa el agujero: sin fecha no hay aviso, y
+                  el aviso es justo por lo que se paga el módulo. */}
+              {filter === "noExpiry" && results.length > 0 ? (
+                <p className="mt-2 flex items-start gap-2 rounded-lg border border-amber-deep/30 bg-amber-soft p-3 text-caption text-ink">
+                  <TriangleAlert
+                    aria-hidden="true"
+                    className="mt-0.5 size-4 shrink-0 text-amber-deep"
+                  />
+                  <span className="min-w-0">{copy.search.noExpiryNudge}</span>
+                </p>
+              ) : null}
+
+              {results.length > 0 ? (
+                <DocumentList
+                  entries={results}
+                  copy={documentCopy}
+                  showFolder
+                  onChanged={refresh}
+                  className="mt-3"
+                />
+              ) : (
+                <div className="mt-3 rounded-lg border border-dashed border-line p-6 text-center">
+                  <p className="text-body text-ink">{copy.search.noResults}</p>
+                  <p className="mt-1 text-caption text-muted">{copy.search.noResultsHint}</p>
+                </div>
+              )}
+            </section>
+          ) : isEmpty ? (
             /* ── Estado vacío ──
                Con la bóveda vacía no se enseñan las cinco carpetas: serían
                cinco controles que no llevan a ningún sitio. Vuelven en cuanto
