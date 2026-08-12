@@ -474,6 +474,23 @@ describe("brief §4.8 — ningún texto visible se escribe en el JSX", () => {
   // la verdad. `/design` es el showcase interno y está exento por definición.
   const EXENTOS = new Set(["app/design/page.tsx"]);
 
+  /**
+   * El panel de administración va en español directo, sin pasar por i18n.
+   *
+   * La regla existe para el copy que lee LA COMUNIDAD: una cadena escrita a
+   * mano se queda en español para siempre y el toggle EN deja de decir la
+   * verdad. El panel no lo ve ningún usuario — lo usa el equipo, cuyo idioma
+   * de trabajo es el español— así que traducir cada etiqueta interna a dos
+   * idiomas es trabajo que no le sirve a nadie.
+   *
+   * ⚠️ ESTA EXENCIÓN CADUCA. `0006_roles.sql` ya contempla un rol `partner`
+   * —un empleador publicando sus propias vacantes—. El día que alguien de
+   * fuera del equipo entre al panel, deja de ser interno y este bloque tiene
+   * que desaparecer, con su copy movido a i18n.
+   */
+  const esPanelInterno = (path: string): boolean =>
+    path.startsWith("app/admin/") || path.startsWith("components/admin/");
+
   it("los atributos visibles no llevan cadenas literales", () => {
     const ATTR =
       /\b(aria-label|aria-description|placeholder|alt|title|label|loadingLabel)="[^"]{2,}"/;
@@ -481,7 +498,7 @@ describe("brief §4.8 — ningún texto visible se escribe en el JSX", () => {
 
     for (const file of CODE_FILES) {
       const path = rel(file);
-      if (!path.endsWith(".tsx") || EXENTOS.has(path)) continue;
+      if (!path.endsWith(".tsx") || EXENTOS.has(path) || esPanelInterno(path)) continue;
       for (const line of stripComments(read(file)).split("\n")) {
         const match = line.match(ATTR);
         if (match) offenders.push(`${path}: ${match[0]}`);
@@ -499,7 +516,7 @@ describe("brief §4.8 — ningún texto visible se escribe en el JSX", () => {
 
     for (const file of CODE_FILES) {
       const path = rel(file);
-      if (!path.endsWith(".tsx") || EXENTOS.has(path)) continue;
+      if (!path.endsWith(".tsx") || EXENTOS.has(path) || esPanelInterno(path)) continue;
       for (const line of stripComments(read(file)).split("\n")) {
         if (SPANISH_TEXT_NODE.test(line)) offenders.push(`${path}: ${line.trim()}`);
       }

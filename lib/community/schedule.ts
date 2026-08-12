@@ -204,3 +204,29 @@ export function crossesDay(session: Session, userZone: string, workshopZone: str
   const b = calendarDateIn(session.startsAt, workshopZone);
   return a.year !== b.year || a.month !== b.month || a.day !== b.day;
 }
+
+/**
+ * Las próximas N sesiones.
+ *
+ * El panel de administración las genera por adelantado para poder pegarle a
+ * cada una SU enlace de Zoom. Es la razón entera de que sesión y serie sean
+ * cosas distintas: sin esto habría que reutilizar un enlace fijo, que es
+ * justo lo que no se puede hacer.
+ */
+export function upcomingSessions(
+  workshop: Workshop,
+  now: Date,
+  count: number,
+): Session[] {
+  const out: Session[] = [];
+  let cursor = now;
+  for (let i = 0; i < count; i += 1) {
+    const s = nextSession(workshop, cursor);
+    if (!s) break;
+    out.push(s);
+    // Un milisegundo después del final: así la siguiente vuelta no vuelve a
+    // devolver la misma sesión.
+    cursor = new Date(s.endsAt.getTime() + 1);
+  }
+  return out;
+}

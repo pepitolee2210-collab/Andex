@@ -16,6 +16,7 @@ import {
   nextSession,
   wallTimeToInstant,
   zoneOffsetMs,
+  upcomingSessions,
   type Workshop,
 } from "./schedule";
 
@@ -159,5 +160,34 @@ describe("el día cambia, no sólo la hora", () => {
   it("en Madrid ya es el día siguiente", () => {
     const s = nextSession(TALLER, new Date("2026-01-12T19:00:00Z"))!;
     expect(crossesDay(s, "Europe/Madrid", UTAH)).toBe(true);
+  });
+});
+
+describe("varias sesiones por adelantado", () => {
+  it("devuelve tantas como se le pidan, en orden", () => {
+    const s = upcomingSessions(TALLER, new Date("2026-01-12T19:00:00Z"), 5);
+    expect(s).toHaveLength(5);
+    for (let i = 1; i < s.length; i += 1) {
+      expect(s[i].startsAt.getTime()).toBeGreaterThan(s[i - 1].startsAt.getTime());
+    }
+  });
+
+  it("salta el fin de semana", () => {
+    // Martes, miércoles, jueves, viernes… y luego el martes siguiente.
+    const s = upcomingSessions(TALLER, new Date("2026-01-12T19:00:00Z"), 5);
+    const dias = s.map((x) => calendarDateIn(x.startsAt, UTAH).day);
+    expect(dias).toEqual([13, 14, 15, 16, 20]);
+  });
+
+  it("no repite la sesión en curso", () => {
+    // Empezando a mitad de una sesión, la primera es esa y la segunda ya
+    // es la del día siguiente: sin el +1ms se devolvería la misma siempre.
+    const s = upcomingSessions(TALLER, new Date("2026-01-14T01:30:00Z"), 2);
+    expect(s[0].startsAt.toISOString()).toBe("2026-01-14T01:00:00.000Z");
+    expect(calendarDateIn(s[1].startsAt, UTAH).day).toBe(14);
+  });
+
+  it("un taller sin días devuelve lista vacía, no revienta", () => {
+    expect(upcomingSessions({ ...TALLER, weekdays: [] }, new Date(), 3)).toEqual([]);
   });
 });
