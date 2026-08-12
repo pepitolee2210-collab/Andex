@@ -14,7 +14,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "simular": "node tests/simulacion.mjs",
-    "simular:ver": "node tests/simulacion.mjs --headed"
+    "simular:ver": "node tests/simulacion.mjs --headed",
+    "sql:bundle": "node scripts/bundle-sql.mjs",
+    "supabase:check": "node scripts/check-supabase.mjs"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^3.1.0",
