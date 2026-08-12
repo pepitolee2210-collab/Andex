@@ -19,10 +19,15 @@
  * carpeta de Descargas y que nadie avise cuando el documento venza. Ese
  * argumento funciona porque es cierto, y se puede decir sin retener nada.
  *
- * ── Presupuesto ────────────────────────────────────────────────────────
- * El escáner (worker, canvas, generador de PDF) NO se carga con la página.
- * Sólo llega cuando alguien pulsa el botón. La landing tiene un tope de
- * 300 KB (§3.1.1) y esto lo reventaría en la primera carga.
+ * ── Cuándo se carga ────────────────────────────────────────────────────
+ * El escáner (worker, canvas, generador de PDF) NO viaja con la página:
+ * llega cuando alguien pulsa el botón.
+ *
+ * Esto NO limita lo que el escáner puede pesar (D61 derogó el peso como
+ * criterio). Es sólo el sitio donde se carga: la portada es lo que decide
+ * si alguien se registra, así que no puede tragarse el motor completo para
+ * la mayoría que nunca lo va a pulsar. Cargar en diferido resuelve las dos
+ * cosas a la vez — el escáner puede crecer todo lo que necesite.
  */
 
 import { useEffect, useRef, useState } from "react";

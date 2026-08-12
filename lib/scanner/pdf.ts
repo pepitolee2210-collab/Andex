@@ -3,11 +3,13 @@
  *
  * Escribe un PDF con una imagen JPEG por página, sin librerías.
  *
- * Por qué a mano: `pdf-lib` y `jsPDF` pesan entre 250 y 400 KB. Para lo que
- * hace falta aquí —incrustar JPEG ya comprimido en páginas de tamaño fijo—
- * el formato PDF es literalmente texto plano con los bytes del JPEG dentro
- * de un stream `DCTDecode`. Son unas 200 líneas y ~2 KB, en un producto
- * cuyo público usa Android de gama baja con datos contados.
+ * Por qué a mano: para lo que hace falta aquí —incrustar JPEG ya comprimido
+ * en páginas de tamaño fijo— el formato PDF es literalmente texto plano con
+ * los bytes del JPEG dentro de un stream `DCTDecode`. Son unas 200 líneas.
+ *
+ * NO es una prohibición de usar `pdf-lib`: el peso dejó de ser criterio de
+ * rechazo (D61). El día que haga falta texto seleccionable, una capa de OCR
+ * incrustada o firma digital, se trae y se tira esto.
  *
  * Clave: el JPEG se incrusta TAL CUAL, sin recodificar. El PDF pesa
  * prácticamente lo mismo que las fotos y no pierde ni un ápice de calidad.

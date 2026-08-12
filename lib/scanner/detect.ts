@@ -5,11 +5,14 @@
  * Es una AYUDA, no una autoridad: si falla devuelve `null` y el usuario
  * ajusta las esquinas a mano, que es el camino que siempre funciona.
  *
- * Por qué no OpenCV.js, que haría esto en cuatro líneas: pesa entre 8 y
- * 11 MB. El público de este producto usa Android de gama baja con datos
- * contados; descargar eso para recortar una foto es indefendible. Esto son
- * ~150 líneas y corre sobre una miniatura de 320 px, así que cuesta
- * milisegundos incluso en un teléfono lento.
+ * Son ~150 líneas sobre una miniatura de 320 px, así que cuesta
+ * milisegundos incluso en un teléfono lento. Se escribió a mano por eso, no
+ * por ahorrar kilobytes: el peso dejó de ser criterio de rechazo (D61).
+ *
+ * ⚠️ Falla en el caso clásico —papel claro sobre mesa clara, sin gradiente
+ * que encontrar—. Cuando toque mejorarlo, Scanic o un detector aprendido
+ * entran sin discutir el tamaño; sólo hay que medirlos contra esto primero
+ * (docs/evidencia-escaner.md).
  *
  * El método: gradiente de Sobel para encontrar los bordes, transformada de
  * Hough para agrupar esos puntos en líneas rectas, y de esas líneas se

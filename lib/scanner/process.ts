@@ -6,9 +6,13 @@
  * porque enderezar una hoja a 200 ppp son ~3,7 millones de píxeles y hacerlo
  * en el hilo principal congelaría la pantalla varios segundos.
  *
- * No se usa OpenCV.js a propósito: pesa entre 8 y 11 MB. El público de este
- * producto usa Android de gama baja con datos contados, y todo lo que hace
- * falta aquí cabe en este archivo.
+ * Está escrito a mano porque cabe y no arrastra dependencias, no porque
+ * traerse una librería esté prohibido: el peso dejó de ser criterio de
+ * rechazo (D61). Si OpenCV.js o cualquier otra cosa hace esto mejor, entra.
+ *
+ * Lo que sí sigue vigilándose es la MEMORIA, que es otro problema: un búfer
+ * intermedio de 174 MB tumbó este mismo archivo aunque el código pesara
+ * 2 KB (docs/evidencia-escaner.md). Eso es tiempo de ejecución, no descarga.
  */
 
 import { naturalSize, project, projectionFromQuad, type Quad } from "./geometry";
