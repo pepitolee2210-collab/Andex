@@ -16,7 +16,8 @@
     "simular": "node tests/simulacion.mjs",
     "simular:ver": "node tests/simulacion.mjs --headed",
     "sql:bundle": "node scripts/bundle-sql.mjs",
-    "supabase:check": "node scripts/check-supabase.mjs"
+    "supabase:check": "node scripts/check-supabase.mjs",
+    "supabase:rls": "node scripts/check-rls.mjs"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^3.1.0",
