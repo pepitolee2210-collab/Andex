@@ -25,9 +25,27 @@ export type OrderSummaryProps = {
   lang: Lang;
 };
 
+/**
+ * Zona de facturación.
+ *
+ * Las fechas de cobro se enseñan SIEMPRE en esta zona, nunca en la de quien
+ * mira, y son dos problemas resueltos de una vez:
+ *
+ *  · **Corrección.** El cargo ocurre en un instante fijo. Alguien en Manila
+ *    que ve "12 de agosto" porque allí ya es de madrugada leería una fecha
+ *    de renovación que no es la que Stripe va a usar.
+ *  · **Hidratación.** `new Date()` se evalúa en el servidor y otra vez en el
+ *    navegador. Con el formato en la zona de cada uno, un usuario lejano
+ *    recibía un HTML que no coincidía con el suyo y React abortaba la
+ *    hidratación de la pantalla de pago (error #418, reproducido con el
+ *    navegador en Asia/Manila).
+ */
+const BILLING_TZ = "America/Denver";
+
 /** Fecha larga en el idioma del usuario, sin librerías. */
 function formatDate(date: Date, lang: Lang): string {
   return new Intl.DateTimeFormat(lang === "es" ? "es-MX" : "en-US", {
+    timeZone: BILLING_TZ,
     day: "numeric",
     month: "long",
     year: "numeric",

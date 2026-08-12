@@ -93,6 +93,9 @@ export function SuccessScreen({ lang }: SuccessScreenProps) {
   const trialDate =
     isTrial && subscription
       ? new Intl.DateTimeFormat(lang === "es" ? "es-MX" : "en-US", {
+          // Zona de facturación, no la del usuario: el cargo ocurre en un
+          // instante fijo y quien esté en Asia leería otro día.
+          timeZone: "America/Denver",
           day: "numeric",
           month: "long",
           year: "numeric",

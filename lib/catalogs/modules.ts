@@ -13,7 +13,10 @@ export const MODULES: readonly ModuleMeta[] = [
   { id: 2, slug: "migracion", iconName: "plane",       accentColor: "#102A43", canonicalOrder: 2, status: "coming_soon" },
   { id: 3, slug: "finanzas",  iconName: "trending-up", accentColor: "#0E7C5A", canonicalOrder: 3, status: "coming_soon" },
   { id: 4, slug: "negocio",   iconName: "building",    accentColor: "#9A6B00", canonicalOrder: 4, status: "coming_soon" },
-  { id: 5, slug: "comunidad", iconName: "users",       accentColor: "#12B8A6", canonicalOrder: 5, status: "coming_soon" },
+  // Comunidad ya tiene pantalla: talleres en vivo con horario en la hora
+  // de quien mira. Sin esto el grid le pondria "Pronto" a un modulo que
+  // ya se puede abrir.
+  { id: 5, slug: "comunidad", iconName: "users",       accentColor: "#12B8A6", canonicalOrder: 5, status: "live" },
   { id: 6, slug: "academia",  iconName: "graduation",  accentColor: "#102A43", canonicalOrder: 6, status: "coming_soon" },
   { id: 7, slug: "empleo",    iconName: "briefcase",   accentColor: "#0F766E", canonicalOrder: 7, status: "coming_soon" },
 ] as const;

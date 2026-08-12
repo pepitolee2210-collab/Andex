@@ -25,6 +25,7 @@ import { common } from "./dictionaries/common";
 import { landing } from "./dictionaries/landing";
 import { tour } from "./dictionaries/tour";
 import { boveda } from "./dictionaries/boveda";
+import { comunidad } from "./dictionaries/comunidad";
 import { auth } from "./dictionaries/auth";
 import { wizard } from "./dictionaries/wizard";
 import { paywall } from "./dictionaries/paywall";
@@ -41,6 +42,7 @@ export type { CommonDict } from "./dictionaries/common";
 export type { LandingDict } from "./dictionaries/landing";
 export type { TourDict } from "./dictionaries/tour";
 export type { BovedaDict } from "./dictionaries/boveda";
+export type { ComunidadDict } from "./dictionaries/comunidad";
 export type { AuthDict } from "./dictionaries/auth";
 export type { WizardDict } from "./dictionaries/wizard";
 export type { PaywallDict } from "./dictionaries/paywall";
@@ -54,6 +56,7 @@ export type Dictionary = {
   landing: (typeof landing)[Lang];
   tour: (typeof tour)[Lang];
   boveda: (typeof boveda)[Lang];
+  comunidad: (typeof comunidad)[Lang];
   auth: (typeof auth)[Lang];
   wizard: (typeof wizard)[Lang];
   paywall: (typeof paywall)[Lang];
@@ -70,6 +73,7 @@ export function getDictionary(lang: Lang): Dictionary {
     landing: landing[lang],
     tour: tour[lang],
     boveda: boveda[lang],
+    comunidad: comunidad[lang],
     auth: auth[lang],
     wizard: wizard[lang],
     paywall: paywall[lang],
