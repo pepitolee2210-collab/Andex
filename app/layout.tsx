@@ -55,6 +55,15 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body>
+        {/* Si el JavaScript no llega —teléfono viejo, ahorro de datos, un
+            error de hidratación— los elementos que entran al aparecer se
+            quedarían invisibles para siempre. Esto los devuelve. Una
+            animación no puede ser la razón de que alguien no vea sus
+            documentos. */}
+        <noscript>
+          {/* eslint-disable-next-line react/no-danger */}
+          <style>{".k-appear{opacity:1;transform:none}"}</style>
+        </noscript>
         {children}
         <Toaster />
       </body>

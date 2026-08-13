@@ -1,4 +1,7 @@
 @import "tailwindcss";
+/* La capa cinética y la superficie del sistema. Vive aparte porque es un
+   lenguaje entero, no unos tokens más: ver la cabecera de ese archivo. */
+@import "./motion.css";
 
 /* ═══════════════════════════════════════════════════════
    ANDEX DESIGN SYSTEM — TOKENS

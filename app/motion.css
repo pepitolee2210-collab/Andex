@@ -1,0 +1,360 @@
+/* ══════════════════════════════════════════════════════════════════════
+   MOVIMIENTO — la capa cinética de ANDEX
+   ══════════════════════════════════════════════════════════════════════
+
+   De dónde sale
+   ─────────────
+   Los efectos vienen de Kinetics (kinetics.colorion.co), que publica 144
+   interacciones con muelle. NO es un paquete: la propia web dice que se
+   copia el CSS. Así que se copia, y se ADAPTA — que es donde está el
+   trabajo de verdad.
+
+   Por qué hay que adaptarlos
+   ──────────────────────────
+   Todos están escritos para escritorio: se disparan con `:hover`. Este
+   producto se usa en un teléfono, donde el hover no existe — y en iOS,
+   peor: al tocar se activa y **se queda pegado** hasta que tocas otra
+   cosa, así que un efecto de hover deja la interfaz en un estado raro.
+
+   La regla de esta hoja:
+
+     1. Nada depende de `:hover` para funcionar.
+     2. Lo que en escritorio era hover, aquí es TOQUE (`:active`),
+        FOCO (`:focus-within`) o APARICIÓN en pantalla.
+     3. Si algún hover sobrevive, va dentro de `@media (hover: hover) and
+        (pointer: fine)` — o sea, sólo donde hay ratón de verdad.
+     4. Todo objetivo táctil, 44px como mínimo.
+     5. Todo respeta `prefers-reduced-motion`.
+
+   Lo que se cae por no tener sentido sin cursor: botón magnético, rastro
+   del cursor, y los `hover` de despliegue (pliegue 3D, subrayado). */
+
+/* ── Curvas ──
+   `--ease-spring` es la curva de la casa: rebasa el destino y vuelve.
+   Es la que aparece en casi todo lo que se eligió como referencia. */
+:root {
+  --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-settle:   cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-inout:    cubic-bezier(0.65, 0, 0.35, 1);
+
+  --dur-tap:    0.18s;
+  --dur-quick:  0.32s;
+  --dur-base:   0.45s;
+  --dur-slow:   0.6s;
+}
+
+/* ── Superficie del sistema ──
+   Tokens del lenguaje nuevo. Viven en `.shell-os` para no tocar ni una
+   pantalla de las que ya existen mientras se migra. */
+.shell-os {
+  --os-void:    #08050F;
+  --os-ink:     #F4F1FB;
+  /* El apagado NO es el del prototipo. Allí medía 2.9:1 a 11px; éste está
+     calibrado sobre el cristal de abajo y se verifica con
+     `scratchpad/medir-actual.mjs`. */
+  --os-muted:   #B8B1CC;
+  --os-faint:   #8E86A6;
+
+  /* Cristal con SUELO opaco: sin este velo el fondo bajo el texto depende
+     del degradado que haya detrás y el contraste deja de ser predecible.
+     Es la diferencia entre "se ve bonito" y "se puede garantizar". */
+  --os-card:    rgba(30, 22, 52, 0.78);
+  --os-card-hi: rgba(46, 35, 74, 0.86);
+  --os-edge:    rgba(255, 255, 255, 0.10);
+  --os-edge-hi: rgba(255, 255, 255, 0.18);
+
+  /* Un acento por módulo. Todos en la banda 300–400 para que pasen
+     contraste como TEXTO sobre el cristal, no sólo como icono. */
+  --acc-boveda:    #34D399;
+  --acc-escaner:   #22D3EE;
+  --acc-ia:        #C4B5FD;
+  --acc-legal:     #FBBF24;
+  --acc-ingles:    #FDA4AF;
+  --acc-comunidad: #7DD3FC;
+
+  color: var(--os-ink);
+
+  /* ── El aurora ──
+     Va en el fondo del PROPIO elemento, no en un `::before` con
+     `z-index:-1`. Ese fue el primer intento y estaba mal: el
+     `background-color` del elemento se pinta por encima de su pseudo
+     negativo, así que el degradado quedaba tapado y el fondo salía plano.
+     Aquí no hay apilado que discutir.
+
+     El velo es la primera capa de la pila (arriba del todo). Es ligero
+     —0.22— porque cada tarjeta lleva su propio suelo opaco: el texto nunca
+     se apoya en el degradado crudo salvo en la cabecera. */
+  background-color: var(--os-void);
+  background-image:
+    linear-gradient(rgba(8, 5, 15, 0.22), rgba(8, 5, 15, 0.22)),
+    radial-gradient(125% 85% at 10% -6%,  #7C3AED 0%, transparent 58%),
+    radial-gradient(110% 75% at 95% 10%,  #4338CA 0%, transparent 60%),
+    radial-gradient(150% 95% at 48% 106%, #0D9488 0%, transparent 64%),
+    linear-gradient(180deg, #34146E 0%, #150A2E 52%, #08050F 100%);
+  /* Se queda quieto al desplazar, como en la referencia. iOS lo ignora y
+     lo desplaza con el contenido: se degrada solo, sin romper nada. */
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+
+  /* ── Y aquí está la pieza que hace posible la migración ──
+     No basta con poner `color` en el contenedor: `@layer base` fija
+     `h1..h4 { color: var(--text) }`, y `--text` es el navy del tema claro.
+     Un título dentro de la cáscara salía azul marino sobre morado oscuro.
+
+     Así que en vez de pelearse con esa regla, se REMAPEAN los tokens del
+     sistema dentro de la cáscara. Consecuencia: cualquier componente que ya
+     existe —Button, Input, Modal, las tarjetas de la Bóveda— se puede
+     soltar aquí dentro y se vuelve oscuro solo, sin tocarlo. La migración
+     deja de ser "reescribir 40 componentes" y pasa a ser "moverlos". */
+  --bg:            var(--os-void);
+  --surface:       var(--os-card);
+  --surface-alt:   var(--os-card-hi);
+  --text:          var(--os-ink);
+  --text-muted:    var(--os-muted);
+  --text-disabled: var(--os-faint);
+  --line:          var(--os-edge);
+
+  --teal:      var(--acc-escaner);
+  --teal-deep: var(--acc-escaner);
+  --teal-soft: rgba(34, 211, 238, 0.14);
+  --amber:      var(--acc-legal);
+  --amber-deep: var(--acc-legal);
+  --amber-soft: rgba(251, 191, 36, 0.14);
+
+  --on-accent:    #07130E;
+  --on-highlight: #0B0714;
+
+  --success: var(--acc-boveda);
+  --warning: var(--acc-legal);
+  --danger:  #FCA5A5;
+  --info:    var(--acc-escaner);
+  --success-soft: rgba(52, 211, 153, 0.14);
+  --danger-soft:  rgba(252, 165, 165, 0.14);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 18px 44px rgba(0, 0, 0, 0.55);
+}
+
+/* ── Cristal ── */
+.k-glass {
+  background: var(--os-card);
+  border: 1px solid var(--os-edge);
+  border-radius: 20px;
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+.k-glass-hi {
+  background: var(--os-card-hi);
+  border-color: var(--os-edge-hi);
+}
+
+/* ══ 1 · TOQUE ══
+   Sustituye al `:hover` de escritorio. Es el gesto que SÍ existe. */
+.k-press {
+  transition: transform var(--dur-tap) var(--ease-settle),
+              filter var(--dur-tap) ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.k-press:active { transform: scale(0.96); filter: brightness(1.12); }
+
+/* Sólo donde hay ratón de verdad. En un móvil esta regla no existe, así
+   que no puede quedarse pegada. */
+@media (hover: hover) and (pointer: fine) {
+  .k-press:hover { filter: brightness(1.08); }
+}
+
+/* ══ 2 · APARICIÓN ESCALONADA ══
+   Lo que en escritorio se revelaba al pasar el ratón, aquí entra solo
+   cuando la tarjeta llega a la pantalla. El retraso lo pone `--i`. */
+.k-appear {
+  opacity: 0;
+  transform: translateY(14px) scale(0.96);
+}
+.k-appear[data-visible="true"] {
+  opacity: 1;
+  transform: none;
+  transition: transform var(--dur-slow) var(--ease-spring),
+              opacity var(--dur-quick) ease;
+  transition-delay: calc(var(--i, 0) * 60ms);
+}
+
+/* ══ 3 · PÍLDORAS DE FILTRO ══
+   Los filtros de la Bóveda. Sin hover: el estado es `aria-pressed`. */
+.k-pill {
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--os-edge);
+  background: transparent;
+  color: var(--os-muted);
+  font-size: 0.9375rem;
+  transition: transform var(--dur-base) var(--ease-spring),
+              background-color var(--dur-tap) ease,
+              color var(--dur-tap) ease,
+              border-color var(--dur-tap) ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.k-pill[aria-pressed="true"] {
+  transform: scale(1.06);
+  background: var(--acc, var(--acc-boveda));
+  border-color: transparent;
+  color: #0B0714;
+  font-weight: 600;
+}
+.k-pill:active { transform: scale(0.97); }
+
+/* ══ 4 · BUSCADOR QUE SE ABRE ══
+   El original se abría con `:hover`. Aquí, al enfocarlo — que es lo que
+   pasa cuando lo tocas. */
+.k-search {
+  width: 44px;
+  min-height: 44px;
+  overflow: hidden;
+  transition: width var(--dur-base) var(--ease-settle);
+}
+.k-search:focus-within,
+.k-search[data-open="true"] { width: 100%; }
+
+/* ══ 5 · DESLIZAR PARA DESCUBRIR ══
+   Nativo del móvil: no tiene equivalente de escritorio y por eso es de
+   los pocos que no hay que traducir. */
+.k-swipe {
+  transition: transform var(--dur-base) var(--ease-spring);
+  touch-action: pan-y;
+}
+.k-swipe[data-dragging="true"] { transition: none; }
+.k-swipe[data-open="true"]     { transform: translateX(-96px); }
+
+/* ══ 6 · CASILLAS DE CLAVE ══
+   Para abrir la Bóveda. Cada dígito da un salto al entrar. */
+.k-pin {
+  width: 44px;
+  height: 56px;
+  text-align: center;
+  font-size: 1.375rem;
+  border-radius: 12px;
+  border: 1.5px solid var(--os-edge);
+  background: var(--os-card);
+  color: var(--os-ink);
+  transition: transform var(--dur-quick) var(--ease-spring),
+              border-color var(--dur-tap) ease;
+}
+.k-pin[data-filled="true"] { border-color: var(--acc-boveda); }
+.k-pin[data-pop="true"]    { transform: scale(1.14); }
+.k-pin:focus { border-color: var(--acc-boveda); outline: none; }
+
+/* ══ 7 · ANILLO DE VENCIMIENTO ══
+   La cuenta atrás de un documento, dibujada. `--pct` va de 0 a 1. */
+.k-ring circle.prog {
+  stroke-dasharray: 213.6;
+  stroke-dashoffset: calc(213.6 * (1 - var(--pct, 0)));
+  transform: rotate(-90deg);
+  transform-origin: center;
+  transition: stroke-dashoffset 0.9s var(--ease-settle), stroke 0.3s ease;
+}
+
+/* ══ 8 · PASOS DE LA ENTREVISTA ══ */
+.k-steps .track i {
+  display: block;
+  height: 100%;
+  transform: scaleX(var(--p, 0));
+  transform-origin: left;
+  background: var(--acc-boveda);
+  transition: transform var(--dur-base) var(--ease-spring);
+}
+.k-steps .step[data-active="true"] {
+  transform: scale(1.18);
+  transition: transform var(--dur-base) var(--ease-spring);
+}
+
+/* ══ 9 · MARCA QUE SE DIBUJA ══ */
+.k-check .tick {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  transition: stroke-dashoffset var(--dur-quick) var(--ease-settle) 0.05s;
+}
+.k-check[data-checked="true"] .tick { stroke-dashoffset: 0; }
+
+/* ══ 10 · AVISO QUE REBASA ══
+   Entra desde ABAJO en escritorio; aquí desde arriba, porque abajo están
+   la barra de pestañas y el botón principal, y taparlos ya causó un fallo
+   real (el toast bloqueaba los toques). */
+.k-toast {
+  transform: translate(-50%, -140%) scale(0.9);
+  opacity: 0;
+  transition: transform 0.55s var(--ease-spring), opacity var(--dur-quick);
+}
+.k-toast[data-show="true"] { transform: translate(-50%, 0) scale(1); opacity: 1; }
+
+/* ══ 11 · COPIAR ══ */
+.k-copy .ic { position: absolute; inset: 0; transition: opacity 0.2s, transform var(--dur-quick) var(--ease-spring); }
+.k-copy .ic-check { opacity: 0; transform: scale(0.5); color: var(--acc-boveda); }
+.k-copy[data-copied="true"] .ic-copy  { opacity: 0; transform: scale(0.5); }
+.k-copy[data-copied="true"] .ic-check { opacity: 1; transform: scale(1); }
+
+/* ══ 12 · PUNTO QUE LATE ══
+   Para "hay clase ahora" o un aviso sin leer. */
+.k-badge { position: relative; }
+.k-badge::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--acc, var(--acc-escaner));
+  animation: k-pulse 1.8s ease-out infinite;
+}
+@keyframes k-pulse {
+  0%        { transform: scale(1);   opacity: 0.7; }
+  70%, 100% { transform: scale(2.6); opacity: 0; }
+}
+
+/* ══ 13 · BORDE VIVO ══
+   Sólo cuando la sala de clase está ABIERTA. Es caro de pintar, así que
+   no se usa de adorno: se enciende para decir algo. */
+.k-beam { position: relative; padding: 1.5px; overflow: hidden; border-radius: 22px; }
+.k-beam::before {
+  content: "";
+  position: absolute;
+  inset: -50%;
+  background: conic-gradient(from 0deg, transparent 0 72%, var(--acc-escaner) 84%, #FFFFFF 90%, transparent 96%);
+  animation: k-spin 3s linear infinite;
+}
+.k-beam > * { position: relative; border-radius: 20.5px; }
+@keyframes k-spin { to { transform: rotate(1turn); } }
+
+/* ══ 14 · FICHAS QUE ENTRAN ══
+   La respuesta del asistente, apareciendo por trozos. */
+.k-token {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(8px) scale(0.94);
+  animation: k-token-in var(--dur-slow) var(--ease-spring) forwards;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+@keyframes k-token-in { to { opacity: 1; transform: none; } }
+
+/* ══ 15 · DESLIZAR PARA CONFIRMAR ══
+   El pulgar sigue al dedo 1:1 mientras se arrastra; al soltar, muelle. */
+.k-slider .thumb {
+  transition: left var(--dur-base) var(--ease-spring), background-color 0.25s ease;
+  touch-action: none;
+}
+.k-slider[data-dragging="true"] .thumb { transition: none; }
+.k-slider[data-unlocked="true"] .thumb { background: var(--acc-boveda); }
+
+/* ── Quien pide menos movimiento, recibe menos ──
+   No se apaga la interfaz: se quitan los recorridos y quedan los cambios
+   de opacidad, que siguen comunicando lo mismo sin marear. */
+@media (prefers-reduced-motion: reduce) {
+  .k-press:active { transform: none; }
+  .k-appear { opacity: 1; transform: none; }
+  .k-pill[aria-pressed="true"] { transform: none; }
+  .k-badge::after { animation: none; opacity: 0.5; }
+  .k-beam::before { animation: none; }
+  .k-token { animation: none; opacity: 1; transform: none; }
+  .k-toast { transition: opacity var(--dur-quick) ease; transform: translate(-50%, 0); }
+  .k-ring circle.prog { transition: none; }
+}
