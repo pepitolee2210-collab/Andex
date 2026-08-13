@@ -36,6 +36,10 @@ export type SyllabusPdfCopy = {
   situations: Record<string, string>;
   /** Encabezado de la columna de pronunciación. */
   sayLabel: string;
+  /** Encabezado del bloque de "lo que hay que saber". */
+  factsTitle: string;
+  factsSource: string;
+  factsDisclaimer: string;
   /** Aviso del pie. */
   footer: string;
   /** Texto de "página N de M". */
@@ -181,6 +185,34 @@ export async function buildSyllabusPdf(
       y -= 8;
       escribir(leccion.title, { font: bold, size: 11 });
       y -= 4;
+
+      // ── Lo que hay que saber ──
+      // Va antes de las frases, igual que en pantalla: un derecho se sabe
+      // antes de necesitar la frase que lo ejerce. Y con su fuente, que es
+      // lo que separa un hecho de una afirmación nuestra.
+      if (leccion.facts && leccion.facts.length > 0) {
+        asegurar(40);
+        y -= 6;
+        escribir(copy.factsTitle.toUpperCase(), {
+          font: bold,
+          size: 8.5,
+          color: TEAL,
+          indent: 12,
+        });
+        for (const hecho of leccion.facts) {
+          asegurar(34);
+          y -= 2;
+          escribir(hecho.text, { size: 10, indent: 12 });
+          escribir(`${copy.factsSource}: ${hecho.source}`, {
+            font: italic,
+            size: 8.5,
+            color: MUTED,
+            indent: 12,
+          });
+        }
+        y -= 2;
+        escribir(copy.factsDisclaimer, { font: italic, size: 8, color: MUTED, indent: 12 });
+      }
 
       for (const frase of leccion.phrases) {
         // Una frase no se parte entre páginas: leerla a medias no sirve.

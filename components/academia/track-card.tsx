@@ -13,7 +13,7 @@
  */
 
 import { useState } from "react";
-import { ChevronDown, Download, FileText, Loader2 } from "lucide-react";
+import { ChevronDown, Download, FileText, Loader2, Scale, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { downloadBlob } from "@/lib/scanner";
@@ -67,6 +67,9 @@ export function TrackCard({ track, copy, className }: TrackCardProps) {
         phrases: (n) => (n === 1 ? copy.pdf.phrasesOne : fill(copy.pdf.phrases, { n })),
         situations: copy.situations,
         sayLabel: copy.phrase.sayLabel,
+        factsTitle: copy.facts.title,
+        factsSource: copy.facts.source,
+        factsDisclaimer: copy.facts.disclaimer,
         footer: copy.pdf.footer,
         page: (n, total) => fill(copy.pdf.page, { n, total }),
       });
@@ -118,6 +121,48 @@ export function TrackCard({ track, copy, className }: TrackCardProps) {
             {grupo.lessons.map((leccion) => (
               <div key={leccion.id} className="mt-3">
                 <p className="text-body font-semibold text-ink">{leccion.title}</p>
+
+                {/* ── Lo que hay que SABER ──
+                    Va ANTES de las frases y con otro aspecto, porque no es
+                    lo mismo: una frase se practica, un derecho se sabe. Y
+                    cada uno lleva su fuente a la vista — un hecho sobre
+                    salarios o sobre OSHA sin fuente es una afirmación
+                    nuestra, y este producto no puede permitirse ninguna. */}
+                {leccion.facts && leccion.facts.length > 0 ? (
+                  <div className="mt-2 rounded-lg border border-teal-deep/25 bg-teal-soft p-3.5">
+                    <p className="flex items-center gap-2 text-caption font-bold uppercase tracking-wide text-teal-deep">
+                      <Scale aria-hidden="true" className="size-4" />
+                      {copy.facts.title}
+                    </p>
+                    <ul className="mt-2 space-y-2.5">
+                      {leccion.facts.map((hecho) => (
+                        <li key={hecho.text}>
+                          <p className="text-body text-ink">{hecho.text}</p>
+                          <p className="mt-0.5 text-caption text-muted">
+                            {copy.facts.source}:{" "}
+                            {hecho.url ? (
+                              <a
+                                href={hecho.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="underline underline-offset-2 hover:text-ink"
+                              >
+                                {hecho.source}
+                              </a>
+                            ) : (
+                              hecho.source
+                            )}
+                          </p>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="mt-3 flex items-start gap-2 border-t border-teal-deep/20 pt-2.5 text-caption text-muted">
+                      <ShieldCheck aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
+                      <span className="min-w-0">{copy.facts.disclaimer}</span>
+                    </p>
+                  </div>
+                ) : null}
+
                 <ul className="mt-1">
                   {leccion.phrases.map((frase) => (
                     <PhraseCard key={frase.en} phrase={frase} copy={copy.phrase} />

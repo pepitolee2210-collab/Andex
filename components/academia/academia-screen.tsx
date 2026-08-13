@@ -20,7 +20,7 @@
 
 import { useEffect, useState } from "react";
 import { GraduationCap, Sparkles } from "lucide-react";
-import { RUTAS_INGLES } from "@/lib/catalogs/ingles";
+import { RUTAS_POR_OFICIO, RUTAS_TRANSVERSALES } from "@/lib/catalogs/ingles";
 import { resolveTimeZone, type Workshop } from "@/lib/community/schedule";
 import type { AcademiaDict } from "@/lib/i18n/dictionaries/academia";
 import { ModuleIcon } from "@/components/module-icon";
@@ -112,7 +112,29 @@ export function AcademiaScreen({
         </section>
       ) : null}
 
-      {/* ── Los temarios ── */}
+      {/* ── Lo que le sirve a todo el mundo ──
+          VA PRIMERO, y es una decisión de producto: nadie sabe que necesita
+          saber qué hacer cuando no le pagan o cuando algo es peligroso. Si
+          esto se pone debajo de los oficios, sólo lo encuentra quien ya
+          sabía que existía — o sea, casi nadie. */}
+      {RUTAS_TRANSVERSALES.length > 0 ? (
+        <section aria-labelledby="academia-todos" className="mt-10">
+          <p className="text-caption font-bold uppercase tracking-widest text-teal-deep">
+            {copy.tracks.everyoneEyebrow}
+          </p>
+          <h2 id="academia-todos" className="mt-1 font-heading text-h2 text-ink">
+            {copy.tracks.everyoneTitle}
+          </h2>
+          <p className="mt-1 max-w-2xl text-body text-muted">{copy.tracks.everyoneBody}</p>
+          <div className="mt-4 space-y-3">
+            {RUTAS_TRANSVERSALES.map((track) => (
+              <TrackCard key={track.id} track={track} copy={copy} />
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {/* ── Los temarios por oficio ── */}
       <section aria-labelledby="academia-temarios" className="mt-10">
         <p className="text-caption font-bold uppercase tracking-widest text-teal-deep">
           {copy.tracks.eyebrow}
@@ -120,10 +142,11 @@ export function AcademiaScreen({
         <h2 id="academia-temarios" className="mt-1 font-heading text-h2 text-ink">
           {copy.tracks.title}
         </h2>
+        <p className="mt-1 max-w-2xl text-body text-muted">{copy.tracks.byTradeBody}</p>
 
-        {RUTAS_INGLES.length > 0 ? (
+        {RUTAS_POR_OFICIO.length > 0 ? (
           <div className="mt-4 space-y-3">
-            {RUTAS_INGLES.map((track) => (
+            {RUTAS_POR_OFICIO.map((track) => (
               <TrackCard key={track.id} track={track} copy={copy} />
             ))}
           </div>

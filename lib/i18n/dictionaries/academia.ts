@@ -32,6 +32,14 @@ const es = {
   tracks: {
     eyebrow: "Los temarios",
     title: "Elige tu oficio",
+    // Los transversales van aparte y ARRIBA: nadie sabe que necesita saber
+    // qué hacer cuando no le pagan, así que no se puede esperar a que lo
+    // busque.
+    everyoneEyebrow: "Para cualquier trabajo",
+    everyoneTitle: "Esto le sirve a todo el mundo",
+    everyoneBody:
+      "No depende de a qué te dediques. Es lo que hay que saber para que te paguen bien, para no lastimarte, y para resolver la vida fuera del trabajo.",
+    byTradeBody: "El inglés exacto del trabajo que buscas.",
     // Se dice el tamaño real antes de entrar: nadie empieza algo que no sabe
     // cuánto dura.
     meta: "{lessons} lecciones · {phrases} frases · {weeks} semanas",
@@ -51,6 +59,20 @@ const es = {
     con_el_jefe: "Hablar con el jefe",
     problema: "Cuando algo sale mal",
     emergencia: "Emergencia",
+    salud: "En el doctor",
+    escuela: "En la escuela",
+    vivienda: "Con el arrendador",
+    dinero: "En el banco y las cuentas",
+  },
+
+  /** Lo que hay que saber, no que decir. Siempre con su fuente. */
+  facts: {
+    title: "Lo que hay que saber",
+    source: "Fuente",
+    // Obligatorio: explicar que un derecho existe no es aconsejar sobre un
+    // caso, y la diferencia hay que dejarla escrita.
+    disclaimer:
+      "Esto es información general, no asesoría legal sobre tu caso. Si tienes un problema concreto, busca a alguien que pueda revisarlo contigo.",
   },
 
   phrase: {
@@ -107,6 +129,11 @@ const en: typeof es = {
   tracks: {
     eyebrow: "The tracks",
     title: "Pick your trade",
+    everyoneEyebrow: "For any job",
+    everyoneTitle: "This is for everyone",
+    everyoneBody:
+      "It doesn't depend on what you do. It's what you need to know to get paid right, to stay safe, and to handle life outside work.",
+    byTradeBody: "The exact English of the job you're looking for.",
     meta: "{lessons} lessons · {phrases} phrases · {weeks} weeks",
     lessonsOne: "1 lesson",
     phrasesOne: "1 phrase",
@@ -123,6 +150,17 @@ const en: typeof es = {
     con_el_jefe: "Talking to the boss",
     problema: "When something goes wrong",
     emergencia: "Emergency",
+    salud: "At the doctor",
+    escuela: "At school",
+    vivienda: "With the landlord",
+    dinero: "Banking and bills",
+  },
+
+  facts: {
+    title: "What you need to know",
+    source: "Source",
+    disclaimer:
+      "This is general information, not legal advice about your case. If you have a specific problem, find someone who can review it with you.",
   },
 
   phrase: {

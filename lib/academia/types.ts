@@ -24,16 +24,27 @@
  * el contenido, sólo cambia de dónde salen los datos.
  */
 
-/** Momento real del trabajo en que se usa la lección. */
+/**
+ * Momento real en que se usa la lección.
+ *
+ * Los seis primeros son del trabajo; los cuatro últimos, de la vida fuera de
+ * él —el médico, la escuela, la renta, el banco— que es lo que CASAS cubre
+ * en sus áreas 2, 3 y 5 y lo que de verdad necesita quien lleva poco tiempo
+ * aquí.
+ */
 export type LessonSituation =
   | "entrevista"
   | "primer_dia"
   | "en_el_turno"
   | "con_el_jefe"
   | "problema"
-  | "emergencia";
+  | "emergencia"
+  | "salud"
+  | "escuela"
+  | "vivienda"
+  | "dinero";
 
-/** Orden en que se vive un trabajo, que es el orden en que se enseña. */
+/** Orden en que se viven las cosas, que es el orden en que se enseñan. */
 export const SITUATION_ORDER: readonly LessonSituation[] = [
   "entrevista",
   "primer_dia",
@@ -41,6 +52,10 @@ export const SITUATION_ORDER: readonly LessonSituation[] = [
   "con_el_jefe",
   "problema",
   "emergencia",
+  "salud",
+  "escuela",
+  "vivienda",
+  "dinero",
 ];
 
 export type EnglishLevel = "ninguno" | "basico" | "intermedio" | "avanzado";
@@ -62,6 +77,25 @@ export type Phrase = {
   note?: string;
 };
 
+/**
+ * Algo que hay que SABER, no que decir.
+ *
+ * Existe porque el marco federal de educación de adultos (CASAS 4.2 y 4.3)
+ * exige enseñar los derechos laborales, y un derecho no es una frase: es un
+ * hecho. "El salario se debe sin importar el estatus migratorio" no se dice
+ * en una entrevista — se sabe, y cambia lo que la persona hace.
+ *
+ * `source` es obligatorio en la práctica: un hecho sobre derechos sin fuente
+ * es una afirmación nuestra, y este producto no puede permitirse ninguna.
+ */
+export type KeyFact = {
+  text: string;
+  /** De dónde sale. Se muestra junto al hecho. */
+  source: string;
+  /** Enlace a la fuente oficial, si lo hay. */
+  url?: string;
+};
+
 export type Lesson = {
   id: string;
   /** Orden dentro de la ruta. */
@@ -69,6 +103,8 @@ export type Lesson = {
   title: string;
   situation: LessonSituation;
   phrases: readonly Phrase[];
+  /** Lo que hay que saber antes de usar estas frases. */
+  facts?: readonly KeyFact[];
 };
 
 /**
@@ -81,11 +117,29 @@ export type Lesson = {
  * lo que permite decir, dentro de una vacante: *"esta pide inglés básico; el
  * taller del jueves lo enseña"*.
  */
+/**
+ * De qué tipo es el temario.
+ *
+ *  · `oficio`      — el inglés de un trabajo concreto. Se elige uno.
+ *  · `transversal` — sirve para cualquier trabajo, o para la vida diaria.
+ *                    Éstos NO se eligen: le hacen falta a todo el mundo.
+ *
+ * La distinción es de producto, no de organización: un temario de oficio se
+ * ofrece según lo que la persona busca; uno transversal se ofrece siempre,
+ * porque nadie sabe que necesita saber qué hacer cuando no le pagan.
+ */
+export type TrackKind = "oficio" | "transversal";
+
 export type LessonTrack = {
   id: string;
   slug: string;
   title: string;
   summary: string;
+  kind: TrackKind;
+  /**
+   * Oficio al que sirve. Vacío en los transversales: es la señal de que no
+   * dependen de a qué se dedique la persona.
+   */
   occupationTag: string;
   level: EnglishLevel;
   /** Cuánto dura el temario completo, en semanas. */

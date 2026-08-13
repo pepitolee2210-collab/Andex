@@ -11,7 +11,13 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { RUTAS_INGLES, rutaPorOficio, rutaPorSlug } from "@/lib/catalogs/ingles";
+import {
+  RUTAS_INGLES,
+  RUTAS_POR_OFICIO,
+  RUTAS_TRANSVERSALES,
+  rutaPorOficio,
+  rutaPorSlug,
+} from "@/lib/catalogs/ingles";
 import {
   SITUATION_ORDER,
   lessonsBySituation,
@@ -24,6 +30,7 @@ const RUTA_PRUEBA: LessonTrack = {
   slug: "t",
   title: "Prueba",
   summary: "Prueba",
+  kind: "oficio",
   occupationTag: "prueba",
   level: "basico",
   weeks: 2,
@@ -113,12 +120,50 @@ describe("el catálogo publicado", () => {
     for (const s of usadas) expect(SITUATION_ORDER).toContain(s);
   });
 
-  it("toda ruta empieza por la entrevista", () => {
-    // Nadie llega al primer día sin pasar la entrevista: si un temario no la
-    // cubre, no sirve para conseguir el trabajo.
-    for (const ruta of RUTAS_INGLES) {
+  it("todo temario DE OFICIO cubre la entrevista", () => {
+    // Nadie llega al primer día sin pasar la entrevista: si un temario de
+    // oficio no la cubre, no sirve para conseguir el trabajo. Los
+    // transversales no la necesitan — "qué hacer si te lastimas" no se
+    // practica en una entrevista.
+    for (const ruta of RUTAS_POR_OFICIO) {
       expect(ruta.lessons.some((l) => l.situation === "entrevista")).toBe(true);
     }
+  });
+
+  it("los transversales no dependen de ningún oficio", () => {
+    for (const ruta of RUTAS_TRANSVERSALES) {
+      expect(ruta.kind).toBe("transversal");
+      expect(ruta.occupationTag).toBe("");
+    }
+  });
+
+  it("los transversales van PRIMERO en el catálogo", () => {
+    // Nadie sabe que necesita saber qué hacer cuando no le pagan, así que no
+    // se puede esperar a que baje a buscarlo.
+    const primeros = RUTAS_INGLES.slice(0, RUTAS_TRANSVERSALES.length);
+    expect(primeros.every((r) => r.kind === "transversal")).toBe(true);
+  });
+
+  it("TODO hecho sobre derechos lleva su fuente", () => {
+    // Un hecho sin fuente es una afirmación nuestra. En un módulo que habla
+    // de salarios y de OSHA, eso no se puede publicar: hay que poder
+    // enseñar de dónde sale cada cosa.
+    const sinFuente: string[] = [];
+    for (const ruta of RUTAS_INGLES) {
+      for (const leccion of ruta.lessons) {
+        for (const hecho of leccion.facts ?? []) {
+          if (!hecho.source.trim()) sinFuente.push(`${ruta.slug}: ${hecho.text.slice(0, 40)}`);
+        }
+      }
+    }
+    expect(sinFuente).toEqual([]);
+  });
+
+  it("se cubren las dos áreas que exige el marco federal", () => {
+    // CASAS 4.2 (salario y derechos) y 4.3 (seguridad). Faltaban las dos, y
+    // esta prueba impide que se caigan sin que nadie se dé cuenta.
+    expect(RUTAS_INGLES.some((r) => r.slug === "pago-y-derechos")).toBe(true);
+    expect(RUTAS_INGLES.some((r) => r.slug === "seguridad")).toBe(true);
   });
 
   it("se encuentra una ruta por su oficio", () => {
