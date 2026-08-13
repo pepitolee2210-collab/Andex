@@ -17,7 +17,9 @@ export const MODULES: readonly ModuleMeta[] = [
   // de quien mira. Sin esto el grid le pondria "Pronto" a un modulo que
   // ya se puede abrir.
   { id: 5, slug: "comunidad", iconName: "users",       accentColor: "#12B8A6", canonicalOrder: 5, status: "live" },
-  { id: 6, slug: "academia",  iconName: "graduation",  accentColor: "#102A43", canonicalOrder: 6, status: "coming_soon" },
+  // Inglés para el trabajo: temarios por oficio, clase en vivo y manual
+  // descargable. Ya se puede abrir.
+  { id: 6, slug: "academia",  iconName: "graduation",  accentColor: "#102A43", canonicalOrder: 6, status: "live" },
   { id: 7, slug: "empleo",    iconName: "briefcase",   accentColor: "#0F766E", canonicalOrder: 7, status: "coming_soon" },
 ] as const;
 
