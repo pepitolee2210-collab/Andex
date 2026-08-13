@@ -180,11 +180,22 @@ export function CornerAdjuster({
     }
     let cancelled = false;
     setDetecting(true);
+    // La detección es asíncrona desde que puede consultar al detector
+    // neuronal, que descarga su modelo la primera vez. El retardo inicial
+    // sigue ahí para que el navegador pinte la foto antes de ponerse a
+    // calcular: sin él la pantalla se queda en blanco unos fotogramas.
     const timer = window.setTimeout(() => {
-      const found = detectDocument(image);
-      if (cancelled) return;
-      setQuad(found ?? defaultQuad(image.width, image.height));
-      setDetecting(false);
+      void detectDocument(image)
+        .then((found) => {
+          if (cancelled) return;
+          setQuad(found ?? defaultQuad(image.width, image.height));
+          setDetecting(false);
+        })
+        .catch(() => {
+          if (cancelled) return;
+          setQuad(defaultQuad(image.width, image.height));
+          setDetecting(false);
+        });
     }, 32);
     return () => {
       cancelled = true;

@@ -141,3 +141,131 @@ generar el PDF— tarda **3,4 s**.
 
 Los puntos 4 y 5 del plan de arriba: probar Scanic contra nuestro Sobel+Hough
 antes de sustituir nada, y evaluar el OCR.
+
+---
+
+# Segunda ronda: sustituir la detección por una medida, no por una opinión
+
+Fecha: 2026-08-12. La pregunta del dueño fue directa —*"quiero un sistema que
+haga lo que hace un escáner de verdad, ¿existe la tecnología?"*— y la
+respuesta corta es **sí**. Pero antes de traerla hubo que construir con qué
+compararla.
+
+## 1. Primero, una vara de medir
+
+`lib/scanner/fixtures.ts` genera fotos sintéticas de un documento en las
+condiciones que de verdad arruinan un escaneo: mesa clara, sombra de la mano,
+penumbra con ruido, reflejo de lámpara, veta de madera, perspectiva fuerte.
+
+La clave es que **las esquinas verdaderas las dibujamos nosotros**, así que el
+error se mide en píxeles. De una foto real no se conocen, y sin eso "el
+detector mejoró" es una opinión.
+
+## 2. Lo que medía nuestro detector
+
+| caso | error | veredicto |
+|---|---|---|
+| fácil | 0,2 % | bien |
+| inclinado | 0,2 % | bien |
+| **claro sobre claro** | **23,1 %** | **recorte falso** |
+| madera | 0,2 % | bien |
+| **sombra de la mano** | **17,9 %** | **recorte falso** |
+| penumbra | 0,3 % | bien |
+| reflejo | 0,2 % | bien |
+| degradado | 0,3 % | bien |
+
+Los dos malos no se rendían: entregaban un recorte equivocado con toda
+seguridad, que es peor, porque la persona lo acepta sin mirar.
+
+Las causas, ambas de fondo y no de ajuste:
+
+- **Claro sobre claro.** El texto del documento tiene ~23 veces más contraste
+  que el borde del papel, así que el umbral por percentil se calibraba con el
+  texto y Hough encontraba el bloque de texto, no la hoja.
+- **Sombra.** Una sombra multiplica la luz, así que el mismo borde salta 210
+  niveles a plena luz y 73 bajo la mano. Hough veía media hoja.
+
+## 3. Dos arreglos que sí funcionaron
+
+**Escala logarítmica.** Un factor multiplicativo se vuelve una suma constante:
+
+    log(253) − log(43) = 1,77     (borde iluminado)
+    log(88)  − log(15) = 1,77     (mismo borde, en sombra)
+
+El caso de la sombra pasó de **17,9 % a 0,9 %**.
+
+**Desenfoque antes del gradiente.** Sobre la miniatura de 320 px una línea de
+texto mide 3–4 px y desaparece; el borde del papel es una frontera larga y
+sobrevive. El caso de mesa clara dejó de inventar y pasó a rendirse — no es
+acertar, pero es la respuesta correcta cuando no se sabe.
+
+## 4. Un intento que EMPEORÓ, anotado para que no se repita
+
+Se probó a puntuar todos los cuadriláteros candidatos por área, con el
+razonamiento de que "el papel es lo que encierra más superficie y un bloque de
+texto siempre cabe dentro". Suena obvio y está mal: el candidato de mayor área
+acaba siendo ruido del borde de la foto. **De 7 casos correctos bajó a 6.**
+Revertido, con el motivo escrito en `detect-sobel.ts`.
+
+## 5. La comparativa contra Scanic
+
+Medido en un navegador real, sobre los mismos ocho casos:
+
+| caso | nuestro | Scanic clásico | Scanic neuronal |
+|---|---|---|---|
+| fácil | 0,8 % | **0,3 %** | se rinde |
+| inclinado | se rinde | **0,3 %** | 0,6 % |
+| claro sobre claro | se rinde | **43,3 %** ✗ | **0,8 %** ✓ |
+| madera | **0,2 %** | 0,6 % | 0,7 % |
+| sombra de la mano | 1,0 % | **0,6 %** | 0,6 % |
+| penumbra | 1,0 % | **0,6 %** | 0,8 % |
+| reflejo | 0,8 % | **0,4 %** | se rinde |
+| degradado | 1,0 % | **0,6 %** | 0,6 % |
+
+Scanic clásico gana 6 a 2 y va al doble de velocidad. Pero **falla justo en el
+caso peligroso**, y sin rendirse.
+
+## 6. El dato que hizo posible la solución
+
+El detector clásico **avisa cuando duda**. Su confianza separa limpiamente:
+
+    aciertos → 0,91 – 0,93          el recorte falso → 0,64
+
+Con ese hueco, la cascada se escribe sola: clásico primero, y si baja de 0,80
+se consulta al neuronal — que resuelve ese caso exacto en 16 ms.
+
+## 7. Resultado
+
+    caso                 cascada
+    ────────────────────────────────
+    fácil                0,3 %    62 ms
+    inclinado            0,3 %    25 ms
+    claro sobre claro    0,8 %   366 ms   ← el único que descarga el modelo
+    madera               0,6 %    90 ms
+    sombra de la mano    0,6 %    28 ms
+    penumbra             0,6 %    34 ms
+    reflejo              0,4 %    30 ms
+    degradado            0,6 %    34 ms
+    ────────────────────────────────
+    aciertos: 8/8
+
+## 8. Lo que hay que saber de la dependencia
+
+`scanic` es MIT, Rust compilado a WebAssembly, y su modelo neuronal
+(DocCornerNet, también MIT) pesa ~1,9 MB y **sólo se descarga cuando el
+clásico duda**. El paquete entero viaja en el chunk del escáner, que ya se
+carga en diferido.
+
+⚠️ **Un solo mantenedor.** Para una app que maneja permisos de trabajo, eso es
+una decisión de riesgo y no sólo técnica. Mitigación aplicada: vive detrás de
+`detectDocument`, y si el paquete no carga se cae a nuestro detector propio —
+que sigue en el repo, probado, y saca 7 de los 8 casos. La detección degrada,
+no desaparece.
+
+## 9. Lo que sigue sin hacerse
+
+- **Probar con fotos reales.** Las sintéticas atrapan regresiones; no imitan
+  las aberraciones de un sensor de verdad.
+- **OCR.** Sería lo que permitiría leer la fecha de vencimiento sola — que
+  alimenta la única promesa del módulo que hoy no se cumple— y buscar dentro
+  de los documentos. Sin evaluar todavía.

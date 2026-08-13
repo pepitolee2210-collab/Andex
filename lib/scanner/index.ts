@@ -33,7 +33,7 @@ export {
   type Point,
   type Quad,
 } from "./geometry";
-export { detectDocument } from "./detect";
+export { detectDocument, detectWithSobelHough } from "./detect";
 
 /** Una página ya escaneada, lista para el PDF. */
 export type ScannedPage = {
