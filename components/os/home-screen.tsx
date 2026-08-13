@@ -21,7 +21,11 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Pencil, Check } from "lucide-react";
+import type { ReactNode } from "react";
+import {
+  Bell, Camera, Check, Gavel, GraduationCap, Mic, Pencil, ScanLine,
+  Settings, ShieldCheck, Sparkles, Users,
+} from "lucide-react";
 import { ShieldCheckIcon } from "@/components/icons/shield-check";
 import { ScanTextIcon } from "@/components/icons/scan-text";
 import { SparklesIcon } from "@/components/icons/sparkles";
@@ -31,7 +35,7 @@ import { UsersIcon } from "@/components/icons/users";
 import { BellIcon } from "@/components/icons/bell";
 import { SettingsIcon } from "@/components/icons/settings";
 import type { AnimatedIconComponent } from "@/components/motion/animated-icon";
-import type { AppSlug } from "@/lib/os/apps";
+import { OS_APPS, type AppSlug } from "@/lib/os/apps";
 import {
   CLAVE_ANTERIOR,
   CLAVE_INICIO,
@@ -44,6 +48,8 @@ import {
 import type { OsDict } from "@/lib/i18n/dictionaries/os";
 import { cn } from "@/lib/utils";
 import { AppIcon } from "./app-icon";
+import { Dock } from "./dock";
+import { StatusBar } from "./status-bar";
 import { OsWidget, type WidgetContent } from "./widget";
 
 const ICONOS: Record<AppSlug, AnimatedIconComponent> = {
@@ -55,6 +61,26 @@ const ICONOS: Record<AppSlug, AnimatedIconComponent> = {
   comunidad: UsersIcon,
   avisos: BellIcon,
   ajustes: SettingsIcon,
+};
+
+/* El glifo de 15px de la cabecera del widget. Es el mismo icono de la app
+   pero SIN animar: dentro de una tarjeta que ya se toca entera, un icono
+   que se mueve al tocarlo compite con la propia tarjeta. */
+const GLIFO: Record<AppSlug, ReactNode> = {
+  boveda: <ShieldCheck className="size-[15px]" />,
+  escaner: <ScanLine className="size-[15px]" />,
+  ia: <Sparkles className="size-[15px]" />,
+  legal: <Gavel className="size-[15px]" />,
+  ingles: <GraduationCap className="size-[15px]" />,
+  comunidad: <Users className="size-[15px]" />,
+  avisos: <Bell className="size-[15px]" />,
+  ajustes: <Settings className="size-[15px]" />,
+};
+
+/** El icono del botón de un widget pequeño: micrófono o cámara. */
+const ICONO_ACCION: Partial<Record<AppSlug, ReactNode>> = {
+  ia: <Mic aria-hidden="true" className="size-[13px]" />,
+  escaner: <Camera aria-hidden="true" className="size-[13px]" />,
 };
 
 const rellenar = (t: string, v: Record<string, string | number>): string =>
@@ -158,10 +184,11 @@ export function HomeScreen({ nombre, lang, copy, datos, onSoon }: HomeScreenProp
         title: w.ingles.title,
         body: i.enVivo ? w.ingles.live : i.cuando ? rellenar(w.ingles.next, { when: i.cuando }) : w.ingles.none,
         action: w.ingles.action,
+        actionIcon: ICONO_ACCION.ingles,
       };
     }
     const resto = w[slug] as { title: string; body: string; action: string };
-    return { title: resto.title, body: resto.body, action: resto.action };
+    return { title: resto.title, body: resto.body, action: resto.action, actionIcon: ICONO_ACCION[slug] };
   };
 
   const total = layout.pages.length;
@@ -180,9 +207,13 @@ export function HomeScreen({ nombre, lang, copy, datos, onSoon }: HomeScreenProp
   }, [lang]);
 
   return (
-    <div className="shell-os flex min-h-dvh flex-col pb-28">
+    /* pb-[168px]: el dock mide 152 y la fila puede desplazarse. Sin este
+       hueco, la última fila de iconos queda debajo y no se puede tocar. */
+    <div className="shell-os flex min-h-dvh flex-col pb-[168px]">
+      <StatusBar lang={lang} />
+
       {/* ── Cabecera ── */}
-      <header className="flex items-start gap-3 px-5 pt-6">
+      <header className="flex items-start gap-3 px-5 pt-2">
         <div className="min-w-0 flex-1">
           {/* La fecha va ENCIMA del saludo y en 11.5px/500 al 54%, como el
               prototipo. El saludo, 24px/800 con -0.5px de interletraje. */}
@@ -201,9 +232,13 @@ export function HomeScreen({ nombre, lang, copy, datos, onSoon }: HomeScreenProp
         <button
           type="button"
           onClick={() => setEditando((v) => !v)}
-          className="k-press k-glass inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-[0.9375rem]"
+          /* 33px de alto es lo que dibuja el prototipo, pero el área
+             pulsable se lleva a 44 con padding vertical: 33px de objetivo
+             táctil falla demasiado. Lo que se VE mide lo mismo. */
+          className="k-press inline-flex h-11 items-center gap-1.5 rounded-full px-4 text-[12px] font-bold"
+          style={{ background: "var(--os-chip)" }}
         >
-          {editando ? <Check aria-hidden="true" className="size-4" /> : <Pencil aria-hidden="true" className="size-4" />}
+          {editando ? <Check aria-hidden="true" className="size-[13px]" /> : <Pencil aria-hidden="true" className="size-[13px]" />}
           {editando ? copy.done : copy.edit}
         </button>
       </header>
@@ -229,6 +264,7 @@ export function HomeScreen({ nombre, lang, copy, datos, onSoon }: HomeScreenProp
                     key={w.id}
                     slug={w.app}
                     size={w.size}
+                    icon={GLIFO[w.app]}
                     content={contenido(w.app)}
                     editing={editando}
                     removeLabel={rellenar(copy.editing.remove, { app: copy.apps[w.app] })}
@@ -239,9 +275,9 @@ export function HomeScreen({ nombre, lang, copy, datos, onSoon }: HomeScreenProp
               </div>
             ) : null}
 
-            <ul className={cn("grid grid-cols-4 gap-x-2 gap-y-5", p.widgets.length > 0 && "mt-6")}>
+            <ul className={cn("grid grid-cols-4 gap-x-[24px] gap-y-[16px]", p.widgets.length > 0 && "mt-8")}>
               {p.apps.map((slug, casilla) => (
-                <li key={casilla} className="min-h-[86px]">
+                <li key={casilla} className="min-h-[87px]">
                   {slug ? (
                     <AppIcon
                       slug={slug}
@@ -285,6 +321,20 @@ export function HomeScreen({ nombre, lang, copy, datos, onSoon }: HomeScreenProp
           ))}
         </nav>
       ) : null}
+
+      {/* ── El dock ──
+          Lleva TODAS las apps del catálogo, no las de la página: es el
+          atajo permanente. Por eso se desplaza — siete no caben en 390px, y
+          en el prototipo tampoco caben: se ve la séptima cortada a
+          propósito, que es la señal de que hay más. */}
+      <Dock
+        apps={OS_APPS.map((a) => a.slug)}
+        labels={copy.apps}
+        iconos={ICONOS}
+        activa={null}
+        sitio={copy.dockHome}
+        onSoon={onSoon}
+      />
     </div>
   );
 }

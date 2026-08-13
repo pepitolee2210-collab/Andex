@@ -38,7 +38,7 @@ describe("el inicio de fábrica", () => {
 
   it("arranca con los dos widgets de estado", () => {
     // Son la idea de la pantalla: se abre y ya se sabe cómo van las cosas.
-    expect(layoutInicial().pages[0].widgets.map((w) => w.app)).toEqual(["boveda", "ingles"]);
+    expect(layoutInicial().pages[0].widgets.map((w) => w.app)).toEqual(["boveda", "ia", "escaner"]);
   });
 });
 
@@ -157,8 +157,8 @@ describe("widgets", () => {
   });
 
   it("se quita por id", () => {
-    const l = quitarWidget(layoutInicial(), "w-ingles");
-    expect(l.pages[0].widgets.map((w) => w.id)).toEqual(["w-boveda"]);
+    const l = quitarWidget(layoutInicial(), "w-ia");
+    expect(l.pages[0].widgets.map((w) => w.id)).toEqual(["w-boveda", "w-escaner"]);
   });
 });
 

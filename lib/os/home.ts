@@ -62,9 +62,13 @@ export function layoutInicial(): HomeLayout {
   for (let i = 0; i < Math.min(deFabrica.length, SLOTS_POR_PAGINA); i += 1) {
     pagina.apps[i] = deFabrica[i];
   }
+  // Los tres del prototipo, en su orden: la Bóveda grande arriba y debajo
+  // dos pequeños a la par. Inglés y Comunidad quedan como iconos de la
+  // rejilla; se pueden añadir como widget desde el modo edición.
   pagina.widgets = [
     { id: "w-boveda", app: "boveda", size: "grande" },
-    { id: "w-ingles", app: "ingles", size: "pequeno" },
+    { id: "w-ia", app: "ia", size: "pequeno" },
+    { id: "w-escaner", app: "escaner", size: "pequeno" },
   ];
   return { v: 2, pages: [pagina] };
 }

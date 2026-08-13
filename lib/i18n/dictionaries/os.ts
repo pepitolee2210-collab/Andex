@@ -89,6 +89,8 @@ const es = {
     empty: "No has quitado ninguna.",
   },
 
+  /** Nombre del sitio en la píldora del dock. */
+  dockHome: "Inicio",
   soon: "Muy pronto",
   soonBody: "Esta parte todavía no está lista. Te avisamos cuando lo esté.",
 };
@@ -168,6 +170,7 @@ const en: typeof es = {
     empty: "You haven't removed any.",
   },
 
+  dockHome: "Home",
   soon: "Coming soon",
   soonBody: "This part isn't ready yet. We'll let you know when it is.",
 };
