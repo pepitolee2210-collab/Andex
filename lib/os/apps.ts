@@ -45,8 +45,8 @@ export const OS_APPS: readonly OsApp[] = [
   { slug: "legal",     accent: "--acc-legal",     href: null,                defaultHome: true },
   { slug: "ingles",    accent: "--acc-ingles",    href: "/modulo/academia",  defaultHome: true },
   { slug: "comunidad", accent: "--acc-comunidad", href: "/modulo/comunidad", defaultHome: true },
-  { slug: "avisos",    accent: "--acc-ia",        href: null,                defaultHome: true },
-  { slug: "ajustes",   accent: "--os-muted",      href: "/perfil",           defaultHome: true },
+  { slug: "avisos",    accent: "--acc-avisos",    href: null,                defaultHome: true },
+  { slug: "ajustes",   accent: "--acc-ajustes",   href: "/perfil",           defaultHome: true },
 ] as const;
 
 const POR_SLUG = new Map(OS_APPS.map((a) => [a.slug, a]));

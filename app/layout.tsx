@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Montserrat } from "next/font/google";
+import { Inter, Montserrat, Plus_Jakarta_Sans } from "next/font/google";
 import { cookies } from "next/headers";
 import { COOKIES } from "@/lib/config";
 import { Toaster } from "@/components/ui/toaster";
@@ -16,6 +16,14 @@ const inter = Inter({
 const montserrat = Montserrat({
   subsets: ["latin"],
   variable: "--font-montserrat",
+  display: "swap",
+});
+
+// Plus Jakarta Sans es la tipografía del prototipo: la usa en TODO, del
+// saludo de 24/800 al metadato de 11/500. Se autoaloja igual que las otras.
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-jakarta",
   display: "swap",
 });
 
@@ -51,7 +59,7 @@ export default async function RootLayout({
     <html
       lang={lang}
       data-theme={theme}
-      className={`${inter.variable} ${montserrat.variable}`}
+      className={`${inter.variable} ${montserrat.variable} ${jakarta.variable}`}
       suppressHydrationWarning
     >
       <body>

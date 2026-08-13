@@ -75,13 +75,14 @@ export type DatosInicio = {
 
 export type HomeScreenProps = {
   nombre: string | null;
+  lang: string;
   copy: OsDict;
   datos: DatosInicio;
   /** Qué hacer con una app que todavía no tiene pantalla. */
   onSoon: (slug: AppSlug) => void;
 };
 
-export function HomeScreen({ nombre, copy, datos, onSoon }: HomeScreenProps) {
+export function HomeScreen({ nombre, lang, copy, datos, onSoon }: HomeScreenProps) {
   const [layout, setLayout] = useState<HomeLayout>(layoutInicial);
   const [pagina, setPagina] = useState(0);
   const [editando, setEditando] = useState(false);
@@ -165,12 +166,30 @@ export function HomeScreen({ nombre, copy, datos, onSoon }: HomeScreenProps) {
 
   const total = layout.pages.length;
 
+  /* La fecha se calcula tras montar, nunca en el servidor: el servidor está
+     en otra zona horaria que la persona y "lunes" contra "martes" es
+     exactamente el error que ya rompió `/pago` con una hidratación
+     descuadrada. Hasta que llega, no se pinta nada en su sitio. */
+  const [fechaLarga, setFechaLarga] = useState("");
+  useEffect(() => {
+    setFechaLarga(
+      new Intl.DateTimeFormat(lang, { weekday: "long", day: "numeric", month: "long" })
+        .format(new Date())
+        .replace(/^\w/, (c) => c.toUpperCase()),
+    );
+  }, [lang]);
+
   return (
     <div className="shell-os flex min-h-dvh flex-col pb-28">
       {/* ── Cabecera ── */}
       <header className="flex items-start gap-3 px-5 pt-6">
         <div className="min-w-0 flex-1">
-          <h1 className="text-[1.75rem] font-bold leading-tight">
+          {/* La fecha va ENCIMA del saludo y en 11.5px/500 al 54%, como el
+              prototipo. El saludo, 24px/800 con -0.5px de interletraje. */}
+          <p className="text-[11.5px] font-medium" style={{ color: "var(--os-muted)", letterSpacing: "0.2px" }}>
+            {fechaLarga}
+          </p>
+          <h1 className="mt-0.5 text-[24px] font-extrabold leading-tight" style={{ letterSpacing: "-0.5px" }}>
             {nombre ? rellenar(copy.greeting, { name: nombre }) : copy.greetingAnon}
           </h1>
           {editando ? (

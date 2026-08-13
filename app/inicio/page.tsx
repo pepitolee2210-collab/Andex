@@ -118,6 +118,7 @@ export default function Inicio() {
   return (
     <HomeScreen
       nombre={nombre}
+      lang={lang}
       copy={dict.os}
       datos={datos}
       onSoon={alTocarLoQueNoExiste}

@@ -33,19 +33,21 @@ export function AppIcon({
   const meta = app(slug);
   const acento = `var(${meta?.accent ?? "--os-muted"})`;
 
+  /* Medidas del prototipo, no elegidas: baldosa de 64px con radio 20 y el
+     acento entrando como degradado a 60° al 35% (`.k-tile`), y la etiqueta
+     a 12px/700 en blanco al 78%. */
   const cuerpo = (
     <>
       <span
-        className="flex size-[60px] items-center justify-center rounded-[19px] border"
-        style={{
-          color: acento,
-          background: "var(--os-card-hi)",
-          borderColor: "var(--os-edge)",
-        }}
+        className="k-tile flex items-center justify-center"
+        style={{ color: acento, ["--acc" as string]: acento }}
       >
-        <AnimatedIcon icon={icon} size={27} trigger={editing ? "loop" : "tap"} every={2600} />
+        <AnimatedIcon icon={icon} size={28} trigger={editing ? "loop" : "tap"} every={2600} />
       </span>
-      <span className="max-w-full truncate text-[0.75rem]" style={{ color: "var(--os-muted)" }}>
+      <span
+        className="max-w-full truncate text-[12px] font-bold"
+        style={{ color: "var(--os-label)", letterSpacing: "0.2px" }}
+      >
         {label}
       </span>
     </>
