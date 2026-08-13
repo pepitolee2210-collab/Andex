@@ -171,6 +171,10 @@ const es = {
 
     saveTitle: "Guardar en tu bóveda",
     nameLabel: "¿Qué documento es?",
+    // Sin fecha no hay aviso, así que la etiqueta lo dice en vez de
+    // limitarse a nombrar el campo.
+    expiryEditLabel: "¿Cuándo vence?",
+    expiryEditHelp: "Déjalo vacío si no vence. Con fecha, te avisamos antes.",
     namePlaceholder: "Ej.: Pasaporte de María",
     folderLabel: "¿En qué carpeta?",
     noteLabel: "Nota (opcional)",
@@ -553,6 +557,8 @@ const en = {
 
     saveTitle: "Save to your vault",
     nameLabel: "What document is this?",
+    expiryEditLabel: "When does it expire?",
+    expiryEditHelp: "Leave it empty if it doesn't expire. With a date, we warn you ahead.",
     namePlaceholder: "E.g.: María's passport",
     folderLabel: "Which folder?",
     noteLabel: "Note (optional)",

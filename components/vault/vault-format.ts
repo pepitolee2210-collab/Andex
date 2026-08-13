@@ -40,6 +40,9 @@ export type VaultCommonCopy = {
 /** Etiquetas del formulario de edición, reutilizadas del bloque `scanner`. */
 export type VaultFieldsCopy = {
   nameLabel: string;
+  /** Etiquetas del campo de vencimiento, editable después de guardar. */
+  expiryLabel: string;
+  expiryHelp: string;
   namePlaceholder: string;
   folderLabel: string;
 };

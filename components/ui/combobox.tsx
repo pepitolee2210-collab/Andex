@@ -217,8 +217,10 @@ export function Combobox({
       <label
         htmlFor={id}
         className={cn(
+          // Igual que en `Input`: la etiqueta no baja de contraste aunque el
+          // campo esté deshabilitado. `text-disabled` da 2,85:1 y reprueba AA.
           "mb-1.5 block text-label font-medium",
-          disabled ? "text-disabled" : "text-ink",
+          disabled ? "text-muted" : "text-ink",
         )}
       >
         {label}

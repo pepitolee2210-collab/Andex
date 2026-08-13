@@ -203,6 +203,8 @@ export function VaultScreen({
         nameLabel: copy.scanner.nameLabel,
         namePlaceholder: copy.scanner.namePlaceholder,
         folderLabel: copy.scanner.folderLabel,
+        expiryLabel: copy.scanner.expiryEditLabel,
+        expiryHelp: copy.scanner.expiryEditHelp,
       },
       common,
     }),

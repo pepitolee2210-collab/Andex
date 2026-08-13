@@ -77,6 +77,15 @@ export function DocumentCard({
   const [dialog, setDialog] = useState<OpenDialog | null>(null);
   const [name, setName] = useState(doc.name);
   const [folder, setFolder] = useState<VaultFolderId>(doc.folder);
+  /**
+   * Fecha de vencimiento editable.
+   *
+   * Faltaba, y era el hueco más caro del módulo: un documento guardado sin
+   * fecha NUNCA dispara un aviso —que es justo lo que se paga— y no había
+   * forma de corregirlo después. Lo destapó una auditoría del propio flujo,
+   * no una lectura del código.
+   */
+  const [expiresAt, setExpiresAt] = useState(doc.expiresAt ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -132,7 +141,13 @@ export function DocumentCard({
     if (cleaned.length === 0) return;
     setBusy(true);
     try {
-      await updateDocument(doc.id, { name: cleaned });
+      // Vacío significa "no vence" y tiene que poder volver a serlo: un
+      // acta de nacimiento no caduca, y quien se equivocó al ponerle fecha
+      // necesita quitarla.
+      await updateDocument(doc.id, {
+        name: cleaned,
+        expiresAt: expiresAt.trim() === "" ? null : expiresAt,
+      });
       setDialog(null);
       onChanged();
     } catch {
@@ -264,6 +279,18 @@ export function DocumentCard({
             autoComplete="off"
             onChange={(event) => setName(event.target.value)}
           />
+          {/* La fecha es lo que enciende el aviso. Va aquí y no en una
+              pantalla aparte porque es la corrección que más falta hace, y
+              esconderla detrás de otro paso la volvería invisible otra vez. */}
+          <div className="mt-4">
+            <Input
+              type="date"
+              label={copy.fields.expiryLabel}
+              value={expiresAt}
+              help={copy.fields.expiryHelp}
+              onChange={(event) => setExpiresAt(event.target.value)}
+            />
+          </div>
           {error ? (
             <p role="alert" className="mt-2 text-caption text-danger">
               {error}

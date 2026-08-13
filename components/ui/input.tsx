@@ -61,8 +61,14 @@ export function Input({
       <label
         htmlFor={id}
         className={cn(
+          // La ETIQUETA nunca baja de contraste, ni con el campo
+          // deshabilitado: describe un dato que la persona sí tiene que
+          // poder leer —su propio correo, por ejemplo—. `text-disabled`
+          // (#8A9BAD) da 2,85:1 sobre blanco y reprueba AA. Es el mismo
+          // fallo que ya se corrigió en el placeholder unas líneas abajo,
+          // y aquí se había quedado. Lo destapó una auditoría de /perfil.
           "mb-1.5 block text-label font-medium",
-          disabled ? "text-disabled" : "text-ink",
+          disabled ? "text-muted" : "text-ink",
         )}
       >
         {label}
