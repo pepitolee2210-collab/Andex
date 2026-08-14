@@ -64,6 +64,7 @@ const es = {
     account: "Tu cuenta",
     settings: "Configuración",
     help: "Ayuda",
+    investments: "Inversiones",
     /** §4.3 — botón fijo, para todos, en todas las pantallas del panel. */
     exploreAll: "Explorar todos los módulos",
     /** past_due §3.4.7 — acceso de solo lectura */
@@ -260,6 +261,7 @@ const en = {
     account: "Your account",
     settings: "Settings",
     help: "Help",
+    investments: "Investments",
     exploreAll: "Explore all the modules",
     readOnly: "Read-only",
     readOnlyHint:

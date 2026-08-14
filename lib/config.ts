@@ -33,6 +33,16 @@ export const PRICES = {
   },
 } as const;
 
+/**
+ * WhatsApp del equipo de Inversiones — donde termina el ciclo de esa
+ * sección. En formato internacional y sin signos: `wa.me` los rechaza.
+ *
+ * Vive en una variable de entorno porque cambia sin tocar código y porque
+ * el número de un comercial no es una constante del producto. Si falta, la
+ * sección lo dice en vez de pintar un botón que abre un chat vacío.
+ */
+export const WHATSAPP_INVERSIONES = process.env.NEXT_PUBLIC_WHATSAPP_INVERSIONES ?? "";
+
 /** Versión de términos registrada en user_consents (§3.4.6). */
 export const TERMS_VERSION = "v1-2026-08";
 
@@ -90,6 +100,7 @@ export const ROUTES = {
   panel: "/panel",
   modulo: (slug: string) => `/modulo/${slug}`,
   perfil: "/perfil",
+  inversiones: "/inversiones",
   design: "/design",
 
   // Páginas legales. Enlazadas desde el footer y desde el checkout (§3.4.6

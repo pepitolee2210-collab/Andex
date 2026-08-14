@@ -33,6 +33,7 @@ import {
   LogOut,
   Menu,
   Settings,
+  TrendingUp,
   User,
   Users,
   X,
@@ -170,6 +171,20 @@ function NavSection({
           icon: <LayoutGrid aria-hidden="true" className="size-5" />,
         }}
         active={false}
+        showLabel={showLabels}
+        onNavigate={onNavigate}
+      />
+
+      {/* Inversiones no es uno de los siete módulos del catálogo, así que
+          va DESPUÉS de ellos y antes de la cuenta: no toca el orden
+          canónico que §4.3 congela. */}
+      <NavItem
+        link={{
+          href: ROUTES.inversiones,
+          label: shell.investments,
+          icon: <TrendingUp aria-hidden="true" className="size-5" />,
+        }}
+        active={isActive(pathname, ROUTES.inversiones)}
         showLabel={showLabels}
         onNavigate={onNavigate}
       />
