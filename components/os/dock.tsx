@@ -52,7 +52,15 @@ export function Dock({ apps, labels, iconos, activa, sitio, onSoon, className }:
       </div>
 
       {/* La fila. Se desplaza: siete baldosas no caben en 390px. */}
-      <ul className="mt-3 flex snap-x gap-[12px] overflow-x-auto overscroll-x-contain px-[18px] pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {/* `justify-around`, no un scroller alineado a la izquierda.
+          Con las siete del prototipo la fila se desborda y llena el ancho
+          sola; con cuatro se quedaba pegada a la izquierda y dejaba medio
+          dock vacío — se veía roto, no minimalista. Repartidas, ocupan el
+          ancho igual que en el original.
+          Es seguro porque el dock son SIEMPRE cuatro: si algún día
+          crecieran, `justify-around` dejaría la primera fuera de alcance al
+          desbordar y habría que volver al scroller. */}
+      <ul className="mt-3 flex items-start justify-around gap-2 px-4 pb-1">
         {apps.map((slug) => {
           const meta = app(slug);
           const acento = `var(${meta?.accent ?? "--acc-ajustes"})`;
