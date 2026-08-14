@@ -223,6 +223,70 @@
 }
 
 /* ══════════════════════════════════════════════════════════════════════
+   VESTIR LO QUE YA EXISTE
+   ══════════════════════════════════════════════════════════════════════
+
+   Estas reglas visten el kit del producto —Button, tarjetas, campos— con
+   los valores del prototipo SIN tocar un solo componente. Es la diferencia
+   entre "rehacer 40 pantallas" y "cambiar una hoja de estilos".
+
+   Sólo aplican dentro de `.shell-os`. La landing, el registro y el pago
+   siguen con el sistema claro de antes, intactos: si esto se revierte, el
+   producto vuelve al estado anterior sin arrastrar nada.
+
+   La regla es una: sólo APARIENCIA. Ni una regla de aquí cambia qué se
+   puede pulsar, en qué orden se lee, ni qué anuncia un lector de pantalla. */
+
+/* El botón principal es el degradado del prototipo. */
+.shell-os [data-variant="primary"] {
+  background: var(--os-cta);
+  color: var(--os-on-cta);
+  border-radius: 17px;
+  font-weight: 800;
+  letter-spacing: 0.1px;
+  box-shadow: 0 8px 20px -8px rgb(139 92 246 / 0.55);
+}
+.shell-os [data-variant="secondary"],
+.shell-os [data-variant="ghost"] {
+  border-radius: 17px;
+  border-color: var(--os-edge);
+  color: var(--os-ink);
+  font-weight: 700;
+}
+.shell-os [data-variant="secondary"] { background: var(--os-chip); }
+
+/* Las tarjetas del producto usan los radios del sistema anterior (16/24).
+   `@theme inline` los deja escritos en la utilidad, así que no basta con
+   reapuntar el token: hay que igualar la utilidad. El prototipo usa 26 en
+   todo lo que es tarjeta. */
+.shell-os :is(.rounded-lg, .rounded-xl) { border-radius: var(--os-card-radius); }
+.shell-os .rounded-md { border-radius: 14px; }
+
+/* Superficie de tarjeta: cristal, sin el borde de 1px del sistema claro
+   —el prototipo no dibuja borde en ninguna tarjeta, sólo sombra—. */
+.shell-os .bg-surface:not(.k-chrome) {
+  background: var(--os-card);
+  border-color: transparent;
+  box-shadow: var(--os-card-shadow);
+  backdrop-filter: blur(var(--os-card-blur));
+  -webkit-backdrop-filter: blur(var(--os-card-blur));
+}
+.shell-os .bg-surface-alt { background: var(--os-chip); }
+
+/* Campos de formulario. */
+.shell-os :is(input, textarea, select):not([type="checkbox"]):not([type="radio"]) {
+  background: var(--os-chip);
+  border-color: var(--os-edge);
+  border-radius: 14px;
+  color: var(--os-ink);
+}
+.shell-os :is(input, textarea)::placeholder { color: var(--os-faint); }
+
+/* El foco visible tiene que verse sobre la superficie oscura: el teal del
+   sistema claro se pierde encima del morado. */
+.shell-os :focus-visible { outline-color: var(--acc-escaner); }
+
+/* ══════════════════════════════════════════════════════════════════════
    MOVIMIENTO — traducido de Kinetics al dedo
    ══════════════════════════════════════════════════════════════════════
 
