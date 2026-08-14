@@ -18,6 +18,8 @@
  * comportaran distinto sin que nadie lo decidiera.
  */
 
+import { OsHeader } from "@/components/os/primitives";
+import { ROUTES } from "@/lib/config";
 import { useEffect, useState } from "react";
 import { GraduationCap, Sparkles } from "lucide-react";
 import { RUTAS_POR_OFICIO, RUTAS_TRANSVERSALES } from "@/lib/catalogs/ingles";
@@ -56,18 +58,15 @@ export function AcademiaScreen({
 
   return (
     <article className="mx-auto w-full max-w-4xl">
-      <header className="flex items-start gap-3 sm:gap-4">
-        <span
-          aria-hidden="true"
-          className="flex size-11 shrink-0 items-center justify-center rounded-md bg-teal-soft text-teal-deep sm:size-12"
-        >
-          <ModuleIcon slug="academia" size={24} />
-        </span>
-        <div className="min-w-0">
-          <h1 className="font-heading text-h2 text-ink sm:text-h1">{copy.title}</h1>
-          <p className="mt-1 text-body text-muted sm:text-body-lg">{copy.subtitle}</p>
-        </div>
-      </header>
+      {/* La cabecera del sistema: la misma en las cuatro pantallas, para
+          que entrar en una no se sienta como cambiar de aplicación. */}
+      <OsHeader
+        title={copy.title}
+        subtitle={copy.subtitle}
+        backHref={ROUTES.panel}
+        backLabel={copy.back}
+        className="px-0"
+      />
 
       {/* ── El argumento ──
           Una sola vez, arriba. Quien ya lo entendió no vuelve a leerlo

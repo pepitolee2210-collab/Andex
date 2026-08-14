@@ -8,6 +8,7 @@
  */
 
 const es = {
+  back: "Volver al inicio",
   title: "Inglés para el trabajo",
   subtitle:
     "No es un curso de inglés. Son las frases exactas de tu entrevista y de tu primer día.",
@@ -107,6 +108,7 @@ const es = {
 };
 
 const en: typeof es = {
+  back: "Back to home",
   title: "English for work",
   subtitle:
     "This isn't an English course. These are the exact phrases for your interview and your first day.",
