@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Montserrat, Plus_Jakarta_Sans } from "next/font/google";
+import { Inter, Montserrat } from "next/font/google";
 import { cookies } from "next/headers";
 import { COOKIES } from "@/lib/config";
 import { Toaster } from "@/components/ui/toaster";
@@ -16,14 +16,6 @@ const inter = Inter({
 const montserrat = Montserrat({
   subsets: ["latin"],
   variable: "--font-montserrat",
-  display: "swap",
-});
-
-// Plus Jakarta Sans es la tipografía del prototipo: la usa en TODO, del
-// saludo de 24/800 al metadato de 11/500. Se autoaloja igual que las otras.
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-jakarta",
   display: "swap",
 });
 
@@ -59,19 +51,10 @@ export default async function RootLayout({
     <html
       lang={lang}
       data-theme={theme}
-      className={`${inter.variable} ${montserrat.variable} ${jakarta.variable}`}
+      className={`${inter.variable} ${montserrat.variable}`}
       suppressHydrationWarning
     >
       <body>
-        {/* Si el JavaScript no llega —teléfono viejo, ahorro de datos, un
-            error de hidratación— los elementos que entran al aparecer se
-            quedarían invisibles para siempre. Esto los devuelve. Una
-            animación no puede ser la razón de que alguien no vea sus
-            documentos. */}
-        <noscript>
-          {/* eslint-disable-next-line react/no-danger */}
-          <style>{".k-appear{opacity:1;transform:none}"}</style>
-        </noscript>
         {children}
         <Toaster />
       </body>

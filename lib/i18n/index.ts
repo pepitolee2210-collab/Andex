@@ -34,7 +34,6 @@ import { checkout } from "./dictionaries/checkout";
 import { panel } from "./dictionaries/panel";
 import { modules } from "./dictionaries/modules";
 import { perfil } from "./dictionaries/perfil";
-import { os } from "./dictionaries/os";
 
 export { DEFAULT_LANG, LANGS, getClientLang, getLangFromCookieValue } from "./config";
 export { formatReason, goalLabel, interestLabel } from "./reasons";
@@ -53,7 +52,6 @@ export type { CheckoutDict } from "./dictionaries/checkout";
 export type { PanelDict } from "./dictionaries/panel";
 export type { ModulesDict } from "./dictionaries/modules";
 export type { PerfilDict } from "./dictionaries/perfil";
-export type { OsDict } from "./dictionaries/os";
 
 export type Dictionary = {
   common: (typeof common)[Lang];
@@ -69,7 +67,6 @@ export type Dictionary = {
   panel: (typeof panel)[Lang];
   modules: (typeof modules)[Lang];
   perfil: (typeof perfil)[Lang];
-  os: (typeof os)[Lang];
 };
 
 /** Ensambla el diccionario completo para un idioma. */
@@ -88,7 +85,6 @@ export function getDictionary(lang: Lang): Dictionary {
     panel: panel[lang],
     modules: modules[lang],
     perfil: perfil[lang],
-    os: os[lang],
   };
 }
 

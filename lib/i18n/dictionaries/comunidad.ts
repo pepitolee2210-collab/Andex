@@ -8,7 +8,6 @@
  */
 
 const es = {
-  back: "Volver al inicio",
   title: "Comunidad",
   subtitle: "Talleres en vivo, en español, con gente que está en lo mismo que tú.",
 
@@ -73,7 +72,6 @@ const es = {
 };
 
 const en: typeof es = {
-  back: "Back to home",
   title: "Community",
   subtitle: "Live workshops, in Spanish, with people going through the same thing.",
 

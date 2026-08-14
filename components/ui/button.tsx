@@ -94,10 +94,6 @@ export function Button(props: ButtonProps) {
     ...rest
   } = props;
 
-  /* `data-variant` no cambia nada por sí solo: es el gancho que permite a
-     la cáscara del sistema (`app/motion.css`) vestir el botón principal con
-     el degradado del prototipo SIN tocar este componente ni sus 60 llamadas.
-     Fuera de `.shell-os` el botón sigue exactamente igual que antes. */
   const classes = cn(
     "inline-flex items-center justify-center gap-2 rounded-md font-medium",
     "select-none transition-[background-color,border-color,box-shadow,filter] duration-150",
@@ -126,7 +122,6 @@ export function Button(props: ButtonProps) {
     };
     const linkProps = {
       className: classes,
-      "data-variant": variant,
       "aria-busy": loading || undefined,
       "aria-disabled": loading || undefined,
       tabIndex: loading ? -1 : undefined,
@@ -150,7 +145,7 @@ export function Button(props: ButtonProps) {
       {...buttonRest}
       disabled={buttonRest.disabled || loading}
       aria-busy={loading || undefined}
-      className={classes} data-variant={variant}
+      className={classes}
     >
       {content}
     </button>

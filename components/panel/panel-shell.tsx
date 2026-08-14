@@ -50,7 +50,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ModuleIcon } from "@/components/module-icon";
 import { LocationChip } from "./location-chip";
 import { usePanel } from "./panel-context";
-import { ShellDock } from "./shell-dock";
 import { formatDate } from "./panel-utils";
 
 const SIDEBAR_KEY = "andex_panel_sidebar_collapsed";
@@ -240,7 +239,7 @@ function TabBar({ dict, pathname }: { dict: Dictionary; pathname: string }) {
   return (
     <nav
       aria-label={shell.tabBarAria}
-      className="k-chrome sticky bottom-0 z-30 border-t border-line bg-surface sm:hidden"
+      className="sticky bottom-0 z-30 border-t border-line bg-surface sm:hidden"
     >
       <ul className="flex items-stretch">
         {tabs.map((tab) => {
@@ -371,42 +370,8 @@ export function PanelShell({ children }: { children: ReactNode }) {
 
   const blocked = access === "blocked" && pathname !== ROUTES.perfil;
 
-  /* ══ UNA SOLA NAVEGACIÓN, EN TODAS LAS PANTALLAS ══
-     Antes esto se aplicaba SÓLO al inicio, y era un error que se veía al
-     primer toque: se entraba en la Bóveda desde el dock y aparecía la barra
-     superior y la de pestañas del panel viejo. Dos menús distintos, dos
-     sitios para ir a Comunidad, y la sensación de haber cambiado de
-     aplicación a mitad de camino.
-
-     Ahora el cromo es el mismo en todas: el dock abajo, permanente, y cada
-     pantalla con su propia cabecera. La barra superior, la de pestañas y el
-     lateral del panel dejan de montarse.
-
-     Lo que NO cambia: los avisos de suscripción siguen arriba —si la cuenta
-     está vencida hay que decirlo—, y la cuenta bloqueada mantiene el shell
-     completo, porque ahí lo que toca no es navegar sino resolver el pago. */
-  if (!blocked) {
-    return (
-      <div className="shell-os flex min-h-dvh flex-col pb-[152px]">
-        <a
-          href="#contenido"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:inline-flex focus:min-h-11 focus:items-center focus:rounded-md focus:bg-surface focus:px-4 focus:text-body focus:text-ink focus:shadow-md"
-        >
-          {dict.common.nav.skipToContent}
-        </a>
-        <TopNotices />
-        <main id="contenido" className="flex-1">{children}</main>
-        <ShellDock pathname={pathname} />
-      </div>
-    );
-  }
-
   return (
-    /* `shell-os` sustituye a `bg-page`: no es sólo un fondo, es el remapeo
-       completo de los tokens (ver `app/motion.css`). Todo lo que cuelga de
-       aquí —tarjetas, botones, campos, modales— resuelve sus colores contra
-       la superficie oscura sin que haya que tocar un solo componente. */
-    <div className="shell-os flex min-h-dvh flex-col">
+    <div className="flex min-h-dvh flex-col bg-page">
       <a
         href="#contenido"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:inline-flex focus:min-h-11 focus:items-center focus:rounded-md focus:bg-surface focus:px-4 focus:text-body focus:text-ink focus:shadow-md"
@@ -415,7 +380,7 @@ export function PanelShell({ children }: { children: ReactNode }) {
       </a>
 
       {/* ── Topbar 56px (§2.4) ── */}
-      <header className="k-chrome sticky top-0 z-30 border-b border-line bg-surface">
+      <header className="sticky top-0 z-30 border-b border-line bg-surface">
         <div className="flex h-14 items-center gap-1 px-3 sm:px-4">
           <button
             type="button"
@@ -484,7 +449,7 @@ export function PanelShell({ children }: { children: ReactNode }) {
         {/* ── Sidebar izquierdo colapsable (§2.4) ── */}
         <aside
           className={cn(
-            "k-chrome sticky top-14 hidden h-[calc(100dvh-3.5rem)] shrink-0 flex-col overflow-y-auto border-r border-line bg-surface px-2 py-4 sm:flex",
+            "sticky top-14 hidden h-[calc(100dvh-3.5rem)] shrink-0 flex-col overflow-y-auto border-r border-line bg-surface px-2 py-4 sm:flex",
             collapsed ? "w-[4.5rem]" : "w-[4.5rem] lg:w-60",
           )}
         >

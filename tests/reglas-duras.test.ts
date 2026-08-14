@@ -472,16 +472,7 @@ describe("brief §4.8 — ningún texto visible se escribe en el JSX", () => {
   // El producto es bilingüe por cookie (D6): una cadena escrita a mano en un
   // componente se queda en español para siempre y el toggle EN deja de decir
   // la verdad. `/design` es el showcase interno y está exento por definición.
-  // `/laboratorio` es la misma categoría que `/design`: una banco de pruebas
-  // interno donde se verifica que una librería de terceros funciona dentro de
-  // este proyecto antes de construir producto encima. Nadie de la comunidad
-  // llega ahí, y su copy describe la propia prueba —"se disparan al tocarlos"—,
-  // que no es copy de producto y no tiene equivalente en inglés que sirva a
-  // nadie.
-  //
-  // ⚠️ Si algún día se enlaza desde la aplicación, deja de ser interno y sale
-  // de esta lista.
-  const EXENTOS = new Set(["app/design/page.tsx", "app/laboratorio/page.tsx"]);
+  const EXENTOS = new Set(["app/design/page.tsx"]);
 
   /**
    * El panel de administración va en español directo, sin pasar por i18n.
