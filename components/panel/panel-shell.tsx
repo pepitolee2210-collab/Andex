@@ -370,6 +370,23 @@ export function PanelShell({ children }: { children: ReactNode }) {
 
   const blocked = access === "blocked" && pathname !== ROUTES.perfil;
 
+  /* ── El inicio no lleva cromo ──
+     La pantalla del sistema trae su PROPIA barra de estado arriba y su
+     PROPIO dock abajo. Si además se le pone la topbar y la tab bar del
+     panel, quedan dos navegaciones simultáneas peleándose por el mismo
+     borde de la pantalla y dos sitios distintos para ir a Comunidad.
+
+     Los avisos de suscripción sí se quedan: si la cuenta está vencida hay
+     que decirlo, y el inicio es donde primero se mira. */
+  if (pathname === ROUTES.panel && !blocked) {
+    return (
+      <div className="shell-os flex min-h-dvh flex-col">
+        <TopNotices />
+        <main id="contenido">{children}</main>
+      </div>
+    );
+  }
+
   return (
     /* `shell-os` sustituye a `bg-page`: no es sólo un fondo, es el remapeo
        completo de los tokens (ver `app/motion.css`). Todo lo que cuelga de

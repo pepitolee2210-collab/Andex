@@ -1,15 +1,22 @@
 import type { Metadata } from "next";
 import { getDictionary } from "@/lib/i18n";
 import { getLang } from "@/lib/i18n/server";
-import { Dashboard } from "@/components/panel/dashboard";
+import { HomeView } from "@/components/os/home-view";
 
 /**
- * DASHBOARD ADAPTATIVO (§4) — "el corazón del MVP".
+ * EL PANEL ES AHORA LA PANTALLA DEL SISTEMA.
  *
- * El servidor solo resuelve el idioma y el título. Todo lo demás es cliente:
- * el perfil, el ranking y la suscripción viven en la capa de datos, que en
- * modo demo es el navegador (brief §6). El layout de (panel) ya exigió sesión
- * y montó el proveedor con el control de acceso de §3.4.7.
+ * Antes aquí vivía el dashboard adaptativo: tarjeta de objetivo, tarjetas de
+ * recomendación y rejilla de módulos. Se sustituye por el inicio —la misma
+ * vista que `/inicio`— porque dice lo mismo de otra forma:
+ *
+ *   antes  "Trámites y Estatus Migratorio · Empezar aquí"   una invitación
+ *   ahora  "12 documentos · el permiso vence en 40 días"    un estado
+ *
+ * Quien abre la aplicación tiene un trámite encima; lo que necesita es saber
+ * cómo va, no que le animen a empezar. El `Dashboard` sigue en el repo y su
+ * lógica de ranking se recupera cuando toque llevar la recomendación a un
+ * widget.
  *
  * §9 — ninguna respuesta del usuario viaja en la URL.
  */
@@ -20,5 +27,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function PanelPage() {
-  return <Dashboard />;
+  return <HomeView />;
 }
