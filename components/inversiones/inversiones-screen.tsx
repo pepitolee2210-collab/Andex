@@ -19,9 +19,7 @@
  */
 
 import {
-  Building2,
   Hammer,
-  Handshake,
   MessageCircle,
   Sparkles,
   TrendingUp,
@@ -41,20 +39,18 @@ const ICONS: Record<string, LucideIcon> = {
   Truck,
   Hammer,
   TrendingUp,
-  Building2,
-  Handshake,
 };
 
 const fill = (t: string, v: Record<string, string | number>): string =>
   t.replace(/\{(\w+)\}/g, (_, k) => String(v[k] ?? ""));
 
 /**
- * Formatea el capital de entrada: "$5,000".
+ * Formatea el capital de entrada: "$100".
  *
  * Se fuerza `en-US` a propósito, aunque la interfaz esté en español. Con
  * `es` el navegador escribe "5000 US$", que no es como se ven los precios
  * en Utah: en un rótulo, en un recibo o en un anuncio, aquí siempre es
- * "$5,000". Traducir el formato del dinero confunde en vez de ayudar.
+ * "$100". Traducir el formato del dinero confunde en vez de ayudar.
  */
 function money(usd: number): string {
   return new Intl.NumberFormat("en-US", {

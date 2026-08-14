@@ -62,29 +62,17 @@ export const OPORTUNIDADES: readonly Opportunity[] = [
   },
 
   // ── Para quien quiere invertir ──
+  // Una sola opción, a propósito. Entrar desde $100 es lo que la hace
+  // alcanzable para quien acaba de llegar; poner al lado una de $20,000
+  // convertiría la sección en un escaparate donde casi todo queda fuera
+  // de alcance, que es justo lo contrario de lo que hace falta aquí.
   {
-    id: "capital",
+    id: "fondo",
     kind: "inversion",
     accent: "--success",
     icon: "TrendingUp",
     monthlyReturn: { min: 3, max: 4 },
-    fromUsd: 5000,
-  },
-  {
-    id: "inmueble",
-    kind: "inversion",
-    accent: "--teal-deep",
-    icon: "Building2",
-    monthlyReturn: { min: 3, max: 4 },
-    fromUsd: 20000,
-  },
-  {
-    id: "socio",
-    kind: "inversion",
-    accent: "--info",
-    icon: "Handshake",
-    monthlyReturn: { min: 3, max: 4 },
-    fromUsd: 10000,
+    fromUsd: 100,
   },
 ] as const;
 

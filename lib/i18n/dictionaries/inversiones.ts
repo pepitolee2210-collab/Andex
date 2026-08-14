@@ -21,7 +21,7 @@ const es = {
   inversion: {
     eyebrow: "HAZ CRECER TU CAPITAL",
     headline: "Genera hasta 3–4% mensual",
-    body: "Si ya tienes capital ahorrado, estas son las opciones disponibles con nuestros aliados. Hablas directo con ellos y te explican los términos.",
+    body: "No hace falta tener mucho para empezar: desde $100 tu dinero entra al fondo. Hablas directo con nuestros aliados y te explican los términos.",
     returnLabel: "{min}–{max}% mensual",
     from: "Desde {amount}",
   },
@@ -43,17 +43,9 @@ const es = {
       title: "Trabajos de construcción",
       body: "Pintura, drywall, jardinería. Se cobra por trabajo y la herramienta se paga sola en semanas.",
     },
-    capital: {
-      title: "Capital en operación",
-      body: "Tu dinero trabaja dentro de negocios que ya están operando y facturando.",
-    },
-    inmueble: {
-      title: "Bienes raíces",
-      body: "Participación en propiedades que generan renta. Entrada más alta, plazo más largo.",
-    },
-    socio: {
-      title: "Socio de un negocio",
-      body: "Entras como socio de un negocio en marcha, con participación de las ganancias.",
+    fondo: {
+      title: "Fondos de inversión",
+      body: "Tu dinero entra a un fondo que trabaja dentro de negocios ya operando. Se empieza desde $100.",
     },
   },
 
@@ -89,7 +81,7 @@ const en: typeof es = {
   inversion: {
     eyebrow: "GROW YOUR CAPITAL",
     headline: "Earn up to 3–4% monthly",
-    body: "If you already have savings, these are the options available with our partners. You talk to them directly and they explain the terms.",
+    body: "You don't need much to start: from $100 your money goes into the fund. You talk to our partners directly and they explain the terms.",
     returnLabel: "{min}–{max}% monthly",
     from: "From {amount}",
   },
@@ -111,17 +103,9 @@ const en: typeof es = {
       title: "Construction work",
       body: "Painting, drywall, landscaping. Paid by job, and the tools pay for themselves in weeks.",
     },
-    capital: {
-      title: "Working capital",
-      body: "Your money works inside businesses that are already operating and invoicing.",
-    },
-    inmueble: {
-      title: "Real estate",
-      body: "A stake in rental properties. Higher entry, longer horizon.",
-    },
-    socio: {
-      title: "Business partner",
-      body: "You come in as a partner in a running business, with a share of the profits.",
+    fondo: {
+      title: "Investment funds",
+      body: "Your money goes into a fund that works inside businesses already operating. Start from $100.",
     },
   },
 
