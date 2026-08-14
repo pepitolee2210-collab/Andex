@@ -49,7 +49,6 @@ import {
 import type { OsDict } from "@/lib/i18n/dictionaries/os";
 import { cn } from "@/lib/utils";
 import { AppIcon } from "./app-icon";
-import { Dock } from "./dock";
 import { StatusBar } from "./status-bar";
 import { OsWidget, type WidgetContent } from "./widget";
 
@@ -214,7 +213,7 @@ export function HomeScreen({ nombre, lang, copy, datos, onSoon }: HomeScreenProp
   return (
     /* pb-[168px]: el dock mide 152 y la fila puede desplazarse. Sin este
        hueco, la última fila de iconos queda debajo y no se puede tocar. */
-    <div className="shell-os flex min-h-dvh flex-col pb-[168px]">
+    <div className="flex min-h-dvh flex-col">
       <StatusBar lang={lang} />
 
       {/* ── Cabecera ── */}
@@ -342,28 +341,6 @@ export function HomeScreen({ nombre, lang, copy, datos, onSoon }: HomeScreenProp
         </div>
       ) : null}
 
-      {/* ── El dock ──
-          Lleva TODAS las apps del catálogo, no las de la página: es el
-          atajo permanente. Por eso se desplaza — siete no caben en 390px, y
-          en el prototipo tampoco caben: se ve la séptima cortada a
-          propósito, que es la señal de que hay más. */}
-      <Dock
-        /* CUATRO, no las ocho.
-           Pasarle el catálogo entero repetía la rejilla completa un palmo
-           más abajo: Bóveda, Escáner y Asistente salían TRES veces en la
-           misma pantalla —widget, rejilla y dock— y eso no se lee como un
-           atajo, se lee como un fallo.
-           El prototipo tampoco enseña más: su dock es un scroller, pero lo
-           que cabe en 390px son cuatro. El dock es el atajo permanente a lo
-           que más se usa; la rejilla es el catálogo. Si el dock lo repite
-           todo, deja de ser un atajo. */
-        apps={DOCK}
-        labels={copy.apps}
-        iconos={ICONOS}
-        activa={null}
-        sitio={copy.dockHome}
-        onSoon={onSoon}
-      />
-    </div>
+      </div>
   );
 }

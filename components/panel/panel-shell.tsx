@@ -50,6 +50,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ModuleIcon } from "@/components/module-icon";
 import { LocationChip } from "./location-chip";
 import { usePanel } from "./panel-context";
+import { ShellDock } from "./shell-dock";
 import { formatDate } from "./panel-utils";
 
 const SIDEBAR_KEY = "andex_panel_sidebar_collapsed";
@@ -370,19 +371,32 @@ export function PanelShell({ children }: { children: ReactNode }) {
 
   const blocked = access === "blocked" && pathname !== ROUTES.perfil;
 
-  /* ── El inicio no lleva cromo ──
-     La pantalla del sistema trae su PROPIA barra de estado arriba y su
-     PROPIO dock abajo. Si además se le pone la topbar y la tab bar del
-     panel, quedan dos navegaciones simultáneas peleándose por el mismo
-     borde de la pantalla y dos sitios distintos para ir a Comunidad.
+  /* ══ UNA SOLA NAVEGACIÓN, EN TODAS LAS PANTALLAS ══
+     Antes esto se aplicaba SÓLO al inicio, y era un error que se veía al
+     primer toque: se entraba en la Bóveda desde el dock y aparecía la barra
+     superior y la de pestañas del panel viejo. Dos menús distintos, dos
+     sitios para ir a Comunidad, y la sensación de haber cambiado de
+     aplicación a mitad de camino.
 
-     Los avisos de suscripción sí se quedan: si la cuenta está vencida hay
-     que decirlo, y el inicio es donde primero se mira. */
-  if (pathname === ROUTES.panel && !blocked) {
+     Ahora el cromo es el mismo en todas: el dock abajo, permanente, y cada
+     pantalla con su propia cabecera. La barra superior, la de pestañas y el
+     lateral del panel dejan de montarse.
+
+     Lo que NO cambia: los avisos de suscripción siguen arriba —si la cuenta
+     está vencida hay que decirlo—, y la cuenta bloqueada mantiene el shell
+     completo, porque ahí lo que toca no es navegar sino resolver el pago. */
+  if (!blocked) {
     return (
-      <div className="shell-os flex min-h-dvh flex-col">
+      <div className="shell-os flex min-h-dvh flex-col pb-[152px]">
+        <a
+          href="#contenido"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:inline-flex focus:min-h-11 focus:items-center focus:rounded-md focus:bg-surface focus:px-4 focus:text-body focus:text-ink focus:shadow-md"
+        >
+          {dict.common.nav.skipToContent}
+        </a>
         <TopNotices />
-        <main id="contenido">{children}</main>
+        <main id="contenido" className="flex-1">{children}</main>
+        <ShellDock pathname={pathname} />
       </div>
     );
   }
