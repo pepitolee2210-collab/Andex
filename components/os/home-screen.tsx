@@ -36,7 +36,7 @@ import { UsersIcon } from "@/components/icons/users";
 import { BellIcon } from "@/components/icons/bell";
 import { SettingsIcon } from "@/components/icons/settings";
 import type { AnimatedIconComponent } from "@/components/motion/animated-icon";
-import { OS_APPS, type AppSlug } from "@/lib/os/apps";
+import type { AppSlug } from "@/lib/os/apps";
 import {
   CLAVE_ANTERIOR,
   CLAVE_INICIO,
@@ -83,6 +83,10 @@ const ICONO_ACCION: Partial<Record<AppSlug, ReactNode>> = {
   ia: <Mic aria-hidden="true" className="size-[13px]" />,
   escaner: <Camera aria-hidden="true" className="size-[13px]" />,
 };
+
+/* Las cuatro del dock, en el orden del prototipo. No es el catálogo: es lo
+   que se usa a diario y por eso está siempre a un pulgar de distancia. */
+const DOCK: readonly AppSlug[] = ["boveda", "escaner", "ia", "legal"];
 
 const rellenar = (t: string, v: Record<string, string | number>): string =>
   t.replace(/\{(\w+)\}/g, (_, k) => String(v[k] ?? ""));
@@ -344,7 +348,16 @@ export function HomeScreen({ nombre, lang, copy, datos, onSoon }: HomeScreenProp
           en el prototipo tampoco caben: se ve la séptima cortada a
           propósito, que es la señal de que hay más. */}
       <Dock
-        apps={OS_APPS.map((a) => a.slug)}
+        /* CUATRO, no las ocho.
+           Pasarle el catálogo entero repetía la rejilla completa un palmo
+           más abajo: Bóveda, Escáner y Asistente salían TRES veces en la
+           misma pantalla —widget, rejilla y dock— y eso no se lee como un
+           atajo, se lee como un fallo.
+           El prototipo tampoco enseña más: su dock es un scroller, pero lo
+           que cabe en 390px son cuatro. El dock es el atajo permanente a lo
+           que más se usa; la rejilla es el catálogo. Si el dock lo repite
+           todo, deja de ser un atajo. */
+        apps={DOCK}
         labels={copy.apps}
         iconos={ICONOS}
         activa={null}
