@@ -32,6 +32,18 @@ const es = {
     ajustes: "Ajustes",
   },
 
+  /** Una línea por app: qué es. Se usa en 'Tus aplicaciones'. */
+  appDesc: {
+    boveda: "Tus documentos, cifrados en tu teléfono",
+    escaner: "Convierte una foto en PDF",
+    ia: "Responde tus dudas de trámites",
+    legal: "Abogados de inmigración",
+    ingles: "El inglés de tu trabajo, con audio",
+    comunidad: "Talleres en vivo, en español",
+    avisos: "Lo que necesita tu atención",
+    ajustes: "Tu cuenta y tus datos",
+  },
+
   /** Qué dice cada widget según su tamaño. */
   widgets: {
     boveda: {
@@ -87,6 +99,7 @@ const es = {
     add: "Añadir",
     added: "Añadida a tu inicio",
     empty: "No has quitado ninguna.",
+    back: "Volver al inicio",
   },
 
   /** Nombre del sitio en la píldora del dock. */
@@ -112,6 +125,17 @@ const en: typeof es = {
     comunidad: "Community",
     avisos: "Alerts",
     ajustes: "Settings",
+  },
+
+  appDesc: {
+    boveda: "Your documents, encrypted on your phone",
+    escaner: "Turn a photo into a PDF",
+    ia: "Answers your paperwork questions",
+    legal: "Immigration attorneys",
+    ingles: "The English of your job, with audio",
+    comunidad: "Live workshops, in Spanish",
+    avisos: "What needs your attention",
+    ajustes: "Your account and your data",
   },
 
   widgets: {
@@ -168,6 +192,7 @@ const en: typeof es = {
     add: "Add",
     added: "Added to your home",
     empty: "You haven't removed any.",
+    back: "Back to home",
   },
 
   dockHome: "Home",

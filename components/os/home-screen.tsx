@@ -21,10 +21,11 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import type { ReactNode } from "react";
 import {
   Bell, Camera, Check, Gavel, GraduationCap, Mic, Pencil, ScanLine,
-  Settings, ShieldCheck, Sparkles, Users,
+  Plus, Settings, ShieldCheck, Sparkles, Users,
 } from "lucide-react";
 import { ShieldCheckIcon } from "@/components/icons/shield-check";
 import { ScanTextIcon } from "@/components/icons/scan-text";
@@ -320,6 +321,21 @@ export function HomeScreen({ nombre, lang, copy, datos, onSoon }: HomeScreenProp
             </button>
           ))}
         </nav>
+      ) : null}
+
+      {/* En edición aparece la salida a 'Tus aplicaciones': es donde se
+          recupera lo que se quitó. Sin este enlace, quitar una app era una
+          decisión sin vuelta atrás. */}
+      {editando ? (
+        <div className="mt-6 px-5">
+          <Link
+            href="/inicio/aplicaciones"
+            className="k-press k-glass flex min-h-12 items-center justify-center gap-2 rounded-full text-[13px] font-bold"
+          >
+            <Plus aria-hidden="true" className="size-4" strokeWidth={3} />
+            {copy.editing.addApp}
+          </Link>
+        </div>
       ) : null}
 
       {/* ── El dock ──
