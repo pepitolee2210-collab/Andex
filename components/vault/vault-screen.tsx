@@ -61,7 +61,8 @@ import {
   type VaultFolderId,
 } from "@/lib/vault/types";
 import { usePanel } from "@/components/panel/panel-context";
-import { ModuleIcon } from "@/components/module-icon";
+import { ROUTES } from "@/lib/config";
+import { OsHeader } from "@/components/os/primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -252,19 +253,31 @@ export function VaultScreen({
 
   return (
     <article className="mx-auto w-full max-w-4xl">
-      {/* ── Encabezado del módulo ── */}
-      <header className="flex items-start gap-3 sm:gap-4">
-        <span
-          aria-hidden="true"
-          className="flex size-11 shrink-0 items-center justify-center rounded-md bg-teal-soft text-teal-deep sm:size-12"
-        >
-          <ModuleIcon slug="boveda" size={24} />
-        </span>
-        <div className="min-w-0">
-          <h1 className="font-heading text-h2 text-ink sm:text-h1">{copy.title}</h1>
-          <p className="mt-1 text-body text-muted sm:text-body-lg">{copy.subtitle}</p>
-        </div>
-      </header>
+      {/* ── Cabecera ──
+          La del prototipo: atrás, título de 20/800, y el CONTEO como
+          subtítulo. El conteo dice más que el eslogan — la persona ya sabe
+          para qué sirve su bóveda; lo que no sabe es cuánto tiene dentro.
+          La lupa lleva al buscador que ya existía; no se duplica nada. */}
+      <OsHeader
+        title={copy.title}
+        subtitle={
+          entries.length > 0
+            ? (entries.length === 1 ? copy.list.documentCountOne : copy.list.documentCount).replace("{n}", String(entries.length))
+            : copy.subtitle
+        }
+        backHref={ROUTES.panel}
+        backLabel={copy.back}
+        action={{
+          label: copy.search.label,
+          icon: <Search aria-hidden="true" className="size-[18px]" />,
+          onClick: () => {
+            const campo = document.getElementById("boveda-buscar");
+            campo?.scrollIntoView({ block: "center", behavior: "smooth" });
+            (campo as HTMLInputElement | null)?.focus();
+          },
+        }}
+        className="px-0"
+      />
 
       {/* ── La acción, siempre a mano ──
           Antes el botón de escanear vivía dentro del estado vacío, así que
@@ -387,6 +400,7 @@ export function VaultScreen({
                   className="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-muted"
                 />
                 <input
+                  id="boveda-buscar"
                   type="search"
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
@@ -432,24 +446,29 @@ export function VaultScreen({
                       type="button"
                       aria-pressed={active}
                       onClick={() => setFilter(option)}
-                      className={cn(
-                        "inline-flex min-h-11 items-center gap-1.5 rounded-full border px-4 text-body transition-colors",
-                        active
-                          ? "border-teal-deep bg-teal-deep font-medium text-white"
-                          : "border-line bg-surface text-muted hover:border-muted hover:text-ink",
-                      )}
+                      /* Las píldoras del prototipo: se ven de 31px de alto,
+                         activa en blanco al 100% y el resto al 54%. El área
+                         pulsable sigue siendo de 44.
+                         El conteo se queda: es nuestro y dice algo que el
+                         original no dice — cuántos caerían en ese filtro. */
+                      className="k-press flex h-11 shrink-0 items-center"
                     >
-                      {copy.search.filters[option]}
-                      {option !== "all" ? (
-                        <span
-                          className={cn(
-                            "text-caption font-bold tabular-nums",
-                            active ? "text-white/80" : "text-muted",
-                          )}
-                        >
-                          {count}
-                        </span>
-                      ) : null}
+                      <span
+                        className={cn(
+                          "flex h-[31px] items-center gap-1.5 rounded-full px-3.5 text-[11.5px] transition-colors",
+                          active ? "font-bold" : "font-medium",
+                        )}
+                        style={{
+                          background: active ? "var(--os-chip)" : "transparent",
+                          color: active ? "var(--os-ink)" : "var(--os-muted)",
+                          backdropFilter: active ? "blur(8px)" : undefined,
+                        }}
+                      >
+                        {copy.search.filters[option]}
+                        {option !== "all" ? (
+                          <span className="tabular-nums opacity-70">{count}</span>
+                        ) : null}
+                      </span>
                     </button>
                   );
                 })}

@@ -16,6 +16,7 @@
 
 const es = {
   title: "Bóveda Digital",
+  back: "Volver al inicio",
   subtitle: "Tus documentos ordenados y tus fechas límite bajo control.",
 
   privacy: {
@@ -428,6 +429,7 @@ export type BovedaDict = typeof es;
 
 const en = {
   title: "Digital Vault",
+  back: "Back to home",
   subtitle: "Your documents organized and your deadlines under control.",
 
   privacy: {
