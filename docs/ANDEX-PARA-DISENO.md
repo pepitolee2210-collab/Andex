@@ -1,321 +1,328 @@
-# ANDEX — la plataforma completa, para diseño
+# ANDEX — contexto para diseñar
 
-Documento de contexto para diseñar la interfaz. Describe **todo lo que la
-aplicación es y hace**: sus siete módulos, cada pantalla, cada estado y las
-condiciones reales en que se usa.
+Este documento describe **qué es la plataforma, quién la usa y qué contiene
+cada pantalla**. No propone colores, tipografías ni formas: esa es
+exactamente la parte que hay que inventar.
+
+> **Sobre lo que existe hoy:** hay una versión construida y funcionando, con
+> su propio sistema visual. **No lo mires y no te sientas atado a él.** Lo
+> único que sobrevive de él son los requisitos de la sección 6, y sobreviven
+> porque son de accesibilidad y de confianza, no de gusto.
 
 ---
 
 ## 1 · Qué es ANDEX
 
 Una aplicación para **familias hispanas inmigrantes en Estados Unidos**.
-Reúne en un solo sitio lo que hoy está repartido entre trámites, empleo,
-finanzas, formación y comunidad. Piloto en **Utah**, con vocación nacional.
+Reúne en un solo sitio lo que hoy está repartido entre trámites migratorios,
+empleo, finanzas, formación y comunidad. Piloto en **Utah**.
 
-Suscripción: **$14 al mes** o **$140 al año** ($11.60/mes equivalente).
+Suscripción de **$14 al mes** o **$140 al año**.
 
-**Bilingüe español / inglés.** El español es el idioma por defecto y el
-inglés se activa por cookie. Todo texto visible existe en los dos idiomas.
-
----
-
-## 2 · Quién lo usa, y en qué condiciones
-
-Esto manda sobre cualquier decisión visual.
-
-**El dispositivo.** Un teléfono Android de gama media o baja, sujeto con una
-mano. Rara vez un escritorio. Pantallas de 360–414px de ancho.
-
-**El lugar.** De pie, en el coche, en una obra, en la cocina de un
-restaurante, en una sala de espera. A veces bajo sol directo. Con datos
-móviles limitados.
-
-**El momento.** Nadie abre ANDEX a explorar. Se abre porque **algo tiene
-fecha**: un permiso que vence, un formulario que hay que mandar, una cita
-consular. Hay prisa y hay ansiedad.
-
-**La historia.** Buena parte de este público **ya fue estafado** — por
-«notarios», gestores y consultores que cobraron y desaparecieron. Esto tiene
-dos consecuencias de diseño concretas:
-
-- La palabra **«notario» está prohibida** en todo el texto en español. En
-  EE. UU. un *notary public* no es abogado, y usar el término en español
-  está restringido por las leyes estatales de consultoría migratoria.
-- **Lo que parece «startup emocionante» se lee como «otro que me quiere
-  vender algo».** Degradados llamativos, promesas grandes y efectos brillantes
-  restan confianza en vez de sumarla.
-
-**El nivel de lectura.** Escolaridad variable, a menudo educación media.
-Frases cortas, palabras comunes, nada de jerga legal sin explicar.
+Bilingüe **español / inglés**, con el español por defecto.
 
 ---
 
-## 3 · Los siete módulos
+## 2 · La persona, y el momento en que abre la aplicación
 
-El producto se organiza en siete módulos con **orden fijo**. Ese orden nunca
-se reordena por popularidad ni por recomendación: es una regla del producto,
-para que nadie pierda de vista un módulo.
+Esta sección es el combustible del diseño. Todo lo demás es inventario.
 
-### Módulo 1 · Bóveda Digital y Alertas
-**El corazón del producto.**
+**Quién.** María llegó a Utah hace ocho meses. Trabaja limpiando casas.
+Tiene dos hijos. Su inglés alcanza para lo básico. Su teléfono es un Android
+de gama media con la pantalla rayada y poco espacio libre.
 
-Guarda documentos y vigila sus fechas límite.
+**Cómo lo sostiene.** Con una mano, de pie. En el coche antes de entrar a
+trabajar, en la cocina de un restaurante, en una sala de espera. A veces con
+sol directo dándole a la pantalla. Con datos móviles contados.
 
-- **Escáner de documentos**: la cámara detecta las cuatro esquinas del papel,
+**Por qué lo abre.** Nunca a explorar. Lo abre porque **algo tiene fecha**:
+su permiso de trabajo vence en 40 días y si se vence pierde el empleo. Hay
+prisa y hay miedo.
+
+**Lo que ya le pasó.** Le cobraron $800 por un trámite que era gratis. El
+«gestor» dejó de contestar el teléfono. Conoce a tres personas más a las que
+les pasó lo mismo.
+
+Esto último tiene consecuencias directas y concretas:
+
+- **Lo que parece «startup emocionante» le resta confianza.** Degradados
+  vistosos, promesas grandes, efectos brillantes, todo eso lo ha visto antes
+  en quien la estafó. Un producto que parece serio y un poco aburrido le
+  genera más confianza que uno que parece innovador.
+- **No cree las promesas absolutas.** «Seguridad de nivel bancario» es
+  exactamente la frase que le dijeron. Prometer de menos y cumplir vale más.
+- **La palabra «notario» está prohibida** en todo el texto en español. En
+  EE. UU. un *notary public* no es abogado, y usarlo en español está
+  restringido por ley estatal.
+
+**Lo que necesita sentir al abrirlo:** *«esto no me va a fallar, y no me
+está vendiendo nada»*.
+
+---
+
+## 3 · Todo lo que la plataforma contiene
+
+Siete módulos de **orden fijo** — nunca se reordenan por popularidad ni por
+recomendación, para que nadie pierda de vista uno.
+
+### 1 · Bóveda Digital y Alertas — *el corazón del producto*
+- **Escáner de documentos**: la cámara detecta las esquinas del papel,
   endereza la perspectiva, blanquea el fondo y genera un PDF.
-- **Cifrado en el dispositivo**: los archivos **nunca salen del teléfono**.
-  Ni ANDEX puede verlos.
-- **Carpetas**: Identidad · Migración · Conducir · Impuestos · Vivienda.
-- **Vencimientos**: cada documento lleva su fecha; la bóveda ordena por
-  urgencia y avisa **90, 60, 30 y 7 días antes**.
-- **Buscador** que atraviesa carpetas y tolera acentos.
-- **Consulta de caso oficial**: un modal guía en tres pasos para consultar el
-  estatus en USCIS o las fechas de corte en EOIR, con enlace al portal
-  oficial. ANDEX no consulta por el usuario: le enseña dónde y cómo.
+- **Cifrado en el propio teléfono.** Los archivos nunca salen del
+  dispositivo; ni la empresa puede verlos.
+- Carpetas: Identidad · Migración · Conducir · Impuestos · Vivienda.
+- **Vencimientos**: cada documento lleva su fecha; avisa 90, 60, 30 y 7 días
+  antes.
+- Buscador que atraviesa carpetas y tolera acentos.
+- **Consulta de caso oficial**: guía en tres pasos para mirar el estatus en
+  USCIS o las fechas de corte en EOIR, con enlace al portal oficial.
 
-### Módulo 2 · Guía Migratoria y Consular
-Acompañamiento en visas (turismo B1/B2, estudiante F-1/M-1), pasaportes y
-citas consulares.
+### 2 · Guía Migratoria y Consular
+- Paso a paso para visas de turismo y estudiante, pasaportes y citas
+  consulares.
+- Enlace directo al portal oficial correspondiente.
+- Opción de que un especialista llene el formulario y agende la cita.
 
-- Paso a paso ilustrado dentro de ANDEX.
-- Enlace directo al portal oficial (`ceac.state.gov`, sistema de citas del
-  consulado correspondiente).
-- **Servicio directo**: opción de que un especialista llene el formulario y
-  agende la cita ($150–$250).
+### 3 · Finanzas y Patrimonio
+- Construcción de historial crediticio y bancarización.
+- **Simulador** con deslizadores de monto ($500–$50,000) y plazo (6–24
+  meses).
+- Guía para abrir cuentas de alto rendimiento y fondos de mercado monetario.
 
-### Módulo 3 · Finanzas y Patrimonio
-Construcción de historial crediticio, bancarización y fondos de inversión.
+### 4 · Desarrollo Empresarial
+- Pasos para registrar una empresa en el estado.
+- Paquete de lanzamiento: LLC, EIN, acuerdo de socios y marca.
 
-- **Simulador**: deslizador de monto ($500–$50,000) y plazo (6–24 meses).
-- Guía y enlace para abrir cuentas de alto rendimiento y fondos de mercado
-  monetario asociados.
+### 5 · Comunidad y Vida Local
+- **Talleres en vivo** por videollamada, de martes a viernes, convertidos
+  automáticamente **a la hora de quien mira** — con aviso cuando la sesión
+  cae otro día en su país.
+- Feed de publicaciones y eventos.
+- **Directorio local geolocalizado**, en mapa o cuadrícula.
 
-### Módulo 4 · Desarrollo Empresarial
-Crear una empresa y hacerla crecer.
-
-- Pasos para registrar el nombre comercial en la división de corporaciones
-  del estado (ej. `corporations.utah.gov`).
-- **Servicio directo**: «Combo Lanzamiento Empresarial» — LLC + EIN +
-  Operating Agreement + marca (logo, web y campañas).
-
-### Módulo 5 · Comunidad y Vida Local
-Red, directorio y programas familiares.
-
-- **Talleres en vivo** por Zoom, de martes a viernes, 6–8pm hora de Utah,
-  convertidos automáticamente **a la hora de quien mira** — incluyendo el
-  aviso cuando la sesión cae otro día en su país.
-- Feed de publicaciones y anuncios de eventos.
-- **Directorio local geolocalizado** en mapa o cuadrícula.
-
-### Módulo 6 · Academia
-Formación y certificación.
-
-Dos partes hoy:
-
-- **Inglés para el trabajo**: nueve temarios organizados por oficio
-  (limpieza, restaurante, construcción, niñera, jardinería, bodega) y por
-  momento (la entrevista, el primer día, cuando algo sale mal). Cada frase
+### 6 · Academia
+- **Inglés para el trabajo**: nueve temarios por oficio (limpieza,
+  restaurante, construcción, niñera, jardinería, bodega) organizados por
+  momento — la entrevista, el primer día, cuando algo sale mal. Cada frase
   trae su **pronunciación escrita en español** y un botón para escucharla.
-  Los datos sobre salario y seguridad llevan **fuente citada** (Department
-  of Labor, OSHA) con enlace. Manual descargable en PDF por temario.
-- **Certificaciones técnicas**: preparador de impuestos (PTIN del IRS),
-  licencias de seguros, gestor inmobiliario, asesoría financiera básica —
-  con simulacros de examen y enlaces al registro oficial.
+  Los datos sobre salarios y seguridad llevan **fuente citada** con enlace.
+  Manual descargable en PDF.
+- **Certificaciones técnicas**: preparador de impuestos, licencias de
+  seguros, gestor inmobiliario, con simulacros de examen.
 
-### Módulo 7 · Conexión Laboral
-Bolsa de trabajo comunitaria.
-
+### 7 · Conexión Laboral
 - Tarjetas de empleo con sueldo, ubicación y requisitos.
-- **Coincidencia automática**: aviso al teléfono cuando una empresa
-  verificada publica un empleo que encaja con el perfil.
-- El perfil laboral **no registra estatus migratorio ni permiso de trabajo**,
-  por diseño.
+- Aviso al teléfono cuando aparece un empleo que encaja con el perfil.
+- El perfil **no registra estatus migratorio ni permiso de trabajo**, por
+  diseño.
 
 ### Sección adicional · Inversiones
-Fuera de los siete módulos.
-
 - **Negocios para arrancar**: limpieza (desde $300), comida preparada
   ($500), construcción ($800), transporte ($1,500).
 - **Fondos de inversión**: hasta 3–4% mensual, desde $100.
-- Cada oportunidad cierra en **WhatsApp**, con el mensaje ya redactado.
+- Cada oportunidad termina en una conversación de WhatsApp.
 
 ---
 
-## 4 · Todas las pantallas
+## 4 · Las pantallas, con su contenido real
 
-### Antes de entrar
+Los textos de abajo son **los de verdad**, no relleno. Sirven para
+dimensionar: cuánto texto cabe, dónde rompen las líneas, qué es largo.
 
-| Pantalla | Qué pasa ahí |
-|---|---|
-| **Portada** | El argumento del producto y **el escáner gratis, sin registro ni tarjeta**. Es el anzuelo: se prueba el valor antes de dar un dato |
-| **Registro** | Tres campos: nombre, correo, contraseña. Y la aceptación de términos |
-| **Acceso** | Entrar con correo y contraseña |
-| **Recuperar contraseña** | Dos pantallas: pedir el enlace, y poner la nueva |
+### Portada — antes de registrarse
+Explica el producto y ofrece **el escáner gratis, sin registro ni tarjeta**.
+Es el anzuelo: se prueba el valor antes de dar un dato.
 
-### La entrevista
+> **Tu progreso cruza fronteras**
+> Un solo lugar para tus trámites, tu empleo y el futuro de tu familia.
+> *Cinco preguntas. Dos minutos. No pedimos tarjeta.*
 
-**Cinco pasos, dos minutos, sin pedir tarjeta.** Arma el plan de la persona.
+### Registro
+Tres campos: nombre, correo, contraseña. Y la aceptación de términos.
 
-1. Lo básico — nombre, teléfono
-2. **¿Dónde estás ahora?** — bifurca todo el producto en dos: ya en EE. UU.
-   (y en qué estado) o todavía en el país de origen
-3. ¿En qué momento de tu camino estás? — recién llegado, asentado, etc.
+### Entrevista — cinco pasos, dos minutos
+Arma el plan de la persona. El paso 2 **bifurca todo el producto**: quien ya
+está en EE. UU. ve un producto distinto de quien todavía está en su país.
+
+1. Lo básico — nombre y teléfono
+2. **¿Dónde estás ahora?** → ya en EE. UU. (¿en qué estado?) / todavía en mi país
+3. ¿En qué momento de tu camino estás?
 4. ¿Qué te interesa resolver?
 5. ¿Qué quieres resolver primero?
 
-### El cobro
+### Membresía y pago
+Dos planes con lo que incluye cada uno. El pago pasa siempre por una
+pasarela externa: **la aplicación nunca toca un número de tarjeta**.
 
-| Pantalla | Qué pasa ahí |
-|---|---|
-| **Membresía** | Los dos planes, lo que incluye cada uno, y el sello de fundador del plan anual |
-| **Pago** | Los datos de la tarjeta, siempre a través de Stripe. ANDEX **nunca** toca un número de tarjeta |
-| **Pago correcto** | Confirmación y entrada al panel |
+### Panel — el inicio
+Lo primero al entrar.
 
-### Dentro
+> Hola, María López
+> **Tu prioridad en Utah este mes**
+> Tu objetivo de estos 30 días: *resolver tus trámites migratorios*
 
-| Pantalla | Qué pasa ahí |
-|---|---|
-| **Panel** | El inicio. Saludo, el objetivo del mes, la recomendación de qué hacer ahora, y la cuadrícula de los siete módulos |
-| **Bóveda** | Escanear, buscar, filtrar, ver vencimientos, abrir y corregir documentos |
-| **Comunidad** | Los talleres en vivo con su horario y su puerta de entrada |
-| **Academia** | Los nueve temarios de inglés y las certificaciones |
-| **Módulo** (genérico) | La pantalla de cualquiera de los siete |
-| **Inversiones** | Negocios y fondos, con salida a WhatsApp |
-| **Perfil** | Cuenta, preferencias, idioma, tema, suscripción y **borrar mis datos** |
+Debajo: la recomendación de qué hacer ahora, y **la cuadrícula de los siete
+módulos**.
 
-### Administración
+### Bóveda
+Vacía la primera vez:
 
-| Pantalla | Qué pasa ahí |
-|---|---|
-| **Panel de admin** | Uso interno del equipo |
-| **Talleres** | Generar las próximas sesiones y pegar el enlace de Zoom de cada una |
+> **Tu bóveda está vacía**
+> Escanea tu primer documento con la cámara. Toma menos de un minuto.
+
+Y el argumento que hace que alguien se atreva a fotografiar su pasaporte:
+
+> **Tus documentos no salen de aquí**
+> El escaneo ocurre dentro de tu teléfono y los archivos se guardan cifrados
+> en él. No los subimos a ningún servidor: ni nosotros podemos verlos.
+>
+> Como están en tu teléfono, protégelo con tu clave o tu huella: quien pueda
+> desbloquearlo puede abrir la app.
+
+Con documentos dentro: buscador, filtros (*Todos · Vence pronto · Sin
+fecha*), y las tarjetas ordenadas por urgencia.
+
+> Permiso de trabajo (EAD) — **Vence en 40 días**
+
+### Comunidad
+> Horarios en tu hora (America/New_York)
+> En Utah son las 11:09
+> **Ojo: para ti es el día siguiente**
+>
+> El enlace se publica poco antes de empezar
+
+### Academia
+> **Inglés para el trabajo**
+> No es un curso de inglés. Son las frases exactas de tu entrevista y de tu
+> primer día.
+
+Cada frase, en tres líneas:
+
+> **Can I start on Monday?**
+> *Se dice: can ai start on MON-dei*
+> ¿Puedo empezar el lunes?
+
+### Inversiones
+Tarjetas con el rendimiento y el capital de entrada, cada una con su salida
+a WhatsApp.
+
+### Perfil
+Cuenta, idioma, tema, suscripción, y **borrar mis datos**.
+
+### Administración *(uso interno del equipo)*
+Generar las sesiones de los talleres y pegar el enlace de cada una.
 
 ---
 
-## 5 · Los estados de cada pantalla
+## 5 · Los estados
 
-**Esto es lo que suele faltar en un diseño y es donde se rompen las cosas.**
-Cada pantalla necesita las cinco versiones, no sólo la feliz.
+**Esto es lo que suele faltar en un diseño y es donde todo se rompe.** Cada
+pantalla necesita las cinco versiones, no sólo la feliz.
 
-| Estado | Ejemplo real en ANDEX |
+| Estado | Ejemplo real |
 |---|---|
-| **Vacío** | «Tu bóveda está vacía» — es la primera pantalla que ve todo el mundo, y donde se decide si confía |
-| **Cargando** | Leer los documentos cifrados del teléfono tarda; el escáner tarda segundos procesando |
-| **Error** | La cámara sin permiso · el escáner que no encuentra el documento · el pago rechazado · sin conexión |
-| **Con datos** | Doce documentos, tres carpetas, uno venciendo en 40 días |
-| **Extremo** | Nombres largos que no caben · cien documentos · un documento sin fecha · el almacenamiento del teléfono lleno |
+| **Vacío** | La bóveda sin documentos — es la primera pantalla que ve todo el mundo |
+| **Cargando** | Descifrar los documentos tarda; el escáner tarda segundos procesando la foto |
+| **Error** | Cámara sin permiso · el escáner no encuentra el documento · pago rechazado · sin conexión |
+| **Con datos** | Doce documentos en cinco carpetas, uno venciendo en 40 días |
+| **Extremo** | Un nombre de documento larguísimo · cien documentos · el teléfono sin espacio |
 
-Estados propios del producto que no existen en otras apps:
+Y tres estados propios de este producto, que no existen en otras apps:
 
-- **La puerta del taller**: cerrada · abre en 15 minutos · abierta ahora ·
-  no hay sesión programada. **Nunca se enseña un botón de entrar sin sala
-  abierta.**
-- **La urgencia de un documento**: vence hoy · en 7 días · en 30 · en 90 ·
-  sin fecha puesta. Ese último es importante: significa que **nunca podrá
-  avisar**, y hay que decirlo.
-- **La suscripción**: activa · pago vencido con periodo de gracia ·
-  cancelada. Con el pago vencido el panel queda en sólo lectura; cancelada y
-  vencida, se bloquea todo salvo la cuenta y el perfil.
+**La urgencia de un documento** — cinco niveles: vence hoy · en 7 días · en
+30 · en 90 · **sin fecha puesta**. Ese último importa: significa que el
+sistema *nunca podrá avisar*, y hay que decírselo.
+
+**La puerta de un taller** — cuatro: no hay sesión programada · próxima
+sesión el jueves · abre en 15 minutos · **abierta ahora**. Regla dura:
+nunca se enseña un botón de entrar si la sala no está abierta.
+
+**La suscripción** — tres: activa · pago vencido en periodo de gracia
+(panel en sólo lectura) · cancelada y vencida (todo bloqueado salvo la
+cuenta).
 
 ---
 
-## 6 · Reglas que el diseño no puede romper
+## 6 · Requisitos que el diseño tiene que cumplir
 
-Vienen del producto, no del gusto.
+No son preferencias. Vienen del público y de la confianza.
 
 **Legibilidad**
-
-- **16px es el mínimo absoluto** para texto de cuerpo. No negociable: el
-  público lo lee bajo el sol y con vista cansada.
-- Contraste **4.5:1 como mínimo** en texto normal, 3:1 en texto grande.
-- Todo lo pulsable mide **44 × 44px** como mínimo.
+- **16px como mínimo absoluto** para texto de cuerpo. Se lee bajo el sol,
+  con vista cansada y a un brazo de distancia.
+- Contraste mínimo **4.5:1** en texto normal y **3:1** en texto grande.
+  *Cualquier* color que lleve texto encima tiene que cumplirlo — si el
+  acento elegido no lo cumple, el acento es de superficie y el texto va
+  sobre otra cosa.
+- Todo lo pulsable, **44 × 44px** como mínimo.
+- Diseñar primero para **360–414px de ancho**. El escritorio viene después.
 
 **Confianza**
-
-- Nada de promesas absolutas de seguridad. El texto dice que los documentos
-  se guardan cifrados **en el teléfono** y también dice el límite: *«protege
-  tu teléfono con tu clave o tu huella; quien pueda desbloquearlo puede abrir
-  la app»*. Prometer de más en seguridad es peor que no prometer.
-- **Disclaimer permanente** donde haya trámites: *«ANDEX no está afiliado a
-  ninguna agencia gubernamental. Estos trámites son gratuitos en los portales
-  oficiales.»*
+- Nada de promesas absolutas de seguridad; se dice el límite junto con la
+  promesa.
+- **Aviso permanente** donde haya trámites: *«ANDEX no está afiliado a
+  ninguna agencia gubernamental. Estos trámites son gratuitos en los
+  portales oficiales.»*
 - Cada recurso externo muestra **cuándo se verificó por última vez**.
-- Ningún dato del usuario viaja en una URL.
 
 **Idioma**
-
-- Todo texto visible existe en español e inglés. El diseño tiene que
-  aguantar que **el español ocupe hasta un 25% más** que el inglés: los
-  botones, las etiquetas y los titulares rompen líneas donde en inglés no lo
-  harían. Un botón que en inglés dice «Scan» en español dice «Escanear un
-  documento».
+- Todo texto existe en español e inglés, y **el español ocupa hasta un 25%
+  más**. Donde el inglés dice «Scan», el español dice «Escanear un
+  documento». Los botones, las etiquetas y los titulares tienen que aguantar
+  ese crecimiento sin romperse.
 
 ---
 
-## 7 · El sistema visual actual
+## 7 · Los problemas de diseño difíciles
 
-Existe y funciona. Sirve como punto de partida, no como límite.
+Si el diseño resuelve estos cinco, está resuelto. Son el encargo real.
 
-**Color**
+**1 · Siete módulos que no pueden abrumar.**
+Los siete tienen que estar visibles y en orden fijo, pero **sólo uno importa
+ahora mismo**. Cómo se enseña todo el mapa sin que la persona se pierda es
+el problema de composición más difícil del producto.
 
-```
-Navy      #102A43   texto y estructura
-Crema     #F7F5EF   fondo de página
-Teal      #12B8A6   superficie: barras, iconos, acentos
-Teal deep #0F766E   botones con texto blanco
-Ámbar     #F4B942   fondo de insignia
-```
+**2 · Urgencia sin alarma.**
+Un documento que vence en 7 días tiene que distinguirse a simple vista de
+uno que vence en 90. Pero la bóveda no puede parecer una alarma de incendios
+cada vez que se abre: la persona ya está asustada.
 
-**Regla de oro que hay que respetar:** el teal `#12B8A6` y el ámbar
-`#F4B942` son colores de **superficie, nunca de texto**. Blanco sobre teal
-da 2.49:1 y sobre ámbar 1.77:1 — los dos reprueban. Si un elemento lleva
-texto encima, el fondo es navy, blanco, crema, `teal-deep` o un tono suave.
+**3 · Un vacío que invite.**
+La primera pantalla que ve todo el mundo es una bóveda sin nada. Ahí se
+decide si esta persona se atreve a **fotografiar su pasaporte y confiárselo
+a una aplicación**. Es la pantalla más importante del producto.
 
-**Escala tipográfica**
+**4 · Confianza sin teatro de seguridad.**
+Hay que comunicar que los documentos están cifrados en el teléfono, y a la
+vez decir el límite, sin que parezca letra pequeña ni escudo de marketing.
 
-```
-40/48px  hero          32px  h1        24px  h2
-20px     h3            18px  destacado 16px  cuerpo (mínimo)
-14px     etiqueta      13px  metadato
-```
-
-**Radios**: 8px campos · 12px botones · 16px tarjetas · 24px modales
-
-**Tipografía actual**: Inter (cuerpo) + Montserrat (titulares).
-**Este es el punto más débil del sistema** y donde más se gana cambiando:
-son las dos familias más usadas del mundo, y además son la misma
-clasificación — dos palos secos. Conviene sustituirlas por dos familias de
-clasificación distinta.
+**5 · Que se lea en la calle.**
+Con una mano, a un brazo, con el sol de lado, con prisa. Todo lo demás está
+subordinado a esto.
 
 ---
 
-## 8 · Qué está construido y qué es especificación
+## 8 · Qué NO se pide
 
-Para que el diseño sepa qué es real hoy.
-
-**Funciona hoy**: portada con escáner gratis · registro · entrevista de 5
-pasos · membresía y pago (simulado) · panel · Bóveda completa con escáner,
-búsqueda y vencimientos · Comunidad con talleres y zonas horarias · Academia
-con los nueve temarios de inglés y sus manuales en PDF · Inversiones · perfil
-· panel de administración de talleres.
-
-**Especificado, aún no construido**: Migración · Finanzas · Negocio · Empleo
-· las certificaciones técnicas de Academia · el directorio local · el feed de
-comunidad · **los avisos de 90/60/30/7 días** · términos, privacidad y
-contacto · el cobro real con Stripe.
+- **No hace falta parecerse a nada que exista hoy en el producto.** El
+  sistema visual actual se va a sustituir; considéralo inexistente.
+- No hace falta que se vea «moderno» ni «innovador». Se pide que se vea
+  **fiable y permanente**: algo que seguirá existiendo dentro de cinco años.
+- No hace falta llenar la pantalla. El espacio vacío es aceptable si lo que
+  queda se lee de un vistazo.
 
 ---
 
-## 9 · Qué se le pide al diseño
+## 9 · Qué se espera de vuelta
 
-1. Que **se lea a un brazo de distancia, con una mano, bajo el sol.**
-2. Que **transmita permanencia, no novedad.** Que parezca algo que seguirá
-   existiendo dentro de cinco años y que no está intentando vender nada.
-3. Que **la urgencia sea visible sin gritar.** Un documento que vence en 7
-   días tiene que distinguirse de uno que vence en 90, sin convertir la
-   pantalla en una alarma.
-4. Que **el vacío sea acogedor.** La primera pantalla que ve todo el mundo
-   es una bóveda vacía; ahí se decide si esta persona se atreve a fotografiar
-   su pasaporte.
-5. Que **siete módulos no abrumen.** Es el reto de composición más difícil
-   del producto: mucha superficie, y una sola cosa que importa ahora mismo.
+**Dos o tres direcciones visuales distintas**, no una. Cada una con:
+
+- Un nombre y una frase que diga a qué compromete y **qué sacrifica**.
+- La misma pantalla resuelta en las tres, para poder compararlas de verdad.
+  La mejor para comparar es **la Bóveda con documentos**: tiene jerarquía,
+  urgencia, listas y una acción principal.
+- Sus estados: al menos el **vacío** y el de **urgencia alta**.
+- Paleta, tipografías, escala, formas y espaciado, con el porqué de cada
+  elección.
+
+Después, una vez elegida la dirección, el resto de las pantallas.
