@@ -257,3 +257,125 @@ interfaz**:
 que el inglés. Los nombres de módulo son largos —«Bóveda Digital y
 Alertas», «Guía Migratoria y Consular»— y en el kit actual la fila con
 insignia parte el título en tres líneas.
+
+---
+
+## 7 · Encargo de rediseño: los temarios de inglés
+
+Es la pantalla que más se usa después de la Bóveda y la que peor se ve. No
+está mal maquetada: está **sin jerarquía y sin aire**.
+
+### El problema, medido
+
+| | |
+|---|---|
+| Frases en **un solo** temario desplegado | **17** |
+| Alto de ese temario | **3.403px** — cuatro pantallas seguidas |
+| Alto de la página con uno abierto | **6.542px** |
+| Alto por frase | 106–157px, todas prácticamente iguales |
+
+Y lo que se ve al mirarlo de cerca:
+
+1. **Diecisiete frases seguidas sin respiro.** Separadas por un filete de
+   1px, no por espacio. Se leen como una lista de la compra.
+2. **«Se dice:» se repite diecisiete veces.** Es una etiqueta, no
+   contenido: cuesta una palabra en cada fila y no aporta nada después de
+   la primera.
+3. **La pronunciación se parte a mitad de palabra** — *«jáu mach is de péi
+   per áu-‑ar»*. Es la línea que la persona va a usar de verdad, y es la
+   única que se rompe.
+4. **Tres colores de texto por frase** —navy, teal, gris— más un botón
+   circular con borde. Mucho ruido para tres líneas.
+5. **El bloque de fuentes pesa más que las frases.** Fondo teal, borde,
+   filete y aviso legal: es lo más ruidoso de la pantalla siendo lo
+   secundario.
+6. **Todo tiene el mismo peso visual.** Nada dice cuál es la frase, cuál es
+   la pronunciación y cuál la traducción.
+
+### La dirección: elegancia por sustracción
+
+La referencia pedida es la de Apple, y conviene traducirla bien: **lo que
+hace elegante a esa escuela no es añadir refinamiento, es quitar.** El
+remedio para «se ve muy lleno» no son bordes más finos ni sombras más
+suaves — es **menos elementos y más espacio**.
+
+Seis principios, en orden de impacto:
+
+**1 · Revelar por capas, nunca diecisiete frases de golpe.**
+Hoy: temario → 17 frases.
+Debería: temario → **los tres momentos** (la entrevista · el primer día ·
+cuando algo sale mal) → las frases de ese momento. Cinco o seis por
+pantalla, no diecisiete.
+
+**2 · El espacio separa mejor que una línea.**
+Fuera los filetes entre frases. Entre una frase y la siguiente, **28–32px
+de aire**. Dentro de la frase, 6–8px. Esa diferencia —cerca lo que va
+junto, lejos lo que no— es toda la jerarquía que hace falta.
+
+**3 · La tipografía lleva el peso, no las cajas.**
+
+```
+INGLÉS          24–26px · peso 700 · interletraje −0.02em
+                es la frase: tiene que dominar
+
+PRONUNCIACIÓN   18–19px · cursiva · color de acento
+                sin la etiqueta «Se dice:» — la cursiva
+                y el color ya dicen qué es
+                nunca partida: si no cabe, baja entera
+
+ESPAÑOL         15–16px · gris apagado
+                es la comprobación, no el protagonista
+```
+
+Tres tamaños bien separados hacen el trabajo que hoy hacen tres colores.
+
+**4 · Escuchar es la acción, así que tiene que parecerlo.**
+Hoy es un circulito con borde flotando arriba a la derecha. Debería ser el
+gesto principal de la tarjeta: **toda la frase es pulsable**, y el botón
+—grande, sólido, sin borde— confirma lo que ya se intuye. Y con **estado
+real de reproducción**: un anillo que avanza o la onda animándose, no
+disparar y olvidarse.
+
+**5 · Un acento, una vez.**
+Hoy el teal está en la pronunciación, en el botón, en el borde del temario
+abierto y en el bloque de fuentes. Que se quede **sólo en la
+pronunciación** — que es lo que hay que mirar— y desaparezca del resto.
+
+**6 · El bloque de fuentes, en voz baja.**
+Sin fondo y sin caja: un **filete vertical fino** a la izquierda y el texto
+en gris. Que siga estando —es lo que separa un dato de una afirmación
+nuestra— pero por debajo de las frases, no por encima.
+
+### Movimiento
+
+Poco, y que explique algo:
+
+| Cuándo | Qué |
+|---|---|
+| Se abre un temario | Muelle suave, 380–420ms, y las frases entran **escalonadas** 40ms una tras otra — así se entiende que salen de ahí |
+| Se toca una frase | Respuesta inmediata, 120ms: baja un 2% y vuelve |
+| Suena el audio | El anillo del botón avanza con el audio. Al terminar, vuelve solo |
+| Se pasa de un momento a otro | Desplazamiento lateral con continuidad, no un corte |
+
+**Lo que NO se anima:** el texto de las frases al aparecer en pantalla, los
+datos con fuente, y nada al desplazarse. Quien está estudiando no quiere
+que la pantalla se mueva mientras lee.
+
+### Forma
+
+- **Sin borde en el temario abierto.** Hoy lleva un filete teal de 1px con
+  radio 24 que encierra 3.400px de contenido; una caja que no cabe en la
+  pantalla no se lee como caja, se lee como raya suelta.
+- La frase **no necesita tarjeta**. Espacio y tipografía bastan.
+- Si algo lleva superficie, que sea **un tono, no un borde**.
+
+### La prueba de que quedó bien
+
+1. Se abre un temario y **cabe un momento entero en una pantalla**, no
+   diecisiete frases.
+2. Se distingue frase / pronunciación / traducción **sin leerlas**, sólo
+   por su peso.
+3. La pronunciación **nunca se parte**.
+4. La palabra «Se dice» **no aparece ni una vez**.
+5. Sigue leyéndose a un brazo, con sol de lado — cuerpo nunca por debajo de
+   16px.
