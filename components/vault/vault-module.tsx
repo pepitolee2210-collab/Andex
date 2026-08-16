@@ -12,7 +12,7 @@
  * Recorrido: bóveda → escanear → PDF listo → guardar cifrado → volver.
  */
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "@/components/ui/toaster";
 import { track } from "@/lib/analytics/track";
 import type { BovedaDict } from "@/lib/i18n/dictionaries/boveda";
@@ -36,7 +36,30 @@ type Stage =
   | { kind: "saving"; pdf: Blob; pageCount: number };
 
 export function VaultModule({ lang, copy, common }: VaultModuleProps) {
+  /**
+   * `?escanear=1` abre el escáner directo.
+   *
+   * Lo usa la acción «Escanear» del menú flotante, que si no tendría que
+   * llevar a `/modulo/boveda` a secas — el mismo destino que la pestaña de
+   * Bóveda, y entonces el menú estaría repitiendo una puerta que ya existe.
+   *
+   * Es una BANDERA, no un dato: en la URL de este producto no viaja nada
+   * de la persona (historial, portapapeles y registros de proxy), y con
+   * este público eso no es una precaución teórica.
+   */
   const [stage, setStage] = useState<Stage>({ kind: "vault" });
+
+  /* Se lee de `window.location` en un efecto, y NO con `useSearchParams`.
+     Ese hook obliga a un límite de `Suspense` en Next 15: sin él la página
+     falla al renderizarse entera en el servidor, aunque funcione al navegar
+     desde dentro. Daba un fallo intermitente —según se llegara por enlace o
+     por carga completa— que costó encontrar justamente por eso. */
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("escanear") === "1") {
+      track("vault_scan_started", { source: "menu" });
+      setStage({ kind: "scanning" });
+    }
+  }, []);
   /** Cambia al guardar para que la bóveda recargue su lista. */
   const [savedCount, setSavedCount] = useState(0);
 

@@ -3,6 +3,10 @@
    que preceder a todo lo demás; el contenido entra en `@layer components`,
    así que su sitio en la cascada no depende de esta línea. */
 @import "./kit.css";
+/* La barra en cápsula y su menú flotante. Hoja aparte a propósito: es una
+   excepción deliberada al sistema de diseño y conviene que sus bordes se
+   vean en el árbol de archivos. */
+@import "./cristal.css";
 
 /* ═══════════════════════════════════════════════════════
    ANDEX DESIGN SYSTEM — TOKENS
@@ -256,6 +260,65 @@
   /* Lo que se hunde un botón al tocarlo. Es el único acuse de recibo que
      hay antes de que responda la red. */
   --press-scale: .98;
+
+  /* ═══════════════════════════════════════════════════════
+     CRISTAL — la barra flotante y su menú
+
+     Material de Apple, con el color del producto. No es una cápsula negra
+     pegada encima: de día es vidrio esmerilado color crema y de noche es
+     tinta, igual que el resto. iOS nunca pinta una barra negra sobre un
+     fondo claro — el material sigue al fondo, y por eso se ve parte de la
+     app y no un injerto de otra.
+
+     SUELO DE OPACIDAD. Los rellenos no bajan del 86%, y no es estética:
+     este producto se usa de pie y a veces bajo sol directo, donde un fondo
+     translúcido pierde justo el contraste que hace falta. El desenfoque
+     embellece; la opacidad es la que garantiza que se lee.
+     ═══════════════════════════════════════════════════════ */
+
+  --glass-top:    rgba(255, 255, 255, 0.90);
+  --glass-bottom: rgba(247, 245, 239, 0.86);
+  --glass-deep:   rgba(239, 235, 225, 0.92);
+
+  /* Sólido, para cuando no hay desenfoque o se pide más contraste. */
+  --glass-solid:  var(--cream-50);
+
+  --glass-bevel-top:    rgba(255, 255, 255, 0.95);
+  --glass-bevel-side:   rgba(8, 25, 43, 0.09);
+  --glass-bevel-bottom: rgba(8, 25, 43, 0.05);
+  --glass-sheen:        rgba(255, 255, 255, 0.55);
+
+  --pebble-fill:  rgba(8, 25, 43, 0.05);
+  --pebble-hover: rgba(8, 25, 43, 0.09);
+  --pebble-press: rgba(8, 25, 43, 0.14);
+
+  --glass-text:       var(--navy-800);
+  --glass-text-quiet: var(--text-secondary);
+  --glass-grabber:    rgba(8, 25, 43, 0.22);
+
+  --glass-scrim: rgba(8, 25, 43, 0.30);
+
+  --glass-blur:       saturate(180%) blur(30px);
+  --glass-blur-scrim: blur(3px);
+
+  --glass-shadow:
+    0 1px 2px rgba(8, 25, 43, 0.06),
+    0 8px 20px rgba(8, 25, 43, 0.12),
+    0 22px 48px rgba(8, 25, 43, 0.12);
+  --glass-shadow-lift:
+    0 2px 6px rgba(8, 25, 43, 0.08),
+    0 18px 44px rgba(8, 25, 43, 0.16),
+    0 40px 90px rgba(8, 25, 43, 0.14);
+
+  /* Grano de vidrio esmerilado. Ruido generado, no una imagen: pesa unos
+     200 bytes y no hace ninguna petición — con datos contados, importa. */
+  --glass-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='120' height='120' filter='url(%23g)' opacity='0.4'/></svg>");
+  --glass-grain-opacity: 0.16;
+
+  /* Geometría, tal y como se pidió. */
+  --radius-modal:  46px;
+  --radius-pebble: 28px;
+  --bar-height:    68px;
 }
 
 /* ── MODO OSCURO (§2.6) ──
@@ -362,6 +425,26 @@
     --danger:  var(--urgency-now-fg);  --info:    var(--accent-deep);
     --success-soft: var(--urgency-ok-wash); --danger-soft: var(--urgency-now-wash);
     --shadow-sm: none; --shadow-md: none; --shadow-lg: none;
+
+    /* El cristal, de noche: tinta en vez de crema. Mismos nombres. */
+    --glass-top:    rgba(29, 29, 32, 0.90);
+    --glass-bottom: rgba(16, 16, 18, 0.88);
+    --glass-deep:   rgba(11, 11, 13, 0.94);
+    --glass-solid:  var(--ink-800);
+    --glass-bevel-top:    rgba(255, 255, 255, 0.16);
+    --glass-bevel-side:   rgba(255, 255, 255, 0.08);
+    --glass-bevel-bottom: rgba(255, 255, 255, 0.03);
+    --glass-sheen:        rgba(255, 255, 255, 0.10);
+    --pebble-fill:  rgba(255, 255, 255, 0.06);
+    --pebble-hover: rgba(255, 255, 255, 0.11);
+    --pebble-press: rgba(255, 255, 255, 0.18);
+    --glass-text:       var(--cream-text);
+    --glass-text-quiet: #BAB8B2;
+    --glass-grabber:    rgba(244, 242, 236, 0.34);
+    --glass-scrim: rgba(6, 6, 8, 0.52);
+    --glass-shadow:      0 1px 2px rgba(0,0,0,.5), 0 10px 30px rgba(0,0,0,.55);
+    --glass-shadow-lift: 0 2px 8px rgba(0,0,0,.55), 0 24px 60px rgba(0,0,0,.6);
+    --glass-grain-opacity: 0.24;
   }
 }
 
@@ -437,6 +520,26 @@
   --danger:  var(--urgency-now-fg);  --info:    var(--accent-deep);
   --success-soft: var(--urgency-ok-wash); --danger-soft: var(--urgency-now-wash);
   --shadow-sm: none; --shadow-md: none; --shadow-lg: none;
+
+  /* El cristal, de noche: tinta en vez de crema. Mismos nombres. */
+  --glass-top:    rgba(29, 29, 32, 0.90);
+  --glass-bottom: rgba(16, 16, 18, 0.88);
+  --glass-deep:   rgba(11, 11, 13, 0.94);
+  --glass-solid:  var(--ink-800);
+  --glass-bevel-top:    rgba(255, 255, 255, 0.16);
+  --glass-bevel-side:   rgba(255, 255, 255, 0.08);
+  --glass-bevel-bottom: rgba(255, 255, 255, 0.03);
+  --glass-sheen:        rgba(255, 255, 255, 0.10);
+  --pebble-fill:  rgba(255, 255, 255, 0.06);
+  --pebble-hover: rgba(255, 255, 255, 0.11);
+  --pebble-press: rgba(255, 255, 255, 0.18);
+  --glass-text:       var(--cream-text);
+  --glass-text-quiet: #BAB8B2;
+  --glass-grabber:    rgba(244, 242, 236, 0.34);
+  --glass-scrim: rgba(6, 6, 8, 0.52);
+  --glass-shadow:      0 1px 2px rgba(0,0,0,.5), 0 10px 30px rgba(0,0,0,.55);
+  --glass-shadow-lift: 0 2px 8px rgba(0,0,0,.55), 0 24px 60px rgba(0,0,0,.6);
+  --glass-grain-opacity: 0.24;
 }
 
 @theme inline {

@@ -68,6 +68,25 @@ const es = {
     } satisfies Record<ModuleId, string>,
     primaryNavAria: "Navegación principal",
     tabBarAria: "Secciones principales",
+    /**
+     * EL MENÚ FLOTANTE DE CRISTAL.
+     *
+     * La cuadrícula recupera algo que se perdió al retirar la barra
+     * lateral: que los SIETE módulos vuelvan a ser alcanzables desde la
+     * navegación, y no sólo desde la pantalla de Inicio (§4.3).
+     */
+    cristal: {
+      barAria: "Navegación principal",
+      menuAria: "Todo lo demás",
+      category: "Todo lo demás",
+      open: "Ver todo",
+      close: "Cerrar",
+      /** Se lee tras el nombre de un módulo que todavía no abre. */
+      pending: "todavía no está abierto",
+      scan: "Escanear",
+      store: "Tienda",
+      invest: "Inversiones",
+    },
     menu: "Menú",
     menuTitle: "Ir a",
     collapse: "Contraer el menú",
@@ -128,8 +147,16 @@ const es = {
     open: "Abrir",
     ariaCard: (moduleTitle: string) => `Abrir el módulo ${moduleTitle}`,
     /** Rótulos de los tres bloques. El CSS los pasa a versalitas. */
-    usedLabel: "Lo que usas",
-    pilotLabel: "Se abren durante el piloto",
+    /**
+     * Las dos etiquetas del panel son un PAR y hay que leerlas juntas:
+     * «Tu plan incluye» / «Fuera de tu plan». Una dice qué se compró y la
+     * otra dónde acaba, y ese contraste es lo que evita la sorpresa de
+     * descubrir un cobro que no se esperaba.
+     *
+     * Aquí van los SIETE módulos, también los cuatro que aún no abren: no
+     * están fuera del plan, sólo todavía no listos, y su insignia lo dice.
+     */
+    usedLabel: "Tu plan incluye",
     /** Insignia de la baldosa apagada: dice el estado, no una fecha. */
     buildingBadge: "En construcción",
   },
@@ -139,7 +166,13 @@ const es = {
    * límite escrito debajo: prometer y acotar en la misma vista (§ voz).
    */
   paidApart: {
-    label: "Se paga aparte",
+    /**
+     * Par con «Tu plan incluye». «Se paga aparte» es correcto pero suena a
+     * letra pequeña y a cobro; «Fuera de tu plan» dice lo mismo desde el
+     * lado de la persona —dónde acaba lo suyo— y se lee como la frontera
+     * que es, no como una advertencia.
+     */
+    label: "Fuera de tu plan",
     store: "Tienda de miniaplicaciones",
     storeMeta: "Herramientas que viven fuera de ANDEX",
     investments: "Inversiones",
@@ -296,6 +329,17 @@ const en = {
     },
     primaryNavAria: "Main navigation",
     tabBarAria: "Main sections",
+    cristal: {
+      barAria: "Main navigation",
+      menuAria: "Everything else",
+      category: "Everything else",
+      open: "See everything",
+      close: "Close",
+      pending: "not open yet",
+      scan: "Scan",
+      store: "Tools",
+      invest: "Investments",
+    },
     menu: "Menu",
     menuTitle: "Go to",
     collapse: "Collapse the menu",
@@ -340,13 +384,12 @@ const en = {
     secondaryLabel: "This could help too",
     open: "Open",
     ariaCard: (moduleTitle: string) => `Open the ${moduleTitle} module`,
-    usedLabel: "What you use",
-    pilotLabel: "Opening during the pilot",
+    usedLabel: "Your plan includes",
     buildingBadge: "Being built",
   },
 
   paidApart: {
-    label: "Paid separately",
+    label: "Outside your plan",
     store: "Mini-app store",
     storeMeta: "Tools that live outside ANDEX",
     investments: "Investments",

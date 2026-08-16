@@ -8,12 +8,18 @@
  * iguales y una columna lateral con enlaces oficiales. Seis bloques que
  * decían lo mismo con seis formas distintas.
  *
- * El diseño lo reordena en BALDOSAS agrupadas por una sola pregunta —¿esto
- * lo puedo usar hoy?— y en tres bloques:
+ * El diseño lo reordena en BALDOSAS y en dos bloques, que son un par y
+ * hay que leerlos juntos:
  *
- *   · **Lo que usas** ................ los módulos que ya abren
- *   · **Se paga aparte** ............. Tienda e Inversiones, con su límite escrito
- *   · **Se abren durante el piloto** . los que todavía no, apagados pero visibles
+ *   · **Tu plan incluye** .... los SIETE módulos. Primero los que ya abren
+ *                              y detrás los que faltan, con su insignia de
+ *                              «En construcción» — no están fuera del plan,
+ *                              sólo todavía no listos
+ *   · **Fuera de tu plan** ... Tienda e Inversiones, con su límite escrito
+ *
+ * Uno dice qué se compró y el otro dónde acaba. Ese contraste es lo que
+ * evita la sorpresa de descubrir un cobro que no se esperaba, que con este
+ * público no es un detalle.
  *
  * Arriba de todo, una sola tarjeta navy con LA recomendación y su porqué;
  * abajo, el objetivo de 30 días y el aviso de no-afiliación.
@@ -185,7 +191,7 @@ export function Dashboard() {
       {/* 3 — la recomendación, o su equivalente para los casos borde de §4.7. */}
       <HeroArea />
 
-      {/* 4 y 5 — los 7 módulos, en tres bloques. */}
+      {/* 4 y 5 — los 7 módulos, y lo que se paga aparte. */}
       <ModuleBlocks ordered={ordered} />
 
       {/* 10 — "Para tu familia". */}
@@ -366,6 +372,17 @@ function ModuleBlocks({ ordered }: { ordered: ModuleScore[] }) {
         <SectionLabel as="h2" id="bloque-lo-que-usas">
           {g.usedLabel}
         </SectionLabel>
+        {/* LOS SIETE, JUNTOS.
+            Antes iban en dos bloques: los que abren y, al final de la
+            pantalla, «Se abren durante el piloto». Eso partía en dos lo
+            que la suscripción cubre y dejaba cuatro módulos leyéndose como
+            si no fueran parte del plan — cuando sí lo son, sólo que
+            todavía no abren.
+
+            Ahora están los siete bajo «Tu plan incluye», en orden: primero
+            los que ya funcionan, y detrás los que faltan con su insignia
+            de «En construcción». Se ve lo que se paga; se ve qué parte
+            está lista. */}
         <TileGrid>
           {vivos.map((id, i) => {
             const meta = moduleById(id);
@@ -383,6 +400,23 @@ function ModuleBlocks({ ordered }: { ordered: ModuleScore[] }) {
                 iconTone={i === 0 ? "accent" : "quiet"}
                 name={moduleTitle(dict, id, variant(id))}
                 meta={moduleDescription(dict, id)}
+                href={ROUTES.modulo(meta.slug)}
+              />
+            );
+          })}
+
+          {pronto.map((id) => {
+            const meta = moduleById(id);
+            const glyph = MODULE_GLYPH[meta.slug];
+            return (
+              <Tile
+                key={id}
+                quiet
+                className={ICONO_DESNUDO}
+                iconName={glyph.name}
+                icon={glyph.icon}
+                name={moduleTitle(dict, id, variant(id))}
+                foot={<KitBadge tone="building">{g.buildingBadge}</KitBadge>}
                 href={ROUTES.modulo(meta.slug)}
               />
             );
@@ -414,29 +448,6 @@ function ModuleBlocks({ ordered }: { ordered: ModuleScore[] }) {
         <p className="mt-3 text-label text-disabled">{p.note}</p>
       </section>
 
-      <section aria-labelledby="bloque-durante-el-piloto">
-        <SectionLabel as="h2" id="bloque-durante-el-piloto">
-          {g.pilotLabel}
-        </SectionLabel>
-        <TileGrid>
-          {pronto.map((id) => {
-            const meta = moduleById(id);
-            const glyph = MODULE_GLYPH[meta.slug];
-            return (
-              <Tile
-                key={id}
-                quiet
-                className={ICONO_DESNUDO}
-                iconName={glyph.name}
-                icon={glyph.icon}
-                name={moduleTitle(dict, id, variant(id))}
-                foot={<KitBadge tone="building">{g.buildingBadge}</KitBadge>}
-                href={ROUTES.modulo(meta.slug)}
-              />
-            );
-          })}
-        </TileGrid>
-      </section>
     </>
   );
 }

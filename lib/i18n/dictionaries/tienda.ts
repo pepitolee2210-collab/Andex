@@ -19,8 +19,8 @@
 
 const es = {
   /** El módulo. Va encima del titular, pequeño. */
-  overline: "Tienda",
-  title: "Miniaplicaciones",
+  overline: "MINIAPLICACIONES",
+  title: "Destacados",
   subtitle:
     "Cada una resuelve una cosa en unos minutos y se compra por separado: no entra en tu suscripción. Se abren fuera de ANDEX, en su propio enlace.",
   back: "Volver al inicio",
@@ -40,13 +40,43 @@ const es = {
       free: "Empezar es gratis, sin tarjeta",
     },
     "primera-audiencia": {
-      title: "Qué hacer en tu primera audiencia",
+      title: "Primera Audiencia",
       body: "Qué llevar, cómo se desarrolla, qué te van a preguntar y qué pasa después. Para que llegues sabiendo qué esperar.",
+      /** La línea de la lista: qué es, en tres palabras. */
+      kind: "Guía de corte",
     },
     "primeros-dolares": {
-      title: "Cómo conseguir tus primeros $300 a $400",
+      title: "Primeros $300 a $400",
       body: "Formas concretas de generar tus primeros ingresos en tus primeras semanas, con lo que hace falta para empezar cada una.",
+      kind: "Flujo de caja inicial",
     },
+  },
+
+  /** La destacada: quién la hace y qué promete. */
+  hero: {
+    author: "HENRY ORELLANA · FUNDADOR",
+    headline: "Quien ya vivió el proceso, hoy te guía",
+    body: "Videos prácticos sobre cómo avanzar legal y financieramente en Estados Unidos.",
+    liveBadge: "Disponible ahora",
+    /** Qué se ve en cada foto. Sin esto, un lector de pantalla dice «imagen». */
+    covers: [
+      "Henry Orellana en la oficina de Prime Academy, con la ciudad al fondo",
+      "Henry Orellana dando una charla de Prime Academy ante un auditorio",
+      "Henry Orellana en su despacho, con los datos de crecimiento de Prime Academy detrás",
+    ],
+    /** Navegación del carrusel, para quien no ve las fotos. */
+    coverNav: "Foto {n} de {total}",
+  },
+
+  /** Lo que todavía no está. Se dice cuántas son, sin fingir catálogo. */
+  upcoming: {
+    title: "PRÓXIMOS LANZAMIENTOS",
+    count: "{n} guías",
+    countOne: "1 guía",
+    notify: "Avisar",
+    notified: "Registrado",
+    /** Se lee tras el nombre, para que el botón diga de qué avisa. */
+    notifyAria: "Avisarme cuando esté lista {name}",
   },
 
   card: {
@@ -105,13 +135,37 @@ const en: typeof es = {
       free: "Free to start, no card needed",
     },
     "primera-audiencia": {
-      title: "What to do at your first hearing",
+      title: "First Hearing",
       body: "What to bring, how it unfolds, what they'll ask you and what happens next. So you arrive knowing what to expect.",
+      kind: "Court guide",
     },
     "primeros-dolares": {
-      title: "How to make your first $300 to $400",
+      title: "First $300 to $400",
       body: "Concrete ways to earn your first income in your first weeks, with what it takes to start each one.",
+      kind: "Starting cash flow",
     },
+  },
+
+  hero: {
+    author: "HENRY ORELLANA · FOUNDER",
+    headline: "Someone who lived it is now your guide",
+    body: "Practical videos on how to move forward legally and financially in the United States.",
+    liveBadge: "Available now",
+    covers: [
+      "Henry Orellana at the Prime Academy office, city skyline behind",
+      "Henry Orellana giving a Prime Academy talk to an audience",
+      "Henry Orellana in his office, with Prime Academy growth figures behind him",
+    ],
+    coverNav: "Photo {n} of {total}",
+  },
+
+  upcoming: {
+    title: "COMING SOON",
+    count: "{n} guides",
+    countOne: "1 guide",
+    notify: "Notify me",
+    notified: "Registered",
+    notifyAria: "Notify me when {name} is ready",
   },
 
   card: {

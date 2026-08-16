@@ -40,8 +40,24 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, GraduationCap, House, ShieldCheck, User, Users } from "lucide-react";
+import {
+  Bell,
+  Briefcase,
+  Building2,
+  GraduationCap,
+  House,
+  Plane,
+  ScanLine,
+  ShieldCheck,
+  Store,
+  TrendingUp,
+  User,
+  Users,
+  Wallet,
+} from "lucide-react";
 import { PAST_DUE_GRACE_DAYS, ROUTES } from "@/lib/config";
+import { MODULES } from "@/lib/catalogs/modules";
+import type { ModuleId } from "@/lib/types";
 import type { Dictionary } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -54,6 +70,7 @@ import {
   HEADER_BACK_ID,
   type IconComponent,
 } from "@/components/ui/kit";
+import { CristalMenu, type CristalTool } from "@/components/ui/cristal-menu";
 import { usePanel } from "./panel-context";
 import { formatDate } from "./panel-utils";
 
@@ -92,12 +109,66 @@ function tabs(dict: Dictionary): Tab[] {
       icon: Users,
       iconName: "users",
     },
-    {
-      href: ROUTES.perfil,
-      label: dict.common.nav.profile,
-      icon: User,
-      iconName: "circle-user",
-    },
+  ];
+}
+
+/**
+ * TODO LO DEMÁS, en una rejilla de 3×3.
+ *
+ * Lo que NO está ya en la barra. Bóveda, Academia y Comunidad son
+ * pestañas, así que repetirlas aquí sería ofrecer la misma puerta dos
+ * veces con dos formas distintas — y de paso empujaba lo que sólo está
+ * aquí a la tercera fila.
+ *
+ * Quedan ocho: los cuatro módulos que abren durante el piloto, la Tienda,
+ * las Inversiones, el Perfil y el escáner. Con la equis, nueve: la
+ * cuadrícula exacta.
+ *
+ * Entre las pestañas y esta rejilla, los SIETE módulos siguen alcanzables
+ * desde la navegación (§4.3) — tres arriba, cuatro aquí.
+ */
+function tools(dict: Dictionary): CristalTool[] {
+  const shell = dict.panel.shell;
+  const c = shell.cristal;
+  const modulo = (
+    slug: string,
+    id: ModuleId,
+    icon: IconComponent,
+    iconName: string,
+  ): CristalTool => {
+    const meta = MODULES.find((m) => m.slug === slug);
+    return {
+      key: slug,
+      /* El nombre COMPLETO, no la abreviatura del sidebar viejo. Aquí no
+         hay contexto alrededor que lo explique: «Negocio» a secas no dice
+         qué hay dentro; «Desarrollo Empresarial», sí. */
+      label: dict.common.modules.titles[id].in_us,
+      icon,
+      iconName,
+      href: ROUTES.modulo(slug),
+      pending: meta?.status !== "live",
+    };
+  };
+
+  /* PRIMERO LO QUE YA FUNCIONA. Antes abría con el escáner y seguía con
+     los cuatro módulos cerrados, así que lo primero que se veía al abrir
+     el menú era una fila entera de cosas apagadas — la impresión de que
+     no hay nada, teniendo cuatro que sí. Ahora las cuatro vivas ocupan la
+     primera fila y media, y lo que falta va detrás. */
+  return [
+    { key: "tienda", label: c.store, icon: Store, iconName: "store", href: ROUTES.tienda },
+    { key: "inversiones", label: c.invest, icon: TrendingUp, iconName: "trending-up",
+      href: ROUTES.inversiones },
+    { key: "perfil", label: dict.common.nav.profile, icon: User, iconName: "circle-user",
+      href: ROUTES.perfil },
+    /* Con su bandera: sin ella el destino sería el mismo que el de la
+       pestaña de Bóveda y el menú repetiría una puerta que ya existe. */
+    { key: "escaner", label: c.scan, icon: ScanLine, iconName: "scan-line",
+      href: `${ROUTES.modulo("boveda")}?escanear=1` },
+    modulo("migracion", 2, Plane, "plane"),
+    modulo("finanzas", 3, Wallet, "wallet"),
+    modulo("negocio", 4, Building2, "building-2"),
+    modulo("empleo", 7, Briefcase, "briefcase"),
   ];
 }
 
@@ -112,31 +183,20 @@ function tabActive(pathname: string, href: string): boolean {
 }
 
 function TabBar({ dict, pathname }: { dict: Dictionary; pathname: string }) {
+  const c = dict.panel.shell.cristal;
   return (
-    <nav
-      aria-label={dict.panel.shell.tabBarAria}
-      className="tabbar sticky bottom-0 z-30"
-    >
-      {tabs(dict).map((tab) => {
-        const active = tabActive(pathname, tab.href);
-        return (
-          <Link
-            key={tab.href}
-            href={tab.href}
-            aria-current={active ? "page" : undefined}
-            className={cn("ax-tab", active && "on")}
-          >
-            <Glyph
-              name={tab.iconName}
-              icon={tab.icon}
-              size={23}
-              strokeWidth={active ? 2.1 : 1.7}
-            />
-            <span className="w-full truncate px-0.5 text-center">{tab.label}</span>
-          </Link>
-        );
-      })}
-    </nav>
+    <CristalMenu
+      tabs={tabs(dict).map((t) => ({ ...t, active: tabActive(pathname, t.href) }))}
+      tools={tools(dict)}
+      category={c.category}
+      labels={{
+        barAria: c.barAria,
+        menuAria: c.menuAria,
+        open: c.open,
+        close: c.close,
+        pending: c.pending,
+      }}
+    />
   );
 }
 
@@ -269,7 +329,20 @@ export function PanelShell({ children }: { children: ReactNode }) {
 
         <TopNotices pathname={pathname} />
 
-        <main id="contenido" className="min-w-0 flex-1 px-5 pb-6">
+        {/* El hueco de la barra.
+            Es `position: fixed`, así que no ocupa sitio en el flujo y se
+            comía los últimos ~82px de cada pantalla — se veía tapando la
+            primera fila de «Próximos lanzamientos» en la Tienda. El padding
+            reserva su altura más el aire de debajo y el área segura del
+            teléfono. */}
+        <main
+          id="contenido"
+          className="min-w-0 flex-1 px-5"
+          style={{
+            paddingBottom:
+              "calc(var(--bar-height) + 30px + env(safe-area-inset-bottom, 0px))",
+          }}
+        >
           {loading ? (
             <div aria-busy="true" aria-live="polite" className="w-full">
               <p className="text-body text-muted">{dict.panel.empty.loading}</p>

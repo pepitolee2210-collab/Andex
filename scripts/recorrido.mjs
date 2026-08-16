@@ -175,10 +175,139 @@ await comprobar("pago", "el pago simulado deja entrar", async () => {
 
 // ══════════════════════════════════════════════════════════
 paso("ARMAZÓN");
-await comprobar("armazón", "la barra tiene las CINCO pestañas", async () => {
-  const n = await page.locator(".tabbar a").count();
-  if (n !== 5) throw new Error(`hay ${n}`);
+await comprobar("armazón", "la cápsula tiene CUATRO pestañas y el «+»", async () => {
+  const tabs = await page.locator(".cristal-barra a").count();
+  const mas = await page.locator(".cristal-mas").count();
+  if (tabs !== 4 || mas !== 1) throw new Error(`${tabs} pestañas, ${mas} botón +`);
   return true;
+});
+
+await comprobar("armazón", "la cápsula mide 68px y es redonda del todo", async () => {
+  const m = await page.locator(".cristal-barra").evaluate((el) => {
+    const s = getComputedStyle(el);
+    return { alto: Math.round(el.getBoundingClientRect().height), radio: s.borderRadius };
+  });
+  if (m.alto !== 68) throw new Error(`alto ${m.alto}`);
+  return true;
+});
+
+await comprobar("armazón", "todo lo pulsable de la barra llega a 44px", async () => {
+  const chicos = await page.evaluate(() =>
+    [...document.querySelectorAll(".cristal-barra a, .cristal-barra button")]
+      .map((el) => el.getBoundingClientRect())
+      .filter((r) => r.width < 44 || r.height < 44).length);
+  if (chicos) throw new Error(`${chicos} por debajo`);
+  return true;
+});
+
+await comprobar("menú", "el «+» abre el modal flotante", async () => {
+  await page.locator(".cristal-mas").click();
+  await page.waitForTimeout(700);
+  const abierto = await page.locator("dialog.cristal-modal[open]").count();
+  const expandido = await page.locator('.cristal-mas[aria-expanded="true"]').count();
+  if (!abierto || !expandido) throw new Error("no abrió o el + no cambió de estado");
+  return true;
+});
+
+await comprobar("menú", "trae OCHO herramientas y la equis, en 3×3", async () => {
+  const n = await page.locator(".cristal-accion").count();
+  const cols = await page.locator(".cristal-rejilla").evaluate(
+    (el) => getComputedStyle(el).gridTemplateColumns.split(" ").length);
+  if (n !== 9) throw new Error(`hay ${n} (8 + cerrar = 9)`);
+  if (cols !== 3) throw new Error(`${cols} columnas`);
+  return true;
+});
+
+await comprobar("menú", "lo que ya funciona va PRIMERO", async () => {
+  const orden = await page.evaluate(() =>
+    [...document.querySelectorAll(".cristal-accion[href]")].map((a) => a.getAttribute("href")));
+  const cerrados = ["migracion", "finanzas", "negocio", "empleo"];
+  const primerCerrado = orden.findIndex((h) => cerrados.some((c) => h?.includes(c)));
+  const ultimoVivo = orden.reduce(
+    (max, h, i) => (cerrados.some((c) => h?.includes(c)) ? max : i), -1);
+  if (primerCerrado !== -1 && ultimoVivo > primerCerrado) {
+    throw new Error("hay algo cerrado antes de algo que funciona");
+  }
+  return orden[0]?.includes("tienda") === true;
+});
+
+await comprobar("menú", "no repite lo que ya es pestaña", async () => {
+  const enRejilla = await page.evaluate(() =>
+    [...document.querySelectorAll(".cristal-accion[href]")].map((a) => a.getAttribute("href")));
+  const enBarra = await page.evaluate(() =>
+    [...document.querySelectorAll(".cristal-barra a")].map((a) => a.getAttribute("href")));
+  const repetidas = enRejilla.filter((h) => enBarra.includes(h));
+  if (repetidas.length) throw new Error(`repetidas: ${repetidas.join(", ")}`);
+  return true;
+});
+
+await comprobar("menú", "entre barra y rejilla están los SIETE módulos", async () => {
+  const todos = await page.evaluate(() => [
+    ...[...document.querySelectorAll(".cristal-accion[href]")].map((a) => a.getAttribute("href")),
+    ...[...document.querySelectorAll(".cristal-barra a")].map((a) => a.getAttribute("href")),
+  ]);
+  const modulos = ["boveda", "migracion", "finanzas", "negocio", "comunidad", "academia", "empleo"];
+  const faltan = modulos.filter((m) => !todos.some((d) => d?.includes(m)));
+  if (faltan.length) throw new Error(`faltan: ${faltan.join(", ")}`);
+  return true;
+});
+
+await comprobar("menú", "los nombres van completos y sin recortar", async () => {
+  const malos = await page.evaluate(() =>
+    [...document.querySelectorAll(".cristal-etiqueta")]
+      // `scrollHeight > clientHeight` delata texto cortado por overflow.
+      .filter((el) => el.scrollHeight > el.clientHeight + 1)
+      .map((el) => el.textContent));
+  if (malos.length) throw new Error(`recortados: ${malos.join(" · ")}`);
+  const nombres = await page.evaluate(() =>
+    [...document.querySelectorAll(".cristal-etiqueta")].map((el) => el.textContent));
+  if (!nombres.some((n) => n && n.length > 14)) {
+    throw new Error("parecen abreviaturas, no nombres de módulo");
+  }
+  return true;
+});
+
+await comprobar("menú", "el material sigue al tema, no es negro fijo", async () => {
+  const fondo = await page.locator(".cristal-barra").evaluate(
+    (el) => getComputedStyle(el).backgroundImage);
+  return fondo.includes("gradient");
+});
+
+await comprobar("menú", "el modal flota SOBRE la barra, en la zona del pulgar", async () => {
+  const p = await page.locator(".cristal-panel").boundingBox();
+  const b = await page.locator(".cristal-barra").boundingBox();
+  if (!p || !b) throw new Error("no los encuentro");
+  if (p.y + p.height > b.y) throw new Error("el panel se solapa con la barra");
+  return true;
+});
+
+await comprobar("menú", "Escape lo cierra", async () => {
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(900);
+  return (await page.locator("dialog.cristal-modal[open]").count()) === 0;
+});
+
+await comprobar("menú", "tocar el fondo lo cierra", async () => {
+  await page.locator(".cristal-mas").click();
+  await page.waitForTimeout(700);
+  await page.mouse.click(195, 120);
+  await page.waitForTimeout(900);
+  return (await page.locator("dialog.cristal-modal[open]").count()) === 0;
+});
+
+await comprobar("menú", "el foco vuelve al «+» al cerrar", async () => {
+  const enfocado = await page.evaluate(() => document.activeElement?.className || "");
+  return /cristal-mas/.test(String(enfocado));
+});
+
+await comprobar("menú", "una acción lleva a su sitio y cierra el menú", async () => {
+  await page.locator(".cristal-mas").click();
+  await page.waitForTimeout(700);
+  await page.locator('.cristal-accion[href*="tienda"]').first().click();
+  await page.waitForURL("**/tienda", { timeout: 30_000 });
+  await page.waitForTimeout(600);
+  const cerrado = (await page.locator("dialog.cristal-modal[open]").count()) === 0;
+  return cerrado && page.url().includes("tienda");
 });
 
 await comprobar("armazón", "no quedan dos navegaciones a la vez", async () => {
@@ -189,18 +318,23 @@ await comprobar("armazón", "no quedan dos navegaciones a la vez", async () => {
 
 await comprobar("armazón", "las pestañas navegan de verdad", async () => {
   const destinos = [];
-  for (const nombre of [/bóveda/i, /academia/i, /comunidad/i, /perfil/i, /inicio/i]) {
-    await page.locator(".tabbar a").filter({ hasText: nombre }).first().click();
-    await page.waitForTimeout(1600);
+  for (const nombre of [/bóveda/i, /academia/i, /comunidad/i, /inicio/i]) {
+    const tab = page.locator(".cristal-barra a").filter({ hasText: nombre }).first();
+    const destino = await tab.getAttribute("href");
+    await tab.click();
+    /* Se espera al HECHO, no al reloj. En desarrollo cada ruta compila la
+       primera vez que se visita, así que un `waitForTimeout` fijo mide la
+       velocidad del compilador y no si la pestaña navega. */
+    await page.waitForURL(`**${destino}`, { timeout: 30_000 });
     destinos.push(page.url().replace(BASE, ""));
   }
-  return new Set(destinos).size === 5;
+  return new Set(destinos).size === 4;
 });
 
 await comprobar("armazón", "la pestaña activa se marca sola", async () => {
   await page.goto(BASE + "/modulo/boveda", { waitUntil: "domcontentloaded" });
   await page.waitForTimeout(1600);
-  const activa = await page.locator('.tabbar a[aria-current="page"]').innerText();
+  const activa = await page.locator('.cristal-barra a[aria-current="page"]').innerText();
   return /bóveda/i.test(activa);
 });
 
@@ -219,14 +353,13 @@ await comprobar("panel", "están los SIETE módulos", async () => {
   return true;
 });
 
-await comprobar("panel", "los tres bloques del diseño", async () =>
-  /LO QUE USAS/i.test(textoPanel) &&
-  /SE PAGA APARTE/i.test(textoPanel) &&
-  /PILOTO/i.test(textoPanel));
+await comprobar("panel", "los dos bloques dicen qué entra y dónde acaba", async () =>
+  /TU PLAN INCLUYE/i.test(textoPanel) && /FUERA DE TU PLAN/i.test(textoPanel));
 
 await comprobar("panel", "una baldosa lleva a su módulo", async () => {
+  const destino = await page.locator(".tile").first().getAttribute("href");
   await page.locator(".tile").first().click();
-  await page.waitForTimeout(1800);
+  await page.waitForURL(`**${destino}`, { timeout: 30_000 });
   return page.url().includes("/modulo/") || page.url().includes("/tienda") || page.url().includes("/inversiones");
 });
 
@@ -243,7 +376,25 @@ await comprobar("bóveda", "la bóveda vacía ofrece UNA acción", async () => {
 async function escanear(nombre, dias) {
   await page.goto(BASE + "/modulo/boveda", { waitUntil: "domcontentloaded" });
   await page.waitForTimeout(1400);
-  await page.getByRole("button", { name: /escanear/i }).first().click();
+
+  /* Se espera a que el botón esté ADEMÁS habilitado: mientras la bóveda
+     descifra se pinta uno desactivado con el mismo nombre, y un `click()`
+     sobre él se queda esperando los 30 s enteros sin decir por qué. */
+  const btnEscanear = page.locator("button:not([disabled])").filter({ hasText: /escanear/i }).first();
+  try {
+    await btnEscanear.waitFor({ state: "visible", timeout: 15_000 });
+  } catch {
+    const diag = await page.evaluate(() => ({
+      url: location.pathname + location.search,
+      dialogoAbierto: !!document.querySelector("dialog[open]"),
+      botones: [...document.querySelectorAll("button")]
+        .filter((b) => /escanear/i.test(b.textContent || ""))
+        .map((b) => ({ txt: (b.textContent || "").trim().slice(0, 24), off: b.disabled })),
+      texto: (document.body.innerText || "").replace(/\s+/g, " ").slice(0, 140),
+    }));
+    throw new Error(`no encuentro el botón de escanear: ${JSON.stringify(diag)}`);
+  }
+  await btnEscanear.click();
   await page.waitForTimeout(1800);
   await page.evaluate(async (t) => {
     const c = document.createElement("canvas");

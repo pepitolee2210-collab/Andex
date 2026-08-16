@@ -1,0 +1,365 @@
+/* ═══════════════════════════════════════════════════════
+   CRISTAL — barra en cápsula y menú flotante de acciones
+
+   Material de Apple con el color de ANDEX. Vive en su propio archivo, no
+   en `kit.css`, porque es un lenguaje de superficie distinto al del resto
+   del sistema y conviene que sus bordes se vean en el árbol de archivos.
+
+   Todos los colores salen de tokens de `globals.css`: aquí no hay ni un
+   hex, igual que en el resto del proyecto. Y el material sigue al tema —
+   crema de día, tinta de noche— con los mismos nombres.
+
+   ── Lo que no se negocia, ni con cristal ──
+   · 44px de área táctil en todo lo pulsable
+   · el estado no se dice sólo con color: la pestaña activa engorda el trazo
+   · suelo de opacidad del 86%: el desenfoque embellece, la opacidad es la
+     que garantiza que se lee bajo el sol
+   · `prefers-reduced-motion` apaga los muelles; `prefers-contrast: more`
+     apaga el desenfoque y pone relleno sólido
+   ═══════════════════════════════════════════════════════ */
+
+@layer components {
+  /* ── La cápsula inferior ────────────────────────────── */
+
+  .cristal-barra {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    z-index: 30;
+    width: min(calc(100% - 32px), 398px);
+    height: var(--bar-height);
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 0 8px;
+    border-radius: var(--radius-pill);
+    color: var(--glass-text);
+    isolation: isolate;
+    /* El velo de luz a 160° sobre el degradado del material. */
+    background-image:
+      linear-gradient(160deg, var(--glass-sheen) 0%, transparent 44%),
+      linear-gradient(to bottom, var(--glass-top), var(--glass-bottom));
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    box-shadow:
+      inset 0 1px 0 0 var(--glass-bevel-top),
+      inset 1px 0 0 0 var(--glass-bevel-side),
+      inset -1px 0 0 0 var(--glass-bevel-side),
+      inset 0 -1px 0 0 var(--glass-bevel-bottom),
+      var(--glass-shadow);
+    transition: backdrop-filter var(--dur-fast) linear;
+  }
+
+  /* Con el menú abierto la barra queda DETRÁS del velo: mantener ahí un
+     `backdrop-filter` es pagar una capa de desenfoque que nadie ve, y en
+     un Android de gama media eso es justo el tirón que se nota durante el
+     muelle. Se apaga mientras dura. */
+  .cristal-barra.sin-blur {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  /* El grano, en su propia capa para que no tiña el degradado. */
+  .cristal-barra::before,
+  .cristal-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-image: var(--glass-grain);
+    background-size: 120px 120px;
+    opacity: var(--glass-grain-opacity);
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  /* ── Las pestañas ───────────────────────────────────── */
+
+  .cristal-tab {
+    flex: 1;
+    min-width: 0;
+    height: 56px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: var(--weight-semibold);
+    letter-spacing: -.01em;
+    color: var(--glass-text-quiet);
+    border-radius: var(--radius-pebble);
+    text-decoration: none;
+    transition:
+      color var(--dur-press) linear,
+      background var(--dur-press) linear,
+      transform var(--dur-press) var(--ease-standard);
+  }
+  .cristal-tab span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .cristal-tab:hover  { background: var(--pebble-fill); }
+  .cristal-tab:active { transform: scale(.9); background: var(--pebble-press); }
+  .cristal-tab.on     { color: var(--glass-text); background: var(--pebble-fill); }
+  .cristal-tab:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: -3px;
+  }
+
+  /* ── El botón «+» ────────────────────────────────────
+     Guijarro de 28px de radio. Al abrirse gira 45° y es una equis sin
+     cambiar de glifo: el mismo trazo, girado.
+
+     Va en el color de acción del producto, no en cristal: un «+» que crea
+     algo es la acción principal de la barra y tiene que verse como tal. */
+
+  .cristal-mas {
+    flex: 0 0 auto;
+    width: 52px;
+    height: 52px;
+    margin-left: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    cursor: pointer;
+    border-radius: var(--radius-pebble);
+    background: var(--action);
+    color: var(--action-text);
+    box-shadow:
+      inset 0 1px 0 0 var(--glass-sheen),
+      var(--shadow-button);
+    transition:
+      transform var(--dur-base) var(--ease-spring),
+      background var(--dur-press) linear;
+  }
+  .cristal-mas:hover  { background: var(--action-hover); }
+  .cristal-mas:active { transform: scale(.9); }
+  .cristal-mas svg { transition: transform var(--dur-base) var(--ease-spring); }
+  .cristal-mas[aria-expanded="true"] svg { transform: rotate(45deg); }
+  .cristal-mas:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 3px;
+  }
+
+  /* ── El modal flotante ───────────────────────────────
+     `<dialog>` nativo: la trampa de foco, la tecla Escape y el fondo
+     inerte los da el navegador bien hechos, y salen gratis. */
+
+  .cristal-modal {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    overflow: visible;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .cristal-modal:not([open]) { display: none; }
+
+  .cristal-modal::backdrop {
+    background: var(--glass-scrim);
+    backdrop-filter: var(--glass-blur-scrim);
+    -webkit-backdrop-filter: var(--glass-blur-scrim);
+    animation: cristal-velo var(--dur-base) var(--ease-standard) both;
+  }
+  @keyframes cristal-velo {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .cristal-panel {
+    position: relative;
+    isolation: isolate;
+    /* Más estrecho que la barra: el panel no tiene por qué llegar a los
+       bordes, y recogido se lee como un objeto y no como otra pantalla. */
+    width: min(calc(100% - 44px), 340px);
+    /* Se apoya encima de la cápsula, no en el centro: la zona cómoda del
+       pulgar está abajo. */
+    margin-bottom: calc(var(--bar-height) + 26px + env(safe-area-inset-bottom, 0px));
+    padding: 9px 11px 13px;
+    border-radius: var(--radius-modal);
+    color: var(--glass-text);
+    background-image:
+      linear-gradient(160deg, var(--glass-sheen) 0%, transparent 48%),
+      linear-gradient(to bottom, var(--glass-top), var(--glass-deep));
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    box-shadow:
+      inset 0 1px 0 0 var(--glass-bevel-top),
+      inset 1px 0 0 0 var(--glass-bevel-side),
+      inset -1px 0 0 0 var(--glass-bevel-side),
+      inset 0 -1px 0 0 var(--glass-bevel-bottom),
+      var(--glass-shadow-lift);
+    /* Física de resorte: de 0.86 a 1, con rebote. */
+    animation: cristal-brotar var(--dur-base) var(--ease-spring) both;
+    transform-origin: bottom center;
+  }
+  @keyframes cristal-brotar {
+    from { opacity: 0; transform: scale(.86) translateY(14px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .cristal-panel.cerrando {
+    animation: cristal-recoger var(--dur-fast) var(--ease-standard) both;
+  }
+  .cristal-modal.cerrando::backdrop {
+    animation: cristal-velo var(--dur-fast) var(--ease-standard) reverse both;
+  }
+  @keyframes cristal-recoger {
+    from { opacity: 1; transform: scale(1) translateY(0); }
+    to   { opacity: 0; transform: scale(.86) translateY(14px); }
+  }
+
+  /* ── Cabecera: el tirador de iOS y el rótulo ───────── */
+
+  .cristal-grabber {
+    display: block;
+    width: 32px;
+    height: 4px;
+    margin: 2px auto 10px;
+    border-radius: var(--radius-pill);
+    background: var(--glass-grabber);
+  }
+  .cristal-categoria {
+    display: block;
+    padding: 0 5px 9px;
+    font-size: 11px;
+    font-weight: var(--weight-black);
+    letter-spacing: var(--track-label);
+    text-transform: uppercase;
+    color: var(--glass-text-quiet);
+  }
+
+  /* ── La cuadrícula: TRES columnas ────────────────────
+     Eran cuatro, y con cuatro la etiqueta cabía a 12px y a dos líneas
+     recortadas. La regla del producto es que nada que haya que leer baje
+     de 16px, y este público lee con vista cansada: con tres columnas la
+     etiqueta sube a 14 y «Ponerle fecha a un documento» entra entera. */
+
+  .cristal-rejilla {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .cristal-accion {
+    min-height: 84px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 7px;
+    padding: 13px 5px 10px;
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: center;
+    text-decoration: none;
+    color: var(--glass-text);
+    border-radius: var(--radius-pebble);
+    background-image:
+      linear-gradient(160deg, var(--glass-sheen) 0%, transparent 64%),
+      linear-gradient(to bottom, var(--pebble-fill), transparent);
+    box-shadow:
+      inset 0 1px 0 0 var(--glass-bevel-side),
+      inset 0 -1px 0 0 var(--glass-bevel-bottom);
+    transition:
+      transform var(--dur-press) var(--ease-standard),
+      background-color var(--dur-press) linear;
+  }
+  .cristal-accion:hover  { background-color: var(--pebble-fill); }
+  .cristal-accion:active { transform: scale(.9); background-color: var(--pebble-press); }
+  .cristal-accion:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  /* Los nombres completos son largos —«Trámites y Estatus Migratorio»— y
+     aquí no hay contexto que los explique, así que se escriben enteros y
+     se les da sitio para tres líneas en vez de recortarlos. Recortado,
+     «Trámites y Estatus…» y «Trámites y…» serían el mismo texto. */
+  .cristal-etiqueta {
+    display: block;
+    width: 100%;
+    /* 13px es el suelo del sistema para un rótulo (`--size-micro`). A 12
+       el recorrido cazaba 28 textos por debajo del mínimo: pequeño no es
+       lo mismo que ilegible, y este público lee con vista cansada. */
+    font-size: var(--size-micro);
+    font-weight: var(--weight-semibold);
+    line-height: 1.18;
+    letter-spacing: -.012em;
+    color: var(--glass-text);
+    text-wrap: pretty;
+    hyphens: auto;
+  }
+
+  /* Un módulo que aún no abre: se ve, y se ve que no toca. Sigue siendo
+     un enlace — su pantalla «En construcción» es contenido real. */
+  .cristal-accion.pendiente { opacity: .48; }
+
+  /* La equis, en la esquina inferior derecha de la cuadrícula. */
+  .cristal-accion.cerrar {
+    background-image: none;
+    background-color: var(--pebble-fill);
+    color: var(--glass-text-quiet);
+    box-shadow: inset 0 0 0 1px var(--glass-bevel-side);
+  }
+  .cristal-accion.cerrar:active { background-color: var(--pebble-press); }
+
+  /* ── Degradados de capacidad ─────────────────────────
+     Sin soporte de desenfoque, relleno sólido: nunca un panel semitrans-
+     parente sin nada detrás que lo sostenga. */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .cristal-barra,
+    .cristal-panel { background-image: none; background-color: var(--glass-solid); }
+    .cristal-modal::backdrop { backdrop-filter: none; }
+  }
+
+  /* Quien pide más contraste no quiere vidrio: quiere leerlo. */
+  @media (prefers-contrast: more) {
+    .cristal-barra,
+    .cristal-panel {
+      background-image: none;
+      background-color: var(--glass-solid);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      box-shadow: inset 0 0 0 2px var(--glass-text), var(--glass-shadow);
+    }
+    .cristal-barra::before,
+    .cristal-panel::before { display: none; }
+    .cristal-tab { color: var(--glass-text); }
+    .cristal-accion { box-shadow: inset 0 0 0 1.5px var(--glass-bevel-side); }
+  }
+
+  /* Y quien pidió que nada se mueva, no ve nada moverse. */
+  @media (prefers-reduced-motion: reduce) {
+    .cristal-panel,
+    .cristal-panel.cerrando,
+    .cristal-modal::backdrop,
+    .cristal-modal.cerrando::backdrop { animation: none; }
+    .cristal-mas svg,
+    .cristal-mas,
+    .cristal-tab,
+    .cristal-accion { transition: none; }
+    .cristal-tab:active,
+    .cristal-mas:active,
+    .cristal-accion:active { transform: none; }
+  }
+}

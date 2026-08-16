@@ -33,6 +33,13 @@ export type MiniApp = {
   minutos: number;
   /** Si necesita el aviso de «esto no es asesoría». */
   aviso: boolean;
+  /**
+   * Las fotos de portada, en orden. Sólo la destacada las tiene: una
+   * miniaplicación que aún no existe no puede enseñar una foto de sí
+   * misma, y una imagen de relleno en un producto que vende confianza es
+   * exactamente lo que no se puede hacer.
+   */
+  portadas?: readonly string[];
 };
 
 export const MINI_APPS: readonly MiniApp[] = [
@@ -43,6 +50,11 @@ export const MINI_APPS: readonly MiniApp[] = [
     icon: "GraduationCap",
     minutos: 0,
     aviso: false,
+    portadas: [
+      "/tienda/prime-1.jpg",
+      "/tienda/prime-2.jpg",
+      "/tienda/prime-3.jpg",
+    ],
   },
   {
     id: "primera-audiencia",
