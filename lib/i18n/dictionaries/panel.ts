@@ -65,6 +65,7 @@ const es = {
     settings: "Configuración",
     help: "Ayuda",
     investments: "Inversiones",
+    store: "Tienda",
     /** §4.3 — botón fijo, para todos, en todas las pantallas del panel. */
     exploreAll: "Explorar todos los módulos",
     /** past_due §3.4.7 — acceso de solo lectura */
@@ -262,6 +263,7 @@ const en = {
     settings: "Settings",
     help: "Help",
     investments: "Investments",
+    store: "Tools",
     exploreAll: "Explore all the modules",
     readOnly: "Read-only",
     readOnlyHint:

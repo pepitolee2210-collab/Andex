@@ -17,7 +17,9 @@
     "simular:ver": "node tests/simulacion.mjs --headed",
     "sql:bundle": "node scripts/bundle-sql.mjs",
     "supabase:check": "node scripts/check-supabase.mjs",
-    "supabase:rls": "node scripts/check-rls.mjs"
+    "supabase:rls": "node scripts/check-rls.mjs",
+    "verificar:visual": "node scripts/verificar-visual.mjs",
+    "verificar": "npm run typecheck && npm test && npm run verificar:visual"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
@@ -43,6 +45,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "playwright": "^1.62.1",
+    "pngjs": "^7.0.0",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.7.0",
     "vitest": "^3.0.0"

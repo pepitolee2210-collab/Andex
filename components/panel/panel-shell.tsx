@@ -33,6 +33,7 @@ import {
   LogOut,
   Menu,
   Settings,
+  Store,
   TrendingUp,
   User,
   Users,
@@ -185,6 +186,17 @@ function NavSection({
           icon: <TrendingUp aria-hidden="true" className="size-5" />,
         }}
         active={isActive(pathname, ROUTES.inversiones)}
+        showLabel={showLabels}
+        onNavigate={onNavigate}
+      />
+
+      <NavItem
+        link={{
+          href: ROUTES.tienda,
+          label: shell.store,
+          icon: <Store aria-hidden="true" className="size-5" />,
+        }}
+        active={isActive(pathname, ROUTES.tienda)}
         showLabel={showLabels}
         onNavigate={onNavigate}
       />

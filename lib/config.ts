@@ -101,6 +101,7 @@ export const ROUTES = {
   modulo: (slug: string) => `/modulo/${slug}`,
   perfil: "/perfil",
   inversiones: "/inversiones",
+  tienda: "/tienda",
   design: "/design",
 
   // Páginas legales. Enlazadas desde el footer y desde el checkout (§3.4.6
