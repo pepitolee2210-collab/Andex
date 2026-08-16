@@ -14,41 +14,133 @@
    ═══════════════════════════════════════════════════════ */
 
 :root {
-  /* ── Marca / estructura (constantes) ── */
-  --navy:        #102A43; /* 14.6:1 sobre blanco ✓ */
-  --navy-hover:  #1B3B5A;
-  --navy-soft:   #EEF2F6;
-  --cream:       #F7F5EF;
+  /* ═══════════════════════════════════════════════════════
+     RAMPAS — la paleta del sistema de diseño
 
-  /* ── Tokens semánticos — MODO CLARO ── */
-  --bg:            var(--cream);
-  --surface:       #FFFFFF;
-  --surface-alt:   var(--navy-soft);
-  --text:          var(--navy);
-  --text-muted:    #52708C; /* 5.18:1 ✓ — NUNCA #627D98 (4.28:1 ✗) */
-  --text-disabled: #8A9BAD; /* solo texto no interactivo */
-  --line:          #E4E7EB;
+     Cada familia tiene sus pasos completos, no sólo los tres tonos que
+     hacían falta ayer. Tener la rampa entera es lo que permite que un
+     estado nuevo —una pulsación, un borde de urgencia— salga de la paleta
+     en vez de inventarse un hex a mano.
+     ═══════════════════════════════════════════════════════ */
 
-  --teal:        #12B8A6; /* SOLO superficie: barras, iconos, acentos */
-  --teal-deep:   #0F766E; /* botones con texto blanco. 5.47:1 ✓ */
-  --teal-soft:   #E6F7F5;
-  --amber:       #F4B942; /* SOLO fondo de badge; texto encima: navy */
-  --amber-deep:  #9A6B00; /* texto de alerta sobre crema/blanco. 4.69:1 ✓ */
-  --amber-soft:  #FEF6E3;
+  --navy-900: #08192B; --navy-800: #102A43; --navy-700: #1C3D5A;
+  --navy-600: #2E5573; --navy-300: #7C93A8; --navy-100: #DDE5EC;
+  --navy-50:  #EDF2F6;
 
-  --on-accent:   #FFFFFF; /* texto sobre teal-deep */
-  --on-highlight: var(--navy); /* texto sobre ámbar (8.2:1 ✓) */
+  --teal-800: #08655E; --teal-700: #0A7F76; --teal-600: #0E9689;
+  --teal-500: #12B8A6; --teal-200: #B7E8E1; --teal-100: #D6F2EE;
+  --teal-50:  #EEF9F7;
 
-  --success: #0E7C5A;
-  --warning: #9A6B00;
-  --danger:  #B42318;
-  --info:    #0F766E;
-  --success-soft: #E7F6F0;
-  --danger-soft:  #FDECEA;
+  --amber-700: #6E4700; --amber-600: #8A5A00; --amber-500: #F4B942;
+  --amber-200: #FBE0A6; --amber-100: #FCEBC7; --amber-50:  #FDF6E7;
 
-  --shadow-sm: 0 1px 3px rgba(16, 42, 67, 0.06);
-  --shadow-md: 0 4px 12px rgba(16, 42, 67, 0.06);
-  --shadow-lg: 0 12px 32px rgba(16, 42, 67, 0.10);
+  --cream-50: #FBFAF6; --cream-100: #F7F5EF;
+  --sand-200: #EFEBE1; --sand-300: #E4DFD4; --sand-400: #D4CDBE;
+  --white:    #FFFFFF;
+
+  --red-700: #8F2C1D; --red-600: #B93A28; --red-200: #F0C9C1;
+  --red-100: #F7E2DE; --red-50:  #FCF1EF;
+
+  /* ── Superficies y texto ── */
+  --bg-app:         var(--cream-100);
+  --bg-sunken:      var(--sand-200);
+  --surface-card:   var(--white);
+  --surface-quiet:  var(--cream-50);
+  --surface-invert: var(--navy-800);
+  --line-hairline:  var(--sand-300);
+  --line-strong:    var(--navy-100);
+
+  --text-primary:          var(--navy-800);
+  --text-secondary:        #4A6076;
+  --text-tertiary:         #5F7285;
+  --text-on-invert:        #F3F7FA;
+  --text-on-invert-quiet:  #A9C0D2;
+  --text-on-invert-accent: var(--teal-500);
+
+  --action:      var(--navy-800);
+  --action-hover: var(--navy-900);
+  --action-text: #FFFFFF;
+  --accent:      var(--teal-500);
+  --accent-deep: var(--teal-800);
+  --accent-wash: var(--teal-50);
+  --highlight:      var(--amber-500);
+  --highlight-wash: var(--amber-50);
+
+  /* ── Pulsación ──
+     Cada superficie se hunde hacia su propio tinte de marca en vez de
+     hacia un gris neutro. Un gris delata que nadie miró. */
+  --press-navy: var(--navy-50);  --press-teal: var(--teal-100);
+  --press-amber: var(--amber-100); --press-sand: var(--sand-200);
+  --press-on-navy: #1C3D5A; --press-on-teal: var(--teal-600);
+  --press-on-red:  var(--red-100);
+
+  /* ── URGENCIA ──
+     El mecanismo central del producto, hecho token. Cuatro niveles, cada
+     uno con su color de texto, su fondo y su filete.
+
+     `none` —sin fecha puesta— tiene tono propio a propósito: significa que
+     el sistema NUNCA podrá avisar, y eso no es "neutro", es lo que hay que
+     corregir. */
+  --urgency-now-fg:  var(--red-600);   --urgency-now-wash:  var(--red-50);    --urgency-now-line:  var(--red-200);
+  --urgency-soon-fg: var(--amber-600); --urgency-soon-wash: var(--amber-50);  --urgency-soon-line: var(--amber-200);
+  --urgency-ok-fg:   var(--teal-700);  --urgency-ok-wash:   var(--teal-50);   --urgency-ok-line:   var(--teal-200);
+  --urgency-none-fg: #5A6B7B;          --urgency-none-wash: var(--sand-200);  --urgency-none-line: var(--sand-300);
+
+  --focus-ring:     var(--teal-600);
+  --bar-bg:         rgba(247, 245, 239, 0.82);
+  --camera-surface: #16324C;
+  --hairline-on-invert: rgba(255, 255, 255, 0.22);
+  --skeleton-base:  var(--sand-200);
+  --skeleton-sheen: var(--sand-300);
+
+  /* ═══════════════════════════════════════════════════════
+     PUENTE — los nombres que ya usa el producto
+
+     Los 224 archivos existentes escriben `text-ink`, `bg-surface`,
+     `border-line`… Reapuntando esos tokens a la paleta nueva, todo el
+     producto cambia de aspecto sin editar un solo componente.
+
+     No es un atajo: es lo que hace que este cambio sea reversible y que la
+     matriz de contraste siga verificándose sola sobre los valores nuevos.
+     ═══════════════════════════════════════════════════════ */
+
+  --navy:       var(--navy-800);
+  --navy-hover: var(--navy-900);
+  --navy-soft:  var(--navy-50);
+  --cream:      var(--cream-100);
+
+  --bg:            var(--bg-app);
+  --surface:       var(--surface-card);
+  --surface-alt:   var(--bg-sunken);
+  --text:          var(--text-primary);
+  --text-muted:    var(--text-secondary);  /* 6.51:1 sobre blanco ✓ */
+  --text-disabled: var(--text-tertiary);
+  --line:          var(--line-hairline);
+
+  --teal:      var(--teal-500); /* SOLO superficie: nunca lleva texto encima */
+  --teal-deep: var(--accent-deep); /* 6.92:1 con blanco ✓ */
+  --teal-soft: var(--accent-wash);
+  --amber:      var(--highlight); /* SOLO fondo; el texto encima va en navy */
+  --amber-deep: var(--amber-600); /* 5.93:1 sobre blanco ✓ */
+  --amber-soft: var(--highlight-wash);
+
+  --on-accent:    #FFFFFF;
+  --on-highlight: var(--navy-900);
+
+  --success: var(--urgency-ok-fg);
+  --warning: var(--urgency-soon-fg);
+  --danger:  var(--red-600);
+  --info:    var(--accent-deep);
+  --success-soft: var(--urgency-ok-wash);
+  --danger-soft:  var(--urgency-now-wash);
+
+  /* ── Sombras ──
+     Dos capas: una tensa que asienta el borde y una amplia que da la
+     altura. Y teñidas de navy, no negro neutro: una sombra gris sobre
+     papel crema se ve sucia. */
+  --shadow-sm: 0 1px 2px rgba(16, 42, 67, 0.05), 0 6px 18px rgba(16, 42, 67, 0.06);
+  --shadow-md: 0 2px 6px rgba(16, 42, 67, 0.06), 0 12px 28px rgba(16, 42, 67, 0.08);
+  --shadow-lg: 0 12px 34px rgba(16, 42, 67, 0.14);
 }
 
 /* ── MODO OSCURO (§2.6) ──
@@ -178,37 +270,68 @@
   --shadow-md: var(--shadow-md);
   --shadow-lg: var(--shadow-lg);
 
-  /* Tipografía (§2.2) */
-  --font-heading: var(--font-montserrat), var(--font-inter), system-ui, sans-serif;
-  --font-body:    var(--font-inter), system-ui, sans-serif;
-  --font-sans:    var(--font-inter), system-ui, sans-serif;
+  /* ── Tipografía ──
+     Manrope en todo. Antes eran Inter + Montserrat: dos palos secos, o sea
+     la misma clasificación haciendo el mismo trabajo. Eso no es un
+     emparejamiento, es un accidente — y es lo que hacía que el producto se
+     viera genérico aunque el color estuviera pensado.
 
-  /* Escala tipográfica (§2.2.1) — todo en rem, base 16 */
+     Ahora la jerarquía la llevan el tamaño, el peso y el interletraje, que
+     es como se hace cuando hay una sola voz. */
+  --font-heading: var(--font-manrope), var(--font-inter), system-ui, sans-serif;
+  --font-body:    var(--font-manrope), var(--font-inter), system-ui, sans-serif;
+  --font-sans:    var(--font-manrope), var(--font-inter), system-ui, sans-serif;
+
+  /* ── Escala tipográfica ──
+     Tres cosas que la separan de una escala generada:
+
+     · el INTERLETRAJE cambia con el tamaño — negativo en los grandes,
+       porque el espaciado de dibujo estaba pensado para texto pequeño;
+       positivo y abierto en las etiquetas en versales, que sin aire se
+       leen rotas.
+     · el INTERLINEADO va al revés que el tamaño: apretado arriba, suelto
+       en el cuerpo.
+     · el CUERPO sube de 16px a 17. El mínimo de 16 sigue siendo el suelo,
+       pero el suelo no tiene por qué ser el sitio donde se vive. */
   --text-*: initial;
-  --text-display: 2.5rem;      /* 40px — hero landing */
-  --text-display--line-height: 1.1;
-  --text-display--font-weight: 700;
-  --text-display-lg: 3rem;     /* 48px — hero desktop */
-  --text-display-lg--line-height: 1.1;
-  --text-display-lg--font-weight: 700;
+  --text-display-lg: 3rem;     /* 48px */
+  --text-display-lg--line-height: 1.05;
+  --text-display-lg--font-weight: 800;
+  --text-display-lg--letter-spacing: -0.03em;
+  --text-display: 2.375rem;    /* 38px */
+  --text-display--line-height: 1.05;
+  --text-display--font-weight: 800;
+  --text-display--letter-spacing: -0.03em;
   --text-h1: 2rem;             /* 32px */
-  --text-h1--line-height: 1.2;
-  --text-h1--font-weight: 700;
-  --text-h2: 1.5rem;           /* 24px */
-  --text-h2--line-height: 1.3;
-  --text-h2--font-weight: 600;
-  --text-h3: 1.25rem;          /* 20px */
-  --text-h3--line-height: 1.4;
-  --text-h3--font-weight: 600;
-  --text-body-lg: 1.125rem;    /* 18px — instructivos */
-  --text-body-lg--line-height: 1.6;
-  --text-body: 1rem;           /* 16px — MÍNIMO para body, no negociable */
-  --text-body--line-height: 1.6;
-  --text-label: 0.875rem;      /* 14px — etiquetas de formulario */
-  --text-label--line-height: 1.4;
+  --text-h1--line-height: 1.06;
+  --text-h1--font-weight: 800;
+  --text-h1--letter-spacing: -0.03em;
+  --text-h2: 1.625rem;         /* 26px */
+  --text-h2--line-height: 1.14;
+  --text-h2--font-weight: 800;
+  --text-h2--letter-spacing: -0.022em;
+  --text-h3: 1.375rem;         /* 22px */
+  --text-h3--line-height: 1.22;
+  --text-h3--font-weight: 700;
+  --text-h3--letter-spacing: -0.022em;
+  --text-phrase: 1.5625rem;    /* 25px — la frase en inglés de Academia */
+  --text-phrase--line-height: 1.2;
+  --text-phrase--font-weight: 700;
+  --text-phrase--letter-spacing: -0.02em;
+  --text-body-lg: 1.1875rem;   /* 19px — instructivos */
+  --text-body-lg--line-height: 1.5;
+  --text-body: 1.0625rem;      /* 17px — cuerpo */
+  --text-body--line-height: 1.5;
+  --text-body--letter-spacing: -0.006em;
+  --text-label: 0.9375rem;     /* 15px — etiquetas, notas al pie */
+  --text-label--line-height: 1.45;
   --text-label--font-weight: 500;
-  --text-caption: 0.8125rem;   /* 13px — metadatos, timestamps */
+  --text-caption: 0.875rem;    /* 14px — metadatos */
   --text-caption--line-height: 1.4;
+  --text-micro: 0.8125rem;     /* 13px — SÓLO versales con interletraje */
+  --text-micro--line-height: 1.4;
+  --text-micro--font-weight: 700;
+  --text-micro--letter-spacing: 0.07em;
 
   /* Breakpoints (§2.4): 640 / 1024 / 1440. Usar sm:, lg:, xl: */
   --breakpoint-xl: 1440px;
@@ -218,7 +341,9 @@
 
 @layer base {
   html {
-    font-family: var(--font-inter), system-ui, sans-serif;
+    /* El token, no la familia escrita a mano: así cambiar la tipografía del
+       sistema es una línea, y no una búsqueda por todo el archivo. */
+    font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
@@ -226,15 +351,21 @@
   body {
     background-color: var(--bg);
     color: var(--text);
-    font-size: 1rem;
-    line-height: 1.6;
+    /* 17px, el cuerpo del sistema. El mínimo de 16 sigue siendo el suelo;
+       el suelo no tiene por qué ser el sitio donde se vive. */
+    font-size: 1.0625rem;
+    line-height: 1.5;
+    letter-spacing: -0.006em;
     min-height: 100dvh;
   }
 
   h1, h2, h3, h4 {
-    font-family: var(--font-montserrat), var(--font-inter), system-ui, sans-serif;
+    font-family: var(--font-heading);
     color: var(--text);
-    text-wrap: balance;
+    /* `pretty` en vez de `balance`: con títulos largos en español —«Bóveda
+       Digital y Alertas»— `balance` reparte las líneas a lo ancho y deja
+       huérfanas raras. `pretty` sólo evita la palabra suelta al final. */
+    text-wrap: pretty;
   }
 
   /* Piso de accesibilidad (§2.5 / §9): foco de teclado SIEMPRE visible */

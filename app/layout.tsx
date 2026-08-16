@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Montserrat } from "next/font/google";
+import { Inter, Manrope, Montserrat } from "next/font/google";
 import { cookies } from "next/headers";
 import { COOKIES } from "@/lib/config";
 import { Toaster } from "@/components/ui/toaster";
@@ -16,6 +16,20 @@ const inter = Inter({
 const montserrat = Montserrat({
   subsets: ["latin"],
   variable: "--font-montserrat",
+  display: "swap",
+});
+
+/**
+ * Manrope es la tipografía del sistema de diseño: una sola familia para
+ * todo, del titular de 38px al metadato de 13. La jerarquía la llevan el
+ * tamaño, el peso y el interletraje — no dos familias compitiendo.
+ *
+ * Se autoaloja con next/font, así que no hay ninguna petición a Google.
+ * Importa: este público navega con datos contados.
+ */
+const manrope = Manrope({
+  subsets: ["latin"],
+  variable: "--font-manrope",
   display: "swap",
 });
 
@@ -51,7 +65,7 @@ export default async function RootLayout({
     <html
       lang={lang}
       data-theme={theme}
-      className={`${inter.variable} ${montserrat.variable}`}
+      className={`${inter.variable} ${montserrat.variable} ${manrope.variable}`}
       suppressHydrationWarning
     >
       <body>

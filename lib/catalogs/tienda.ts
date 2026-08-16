@@ -18,7 +18,7 @@
  * dinero o trámite llevan `aviso: true` y la pantalla lo pinta.
  */
 
-export type MiniAppId = "primera-audiencia" | "primeros-dolares";
+export type MiniAppId = "prime-academy" | "primera-audiencia" | "primeros-dolares";
 
 export type MiniApp = {
   id: MiniAppId;
@@ -28,13 +28,22 @@ export type MiniApp = {
   accent: string;
   /** Icono de lucide-react, por nombre. */
   icon: string;
-  /** Cuánto lleva usarla, en minutos. Se dice antes de salir de ANDEX. */
+  /** Cuánto lleva usarla. `0` = no se mide en minutos (es un catálogo, no
+   *  una herramienta de un solo uso), y entonces no se enseña el dato. */
   minutos: number;
   /** Si necesita el aviso de «esto no es asesoría». */
   aviso: boolean;
 };
 
 export const MINI_APPS: readonly MiniApp[] = [
+  {
+    id: "prime-academy",
+    envVar: "NEXT_PUBLIC_APP_PRIME_ACADEMY",
+    accent: "--teal-deep",
+    icon: "GraduationCap",
+    minutos: 0,
+    aviso: false,
+  },
   {
     id: "primera-audiencia",
     envVar: "NEXT_PUBLIC_APP_PRIMERA_AUDIENCIA",
@@ -62,6 +71,7 @@ export const MINI_APPS: readonly MiniApp[] = [
  * error — el peor fallo posible: silencioso y en producción.
  */
 export const URLS_MINI_APPS: Record<MiniAppId, string | undefined> = {
+  "prime-academy": process.env.NEXT_PUBLIC_APP_PRIME_ACADEMY,
   "primera-audiencia": process.env.NEXT_PUBLIC_APP_PRIMERA_AUDIENCIA,
   "primeros-dolares": process.env.NEXT_PUBLIC_APP_PRIMEROS_DOLARES,
 };

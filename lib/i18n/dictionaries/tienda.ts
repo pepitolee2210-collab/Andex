@@ -12,16 +12,21 @@
 
 const es = {
   title: "Tienda",
-  subtitle: "Herramientas que resuelven una cosa concreta, cada una en unos minutos.",
+  subtitle: "Herramientas que viven fuera de ANDEX. Te registras allí y, si algo se paga, se paga allí.",
   back: "Volver al inicio",
 
   intro: {
     eyebrow: "HECHAS PARA UN MOMENTO",
     headline: "Cada una resuelve un problema, no te enseña un tema",
-    body: "Son herramientas cortas: entras, resuelves lo que necesitas y sales. No hay que estudiar nada ni crear otra cuenta.",
+    body: "Cada una vive en su propia plataforma, con su propio registro y su propio cobro. No entra en tu suscripción de ANDEX: si no compras nada allí, no pagas nada más aquí.",
   },
 
   apps: {
+    "prime-academy": {
+      title: "Prime Academy",
+      body: "Vídeos y cursos en español sobre cómo avanzar en Estados Unidos: qué hacer, qué evitar y en qué orden. Lo lleva quien ya pasó por el proceso.",
+      free: "Empezar es gratis, sin tarjeta",
+    },
     "primera-audiencia": {
       title: "Qué hacer en tu primera audiencia",
       body: "Qué llevar, cómo se desarrolla, qué te van a preguntar y qué pasa después. Para que llegues sabiendo qué esperar.",
@@ -37,7 +42,7 @@ const es = {
     minutes: "{n} minutos",
     open: "Abrir",
     /** Aviso de que la herramienta vive fuera. */
-    leaves: "Se abre fuera de ANDEX, en {domain}",
+    leaves: "Se abre fuera de ANDEX, en {domain}. Allí te registras.",
     soonBadge: "Muy pronto",
     soonBody: "Todavía no está lista. Te avisamos cuando lo esté.",
     notify: "Avísame cuando esté lista",
@@ -57,16 +62,21 @@ const es = {
 
 const en: typeof es = {
   title: "Tools",
-  subtitle: "Tools that solve one specific thing, each in a few minutes.",
+  subtitle: "Tools that live outside ANDEX. You register there, and if anything costs money, you pay there.",
   back: "Back to home",
 
   intro: {
     eyebrow: "BUILT FOR A MOMENT",
     headline: "Each one solves a problem — it doesn't teach you a subject",
-    body: "These are short tools: you go in, solve what you need, and leave. Nothing to study, no second account to create.",
+    body: "Each one lives on its own platform, with its own sign-up and its own billing. It is not part of your ANDEX subscription: if you buy nothing there, you pay nothing more here.",
   },
 
   apps: {
+    "prime-academy": {
+      title: "Prime Academy",
+      body: "Videos and courses in Spanish on how to move forward in the United States: what to do, what to avoid, and in what order. Run by someone who has been through it.",
+      free: "Free to start, no card needed",
+    },
     "primera-audiencia": {
       title: "What to do at your first hearing",
       body: "What to bring, how it unfolds, what they'll ask you and what happens next. So you arrive knowing what to expect.",
@@ -80,7 +90,7 @@ const en: typeof es = {
   card: {
     minutes: "{n} minutes",
     open: "Open",
-    leaves: "Opens outside ANDEX, at {domain}",
+    leaves: "Opens outside ANDEX, at {domain}. You sign up there.",
     soonBadge: "Coming soon",
     soonBody: "It isn't ready yet. We'll let you know when it is.",
     notify: "Let me know when it's ready",

@@ -340,28 +340,28 @@ describe("§2.1.1 — matriz de contraste verificada automáticamente", () => {
     expect(failures).toEqual([]);
   });
 
-  it("el ámbar de alerta no se usa sobre el fondo crema", () => {
-    // `--amber-deep` (#9A6B00) da 4.69:1 sobre blanco —el valor que el PRD
-    // aprueba— pero solo 4.30:1 sobre el crema de `--bg`, y ahí reprueba AA.
-    // Su sitio son las tarjetas (`bg-surface`) y los avisos (`bg-amber-soft`).
-    const ratioOnCream = contrast(
-      resolve(LIGHT_TOKENS, "--amber-deep"),
-      resolve(LIGHT_TOKENS, "--bg"),
-    );
-    expect(ratioOnCream).toBeLessThan(AA); // el porqué de la regla
-
-    const offenders: string[] = [];
-    for (const file of CODE_FILES) {
-      const path = rel(file);
-      if (path === "app/design/page.tsx") continue;
-      for (const line of stripComments(read(file)).split("\n")) {
-        const amberText = /\btext-(amber-deep|warning)\b/.test(line);
-        if (amberText && /\bbg-page\b/.test(line)) {
-          offenders.push(`${path}: ${line.trim()}`);
-        }
-      }
+  it("el ámbar de alerta se lee sobre las TRES superficies", () => {
+    // ── Esta prueba cambió de sentido, y merece explicarse ──
+    //
+    // Antes decía lo contrario: que `--amber-deep` NO podía ir sobre el
+    // fondo crema. Era cierto con el ámbar viejo (#9A6B00), que daba 4.69:1
+    // sobre blanco pero sólo 4.30:1 sobre crema, y ahí reprobaba AA. De ahí
+    // salió la restricción de usarlo sólo en tarjetas y avisos.
+    //
+    // El sistema de diseño nuevo lo oscurece a #8A5A00 y con eso pasa a
+    // 5.44:1 sobre crema: la restricción dejó de tener motivo. Así que la
+    // prueba deja de prohibir y pasa a VERIFICAR — que es lo que debe hacer
+    // cuando el hecho que la justificaba cambia.
+    //
+    // Se comprueban las tres superficies para que, si alguien aclara el
+    // ámbar en el futuro, el fallo salte aquí y no en el teléfono de nadie.
+    const superficies = ["--surface", "--bg", "--surface-alt"] as const;
+    const flojos: string[] = [];
+    for (const bg of superficies) {
+      const r = contrast(resolve(LIGHT_TOKENS, "--amber-deep"), resolve(LIGHT_TOKENS, bg));
+      if (r < AA) flojos.push(`--amber-deep sobre ${bg}: ${r.toFixed(2)}:1`);
     }
-    expect(offenders).toEqual([]);
+    expect(flojos).toEqual([]);
   });
 });
 

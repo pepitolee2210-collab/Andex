@@ -19,6 +19,7 @@
 import { useState } from "react";
 import {
   Clock,
+  GraduationCap,
   ExternalLink,
   Landmark,
   Scale,
@@ -31,7 +32,7 @@ import { validarEnlace } from "@/lib/tienda/enlaces";
 import type { TiendaDict } from "@/lib/i18n/dictionaries/tienda";
 import { Button } from "@/components/ui/button";
 
-const ICONS: Record<string, LucideIcon> = { Scale, Wallet, Landmark };
+const ICONS: Record<string, LucideIcon> = { Scale, Wallet, Landmark, GraduationCap };
 
 const fill = (t: string, v: Record<string, string | number>): string =>
   t.replace(/\{(\w+)\}/g, (_, k) => String(v[k] ?? ""));
@@ -43,6 +44,10 @@ export function TiendaScreen({ copy }: TiendaScreenProps) {
 
   function Tarjeta({ app }: { app: MiniApp }) {
     const texto = copy.apps[app.id];
+    /* Algunas traen una línea propia —"empezar es gratis"— y otras no.
+       Se lee así en vez de con `in` para que TypeScript no obligue a
+       declararla vacía en las que no la tienen. */
+    const gratis = (texto as { free?: string }).free;
     const Icon = ICONS[app.icon] ?? Scale;
     const enlace = validarEnlace(urlDe(app.id));
     const yaAvisado = avisado.includes(app.id);
@@ -73,12 +78,21 @@ export function TiendaScreen({ copy }: TiendaScreenProps) {
 
             <p className="mt-1 text-body text-muted">{texto.body}</p>
 
-            {/* Cuánto tarda. Va siempre, esté lista o no: ayuda a decidir si
-                entrar ahora o volver luego. */}
-            <p className="mt-3 inline-flex min-h-8 items-center gap-1.5 rounded-full bg-surface-alt px-3 text-caption font-medium text-muted">
-              <Clock aria-hidden="true" className="size-4" />
-              {fill(copy.card.minutes, { n: app.minutos })}
-            </p>
+            {/* Cuánto tarda, o qué cuesta empezar. Va antes del botón porque
+                es lo que decide si entra ahora o vuelve luego. */}
+            <div className="mt-3 flex flex-wrap gap-2">
+              {app.minutos > 0 ? (
+                <span className="inline-flex min-h-8 items-center gap-1.5 rounded-full bg-surface-alt px-3 text-caption font-medium text-muted">
+                  <Clock aria-hidden="true" className="size-4" />
+                  {fill(copy.card.minutes, { n: app.minutos })}
+                </span>
+              ) : null}
+              {gratis ? (
+                <span className="inline-flex min-h-8 items-center rounded-full bg-success-soft px-3 text-caption font-bold text-success">
+                  {gratis}
+                </span>
+              ) : null}
+            </div>
 
             {enlace.ok ? (
               <>
