@@ -21,10 +21,11 @@
  * Todo el texto entra por props: este componente no importa los diccionarios.
  */
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Check,
   Clock,
+  Eye,
   FileText,
   FolderInput,
   Pencil,
@@ -37,12 +38,13 @@ import { Modal } from "@/components/ui/modal";
 import { Select } from "@/components/ui/select";
 import { deleteDocument, readDocument, updateDocument } from "@/lib/vault/storage";
 import { VAULT_FOLDERS, type ExpiryState, type VaultDocument, type VaultFolderId } from "@/lib/vault/types";
-import { cn, sanitizeFreeText } from "@/lib/utils";
+import { sanitizeFreeText } from "@/lib/utils";
 import {
   expiryText,
   expiryTone,
-  expiryToneClass,
   pageCountText,
+  urgencyTone,
+  urgencyToneVar,
   type VaultDocumentCopy,
 } from "./vault-format";
 
@@ -199,52 +201,74 @@ export function DocumentCard({
     .join(" · ");
 
   return (
-    <article className="rounded-lg border border-line bg-surface p-3 shadow-sm">
-      <div className="flex items-start gap-3">
-        <span
-          aria-hidden="true"
-          className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-md bg-surface-alt text-muted"
-        >
-          <FileText className="size-5" />
+    <article className="doccard">
+      {/* La cabecera entera abre el documento. Antes «Abrir» era un botón
+          más entre cuatro, del mismo tamaño que «Eliminar»: la acción que
+          se hace el 95% de las veces valía lo mismo que la irreversible.
+          Ahora abrir es toda la tarjeta, y las cuatro siguen abajo para
+          quien las busque. */}
+      <button
+        type="button"
+        onClick={handleOpen}
+        disabled={busy && dialog === null}
+        className="dochead"
+      >
+        <span className="rowicon tone-quiet">
+          <FileText aria-hidden="true" data-icon="file-text" className="size-5" />
         </span>
 
-        <div className="min-w-0 flex-1">
-          {/* `break-words`, no `truncate`: un nombre largo se envuelve; a 320px
-              nada se sale y nada se esconde. */}
-          <h3 className="break-words text-body font-medium text-ink">{doc.name}</h3>
-          <p className="mt-0.5 text-caption text-muted">{meta}</p>
-          <p
-            className={cn(
-              "mt-1.5 flex items-center gap-1.5",
-              // El texto ya dice el estado; el tamaño sube sólo cuando hay
-              // fecha límite de por medio.
-              tone === "neutral" ? "text-caption" : "text-body font-medium",
-              expiryToneClass(tone),
-            )}
-          >
-            {ToneIcon ? <ToneIcon aria-hidden="true" className="size-4 shrink-0" /> : null}
+        <span className="docmain">
+          {/* Se envuelve, no se recorta: el apellido que se perdería con
+              puntos suspensivos es justo el que distingue el acta de un
+              hijo de la del otro. */}
+          <span className="docname">{doc.name}</span>
+          <span className="docmeta">{meta}</span>
+          <span className="docstate" style={{ color: urgencyToneVar(urgencyTone(state)) }}>
+            {ToneIcon ? (
+              <ToneIcon aria-hidden="true" className="size-4 shrink-0" />
+            ) : null}
             <span className="min-w-0">{stateText}</span>
-          </p>
-        </div>
-      </div>
+          </span>
+        </span>
+      </button>
 
-      <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-        <Button variant="secondary" onClick={handleOpen} loading={busy && dialog === null}>
+      {/* Las cuatro acciones, a la vista y repartidas a partes iguales.
+          Estaban detrás de tres iconos sin texto: un icono de lápiz no
+          dice «cambiar nombre» a quien no lo ha visto antes. */}
+      <div className="docactions">
+        <button type="button" onClick={handleOpen}>
+          <Eye aria-hidden="true" className="size-4 shrink-0" />
           {copy.list.open}
-        </Button>
-        <IconAction label={copy.list.rename} onClick={() => openDialog("rename")}>
-          <Pencil aria-hidden="true" className="size-5" />
-        </IconAction>
-        <IconAction label={copy.list.move} onClick={() => openDialog("move")}>
-          <FolderInput aria-hidden="true" className="size-5" />
-        </IconAction>
-        <IconAction label={copy.list.delete} onClick={() => openDialog("delete")}>
-          <Trash2 aria-hidden="true" className="size-5" />
-        </IconAction>
+        </button>
+        <button
+          type="button"
+          aria-label={copy.list.rename}
+          onClick={() => openDialog("rename")}
+        >
+          <Pencil aria-hidden="true" className="size-4 shrink-0" />
+          {copy.list.renameShort}
+        </button>
+        <button
+          type="button"
+          aria-label={copy.list.move}
+          onClick={() => openDialog("move")}
+        >
+          <FolderInput aria-hidden="true" className="size-4 shrink-0" />
+          {copy.list.moveShort}
+        </button>
+        <button
+          type="button"
+          className="danger"
+          aria-label={copy.list.delete}
+          onClick={() => openDialog("delete")}
+        >
+          <Trash2 aria-hidden="true" className="size-4 shrink-0" />
+          {copy.list.deleteShort}
+        </button>
       </div>
 
       {error && dialog === null ? (
-        <p role="alert" className="mt-2 text-caption text-danger">
+        <p role="alert" className="px-4 pb-3 text-caption text-danger">
           {error}
         </p>
       ) : null}
@@ -364,26 +388,7 @@ export function DocumentCard({
     </article>
   );
 }
-
-/** Botón de icono con nombre accesible y target táctil de 44px. */
-function IconAction({
-  label,
-  onClick,
-  children,
-}: {
-  label: string;
-  onClick: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={label}
-      title={label}
-      className="inline-flex size-11 shrink-0 items-center justify-center rounded-md border border-line text-muted transition-colors hover:bg-surface-alt hover:text-ink"
-    >
-      {children}
-    </button>
-  );
-}
+/* `IconAction` vivía aquí: tres botones de icono sin texto para cambiar
+   nombre, mover y borrar. Se ha ido con el rediseño — ahora las cuatro
+   acciones llevan su palabra escrita, que es lo que hace falta cuando el
+   lápiz y la carpeta-con-flecha no significan nada de antemano. */

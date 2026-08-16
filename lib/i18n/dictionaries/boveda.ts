@@ -32,6 +32,56 @@ const es = {
   sections: {
     dueSoon: "Se te vence pronto",
     allDocuments: "Tus documentos",
+    folders: "Carpetas",
+    seeAll: "Ver las {n}",
+  },
+
+  /**
+   * EL RESUMEN — el recuento que además es el filtro.
+   *
+   * Antes había dos controles para la misma pregunta: una tira de chips
+   * («Todos · Vence pronto · Sin fecha») y una rejilla de cinco carpetas.
+   * Ninguno de los dos contestaba lo primero que se quiere saber al abrir
+   * la bóveda con prisa, que no es "en qué carpeta lo metí" sino "¿tengo
+   * algo encima?".
+   *
+   * Tres cuentas lo dicen y además filtran. Y no hay estado "todos": una
+   * lista de doce documentos sin orden de urgencia no es una respuesta.
+   */
+  summary: {
+    /** El módulo. Va de sobretítulo, para que el titular pueda ser corto. */
+    overline: "Bóveda Digital y Alertas",
+    title: "Tu bóveda",
+    /** "12 documentos" + "5 carpetas", ya en plural, se unen aquí. */
+    inFolders: "{docs} en {folders}",
+    folderCount: "{n} carpetas",
+    folderCountOne: "1 carpeta",
+    groupLabel: "Ver los documentos por su estado",
+  },
+
+  /**
+   * Los tres estados. El texto de cada uno dice qué hacer, no qué es:
+   * «sin fecha» sin más es una etiqueta, y lo que hace falta saber es que
+   * sin fecha no va a llegar ningún aviso.
+   */
+  states: {
+    soon: {
+      tally: "vencen pronto",
+      title: "Vencen en los próximos 90 días",
+      empty: "Ninguno de tus documentos vence en los próximos 90 días.",
+    },
+    none: {
+      tally: "sin fecha",
+      title: "Sin fecha de vencimiento",
+      note: "Sin fecha puesta no te podemos avisar antes de que venzan. Pónsela desde cada documento, con el lápiz.",
+      empty: "Todos tus documentos tienen su fecha puesta.",
+    },
+    ok: {
+      tally: "en regla",
+      title: "En regla",
+      note: "Con estos no hay nada que hacer. Están aquí para cuando te los pidan.",
+      empty: "Todavía no tienes ningún documento vigente guardado.",
+    },
   },
 
   /**
@@ -96,6 +146,18 @@ const es = {
     rename: "Cambiar nombre",
     move: "Mover de carpeta",
     delete: "Eliminar",
+    /**
+     * Las mismas cuatro, en una palabra.
+     *
+     * En la tarjeta las acciones van en una fila de cuatro, y a 390px
+     * «Cambiar nombre» y «Mover de carpeta» se parten en dos líneas con
+     * el icono encajado a mitad de palabra. Estas son las que se ven; las
+     * largas siguen siendo el `aria-label` y el título del diálogo, que
+     * es donde hace falta la frase entera.
+     */
+    renameShort: "Editar",
+    moveShort: "Mover",
+    deleteShort: "Borrar",
     deleteConfirm:
       "Se borrará de tu teléfono y no se puede recuperar. ¿Seguro que quieres eliminarlo?",
     deleteAction: "Sí, eliminar",
@@ -442,6 +504,37 @@ const en = {
   sections: {
     dueSoon: "Expiring soon",
     allDocuments: "Your documents",
+    folders: "Folders",
+    seeAll: "See all {n}",
+  },
+
+  summary: {
+    overline: "Digital Vault and Alerts",
+    title: "Your vault",
+    inFolders: "{docs} in {folders}",
+    folderCount: "{n} folders",
+    folderCountOne: "1 folder",
+    groupLabel: "View your documents by status",
+  },
+
+  states: {
+    soon: {
+      tally: "expiring soon",
+      title: "Expiring in the next 90 days",
+      empty: "None of your documents expire in the next 90 days.",
+    },
+    none: {
+      tally: "no date",
+      title: "No expiry date",
+      note: "Without a date we can't warn you before they expire. Add one from each document, with the pencil.",
+      empty: "All your documents have their date set.",
+    },
+    ok: {
+      tally: "up to date",
+      title: "Up to date",
+      note: "Nothing to do with these. They're here for when someone asks for them.",
+      empty: "You haven't saved any current documents yet.",
+    },
   },
 
   search: {
@@ -487,6 +580,9 @@ const en = {
     rename: "Rename",
     move: "Move to folder",
     delete: "Delete",
+    renameShort: "Rename",
+    moveShort: "Move",
+    deleteShort: "Delete",
     deleteConfirm:
       "It will be erased from your phone and can't be recovered. Delete it anyway?",
     deleteAction: "Yes, delete",

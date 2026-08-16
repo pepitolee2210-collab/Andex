@@ -86,6 +86,28 @@ describe("§2.1 — los colores solo se definen en globals.css", () => {
 
     expect(offenders).toEqual([]);
   });
+
+  // Esta regla decía "solo en globals.css" pero únicamente miraba .ts/.tsx.
+  // Al portar el sistema de diseño aparecieron cuatro hex en `app/kit.css`
+  // que la elidían igual de bien que uno en un componente: un color fuera
+  // de globals.css no lo ve la matriz de contraste, esté en TSX o en CSS.
+  it("ningún otro archivo CSS declara un color hex", () => {
+    const HEX = /#[0-9a-fA-F]{3,8}\b/;
+    const offenders: string[] = [];
+
+    const cssFiles = SCAN_DIRS.flatMap((d) => walk(join(ROOT, d)))
+      .filter((f) => f.endsWith(".css"))
+      .filter((f) => rel(f) !== "app/globals.css");
+
+    for (const file of cssFiles) {
+      const code = stripComments(read(file));
+      for (const line of code.split("\n")) {
+        if (HEX.test(line)) offenders.push(`${rel(file)}: ${line.trim()}`);
+      }
+    }
+
+    expect(offenders).toEqual([]);
+  });
 });
 
 describe("§2.1.1 — el teal y el ámbar puros nunca llevan texto encima", () => {

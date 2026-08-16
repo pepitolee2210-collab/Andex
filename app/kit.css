@@ -1,0 +1,1060 @@
+/* ═══════════════════════════════════════════════════════
+   ANDEX — CLASES DEL SISTEMA DE DISEÑO
+
+   Portadas desde el proyecto de Claude Design
+   (bd73bc05-e8da-4d65-8753-69afffad1973 · components/components.css
+   y ui_kits/app/kit.css). Este archivo NO inventa nada: es el diseño
+   aprobado, adaptado a tres realidades de este repositorio.
+
+   ── Las tres adaptaciones, y por qué ──
+
+   1. `.group` → `.ax-group`. En el diseño, `.group` es la lista
+      agrupada. En Tailwind es el marcador de `group-hover:`, y este
+      repositorio lo usa 51 veces. Definirlo con fondo y sombra habría
+      pintado una tarjeta detrás de cada `group-hover` del producto.
+
+   2. `[data-theme=night]` → los dos selectores de este proyecto. Aquí
+      el tema oscuro son dos bloques que hay que mantener en sync: la
+      cookie explícita y `prefers-color-scheme`. Es la convención que ya
+      sigue `globals.css`.
+
+   3. Todo va dentro de `@layer components`. Sin capa, estas reglas
+      ganarían a CUALQUIER utilidad de Tailwind —lo no capado gana a lo
+      capado, sin importar el orden— y `className="btn mt-4"` dejaría de
+      comportarse como se espera. Dentro de la capa el orden queda:
+      base < components < utilities. Las clases del kit ganan a los
+      estilos de elemento (`h1 { color }`) y pierden ante una utilidad
+      puesta a mano, que es exactamente lo que se quiere.
+
+   Los tokens que consume viven en `globals.css`. Aquí no hay ni un hex.
+   ═══════════════════════════════════════════════════════ */
+
+@layer components {
+  /* ── Cabecera de pantalla ───────────────────────────────
+     En el kit el armazón vive dentro de un teléfono de 390×844 y se paga
+     sus propios márgenes. Aquí no: `PanelShell` ya pone la barra
+     superior, el lateral y el padding de `<main>`. Portar `.sbody` y el
+     padding de `.navbar` habría dado margen doble y una segunda
+     navegación. Lo que sí se porta —y es lo que se ve— es la jerarquía
+     de la cabecera: sobretítulo, titular grande y subtítulo. */
+
+  .navrow {
+    min-height: var(--tap-min);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .navback {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: -6px;
+    min-height: var(--tap-min);
+    font-size: var(--size-body);
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+  }
+  .navright {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  /* El sobretítulo dice de qué módulo es la pantalla; el título dice
+     qué es esta pantalla. Separarlos deja que el título sea corto. */
+  .navover {
+    font-size: var(--size-footnote);
+    font-weight: var(--weight-semibold);
+    color: var(--navy-600);
+    margin-top: 9px;
+  }
+  .largeTitle {
+    font-size: var(--size-title-1);
+    font-weight: var(--weight-black);
+    letter-spacing: var(--track-display);
+    line-height: 1.06;
+    margin-top: 9px;
+    text-wrap: pretty;
+  }
+  .navsub {
+    font-size: var(--size-footnote);
+    color: var(--text-secondary);
+    margin-top: 8px;
+    line-height: 1.45;
+  }
+
+  .stack-sm > * + * { margin-top: 12px; }
+  .stack    > * + * { margin-top: 20px; }
+
+  /* Aparecer, una sola vez, hacia arriba. */
+  .enter { animation: andex-enter var(--dur-reveal) var(--ease-spring) both; }
+  @keyframes andex-enter {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  /* ── Listas agrupadas ─────────────────────────────────── */
+
+  .ax-group {
+    background: var(--surface-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-raise);
+    overflow: hidden;
+  }
+
+  .row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 15px 16px;
+    text-align: left;
+    min-height: var(--tap-comfortable);
+    position: relative;
+    background: none;
+    border: 0;
+    font-family: inherit;
+    color: inherit;
+    transition: background var(--dur-press) linear;
+  }
+  /* El filete empieza a 16px, no en el borde: así arranca donde arranca
+     el texto y la lista se lee como una columna, no como una tabla. */
+  .row + .row::before {
+    content: "";
+    position: absolute;
+    left: 16px; right: 0; top: 0;
+    height: 1px;
+    background: var(--line-hairline);
+  }
+  .row.tappable { cursor: pointer; }
+  .row.tappable:hover  { background: var(--surface-quiet); }
+  .row.tappable:active { background: var(--press-navy); }
+
+  .rowicon {
+    width: 36px; height: 36px;
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    flex: 0 0 auto;
+  }
+  .rowicon.tone-quiet     { background: var(--navy-50);       color: var(--navy-700); }
+  .rowicon.tone-accent    { background: var(--teal-100);      color: var(--teal-800); }
+  .rowicon.tone-highlight { background: var(--amber-100);     color: var(--amber-700); }
+  .rowicon.tone-invert    { background: var(--surface-invert); color: var(--text-on-invert); }
+
+  .rowmain { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .rowtitle {
+    display: block;
+    font-size: var(--size-body);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--track-body);
+    line-height: 1.28;
+    overflow-wrap: break-word;
+  }
+  .rowmeta {
+    display: block;
+    font-size: var(--size-footnote);
+    color: var(--text-secondary);
+    line-height: 1.38;
+  }
+  .rowwarn {
+    display: block;
+    font-size: var(--size-footnote);
+    color: var(--text-secondary);
+    line-height: 1.42;
+    margin-top: 6px;
+    padding-top: 9px;
+    border-top: 1px solid var(--line-hairline);
+  }
+  .rowtrail { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+
+  /* ── Etiqueta de sección ────────────────────────────────
+     No es un título: es un rótulo. Va en versalitas apretadas porque su
+     trabajo es separar, no competir con lo que separa. */
+  .seclbl {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin: var(--gap-section) 0 11px;
+    font-size: var(--size-micro);
+    font-weight: var(--weight-black);
+    letter-spacing: var(--track-label);
+    text-transform: uppercase;
+    color: var(--navy-700);
+  }
+  /* El enlace de la derecha necesita sus 44px de alto para el dedo, pero
+     no puede empujar la línea: los márgenes negativos le dan área táctil
+     sin ocupar sitio. */
+  .seclbl button {
+    min-height: var(--tap-min);
+    min-width: var(--tap-min);
+    margin: -13px 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    font-size: var(--size-micro);
+    font-weight: var(--weight-bold);
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--accent-deep);
+    background: none;
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+
+  /* ── Insignias ──────────────────────────────────────────
+     Los cuatro tonos de urgencia, y ninguno depende sólo del color: la
+     insignia siempre lleva su texto. */
+  .badge {
+    flex: 0 0 auto;
+    font-size: var(--size-caption);
+    font-weight: var(--weight-bold);
+    padding: 5px 11px;
+    border-radius: var(--radius-pill);
+    white-space: nowrap;
+    letter-spacing: -.005em;
+  }
+  .badge.tone-now      { background: var(--urgency-now-wash);  color: var(--urgency-now-fg); }
+  .badge.tone-soon     { background: var(--urgency-soon-wash); color: var(--urgency-soon-fg); }
+  .badge.tone-ok       { background: var(--urgency-ok-wash);   color: var(--urgency-ok-fg); }
+  .badge.tone-none     { background: var(--urgency-none-wash); color: var(--urgency-none-fg); }
+  .badge.tone-accent   { background: var(--teal-100);          color: var(--teal-800); }
+  .badge.tone-building { background: var(--navy-50);           color: var(--navy-700); }
+
+  /* ── Superficies ────────────────────────────────────────
+     Tres pesos para una lista donde el estado importa: destacada,
+     normal y pendiente. */
+  .ax-card {
+    background: var(--surface-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-raise);
+    padding: var(--gutter-card);
+  }
+  .card-accent    { background: var(--accent-wash); box-shadow: none; }
+  .card-highlight { background: var(--amber-100);   box-shadow: var(--shadow-raise); }
+  .card-invert    { background: var(--surface-invert); color: var(--text-on-invert); box-shadow: var(--shadow-float); }
+  .card-quiet     { background: transparent; box-shadow: none; border: 1px solid var(--line-hairline); }
+  .card-lift      { box-shadow: var(--shadow-lift); border: 1px solid var(--teal-200); }
+  .card-pending   { background: transparent; box-shadow: none; border: 1px solid var(--line-hairline); }
+  .subcard {
+    background: var(--surface-card);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-raise);
+  }
+
+  /* ── Botones ────────────────────────────────────────────
+     Se hunden al tocarlos. Es el único acuse de recibo que existe antes
+     de que conteste la red, y con conexión mala es lo único que hay. */
+  .ax-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    font-family: inherit;
+    font-weight: var(--weight-bold);
+    letter-spacing: -.012em;
+    border: 0;
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    transition:
+      transform  var(--dur-press) var(--ease-standard),
+      background var(--dur-press) linear,
+      box-shadow var(--dur-press) linear;
+  }
+  .ax-btn.wide { width: 100%; }
+  .btn-lg { min-height: var(--tap-primary); font-size: var(--size-body);     padding: 0 22px; }
+  .btn-sm { min-height: var(--tap-min);     font-size: var(--size-footnote); padding: 0 17px; border-radius: var(--radius-sm); }
+  .ax-btn:active   { transform: scale(var(--press-scale)); }
+  .ax-btn:disabled { opacity: .4; pointer-events: none; box-shadow: none; }
+
+  .btn-primary { background: var(--action); color: var(--action-text); box-shadow: var(--shadow-button); }
+  .btn-primary:hover  { background: var(--action-hover); }
+  .btn-primary:active { background: var(--press-on-navy); box-shadow: var(--shadow-button-press); }
+
+  /* El teal puro nunca lleva texto blanco: 2.49:1. Encima va navy. */
+  .btn-accent { background: var(--accent); color: var(--navy-900); box-shadow: var(--shadow-button); }
+  .btn-accent:hover  { background: var(--teal-600); }
+  .btn-accent:active { background: var(--press-on-teal); box-shadow: var(--shadow-button-press); }
+
+  .btn-quiet  { background: var(--surface-card); color: var(--text-primary); box-shadow: var(--shadow-raise); }
+  .btn-quiet:active { background: var(--press-navy); }
+  .btn-ghost  { background: transparent; color: var(--text-primary); box-shadow: inset 0 0 0 1.5px var(--line-strong); }
+  .btn-ghost:hover  { background: var(--surface-quiet); }
+  .btn-ghost:active { background: var(--press-navy); }
+  .btn-danger { background: transparent; color: var(--red-600); box-shadow: inset 0 0 0 1.5px var(--red-200); }
+  .btn-danger:active { background: var(--press-on-red); }
+  .btn-onInvert { background: var(--text-on-invert); color: var(--navy-900); }
+  .btn-onInvert:active { background: var(--navy-50); }
+  .ax-btn:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+
+  /* ── Campos ─────────────────────────────────────────────── */
+
+  .ax-field { display: flex; flex-direction: column; gap: 7px; padding: 14px 16px; position: relative; }
+  .ax-field + .ax-field::before {
+    content: "";
+    position: absolute;
+    left: 16px; right: 0; top: 0;
+    height: 1px;
+    background: var(--line-hairline);
+  }
+  .fieldlbl {
+    font-size: var(--size-micro);
+    font-weight: var(--weight-bold);
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+  }
+  .fieldbox  { font-size: var(--size-body); font-weight: var(--weight-medium); color: var(--text-primary); }
+  .fieldhint { font-size: var(--size-footnote); color: var(--text-secondary); line-height: 1.42; }
+
+  .segmented {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    background: var(--sand-200);
+    border-radius: var(--radius-md);
+  }
+  .segmented button {
+    flex: 1;
+    min-height: var(--tap-min);
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+    border-radius: var(--radius-sm);
+    font-size: var(--size-footnote);
+    font-weight: var(--weight-semibold);
+    color: var(--text-secondary);
+    background: none;
+    transition: background var(--dur-press) linear;
+  }
+  .segmented button[aria-pressed="true"] {
+    background: var(--surface-card);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-raise);
+  }
+
+  /* Filtros con contador. */
+  .filterbar { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+  .filterbar::-webkit-scrollbar { display: none; }
+  .filterchip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: var(--tap-min);
+    padding: 0 15px;
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+    border-radius: var(--radius-pill);
+    background: var(--surface-card);
+    box-shadow: var(--shadow-raise);
+    font-size: var(--size-footnote);
+    font-weight: var(--weight-semibold);
+    color: var(--text-secondary);
+    white-space: nowrap;
+    transition: background var(--dur-press) linear;
+  }
+  .filterchip:active { background: var(--press-navy); }
+  .filterchip[aria-pressed="true"] {
+    background: var(--action);
+    color: var(--action-text);
+    box-shadow: var(--shadow-button);
+  }
+  .filtercount {
+    font-size: var(--size-micro);
+    font-weight: var(--weight-bold);
+    padding: 2px 7px;
+    border-radius: var(--radius-pill);
+    background: var(--sand-200);
+    color: var(--text-secondary);
+  }
+  .filterchip[aria-pressed="true"] .filtercount {
+    background: var(--tint-on-action);
+    color: var(--action-text);
+  }
+
+  .chiplist { display: flex; flex-wrap: wrap; gap: 9px; }
+  .ax-chip {
+    min-height: var(--tap-min);
+    padding: 0 16px;
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+    border-radius: var(--radius-pill);
+    background: var(--surface-card);
+    box-shadow: var(--shadow-raise);
+    font-size: var(--size-footnote);
+    font-weight: var(--weight-semibold);
+    color: inherit;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    transition: background var(--dur-press) linear;
+  }
+  .ax-chip:active { background: var(--press-navy); }
+  .ax-chip.on { background: var(--action); color: var(--action-text); box-shadow: var(--shadow-button); }
+
+  /* ── Avisos ─────────────────────────────────────────────── */
+
+  .ax-notice {
+    display: flex;
+    gap: 11px;
+    align-items: flex-start;
+    font-size: var(--size-footnote);
+    line-height: 1.5;
+    color: var(--text-secondary);
+    padding: 14px 16px;
+    border-radius: var(--radius-md);
+    background: var(--bg-sunken);
+  }
+  .ax-notice.tone-plain { background: transparent; padding: 12px 0; }
+  .verified { font-size: var(--size-micro); color: var(--text-tertiary); margin-top: 9px; }
+  .searchbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: var(--tap-min);
+    padding: 0 15px;
+    border-radius: var(--radius-md);
+    background: var(--bg-sunken);
+    color: var(--text-tertiary);
+    font-size: var(--size-body);
+  }
+
+  /* ── Navegación ─────────────────────────────────────────── */
+
+  .tabbar {
+    display: flex;
+    align-items: stretch;
+    padding: 8px 6px 22px;
+    background: var(--bar-bg);
+    backdrop-filter: var(--blur-bar);
+    -webkit-backdrop-filter: var(--blur-bar);
+    border-top: 1px solid var(--line-hairline);
+  }
+  .ax-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-height: var(--tap-min);
+    border: 0;
+    background: none;
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--text-tertiary);
+    font-size: 11px;
+    font-weight: var(--weight-semibold);
+    letter-spacing: -.01em;
+    transition: color var(--dur-press) linear;
+  }
+  .ax-tab.on { color: var(--text-primary); }
+
+  .ax-progress { display: flex; gap: 5px; margin-top: 16px; }
+  .ax-progress i {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--sand-300);
+    transition: background var(--dur-fast) linear;
+  }
+  .ax-progress i.on { background: var(--accent); }
+
+  /* ── Tarjeta de documento ───────────────────────────────
+     Las cuatro acciones viven en la propia tarjeta, en una fila con
+     filetes entre medias. Antes estaban detrás de un menú: un menú es un
+     toque más y una lista que hay que leer para saber qué hay dentro. */
+  .doccard {
+    background: var(--surface-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-raise);
+    overflow: hidden;
+  }
+  .dochead {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    padding: 16px 16px 14px;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: 0;
+    font-family: inherit;
+    color: inherit;
+    cursor: pointer;
+    transition: background var(--dur-press) linear;
+  }
+  .dochead:active { background: var(--press-navy); }
+  .docmain { flex: 1; min-width: 0; display: block; }
+  /* Los nombres reales son largos —«Acta de nacimiento de Sofía Ramírez
+     López»— y se parten, no se recortan con puntos suspensivos: el
+     apellido que se pierde es justo el que distingue un documento de
+     otro en una familia. */
+  .docname {
+    display: block;
+    font-size: var(--size-body);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--track-body);
+    line-height: 1.3;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+  .docmeta { display: block; font-size: var(--size-footnote); color: var(--text-secondary); margin-top: 5px; }
+  .docstate {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 9px;
+    font-size: var(--size-footnote);
+    font-weight: var(--weight-bold);
+  }
+  .docactions { display: flex; border-top: 1px solid var(--line-hairline); }
+  .docactions button {
+    flex: 1;
+    min-height: var(--tap-min);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: var(--size-caption);
+    font-weight: var(--weight-semibold);
+    color: var(--text-secondary);
+    position: relative;
+    transition: background var(--dur-press) linear;
+  }
+  .docactions button + button::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 9px; bottom: 9px;
+    width: 1px;
+    background: var(--line-hairline);
+  }
+  .docactions button:active { background: var(--press-navy); }
+  .docactions button.danger { color: var(--red-600); }
+  .docactions button.danger:active { background: var(--press-on-red); }
+
+  /* ── Rejilla de carpetas ────────────────────────────────── */
+
+  .foldergrid { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+  .foldercard {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 15px;
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    color: inherit;
+    background: var(--surface-card);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-raise);
+    min-height: 96px;
+    transition: background var(--dur-press) linear;
+  }
+  .foldercard:active { background: var(--press-navy); }
+  .foldername {
+    display: block;
+    font-size: var(--size-footnote);
+    font-weight: var(--weight-bold);
+    letter-spacing: -.008em;
+    line-height: 1.28;
+  }
+  .foldercount { display: block; font-size: var(--size-micro); color: var(--text-tertiary); margin-top: auto; }
+
+  /* ── Dato con fuente ────────────────────────────────────
+     El filete de la izquierda dice «esto no lo decimos nosotros». */
+  .sourced { border-left: 2px solid var(--line-hairline); padding-left: 15px; }
+  .sourced p { font-size: var(--size-footnote); line-height: 1.55; color: var(--text-secondary); }
+  .sourced p + p { margin-top: 10px; }
+  .sourced a {
+    color: var(--text-secondary);
+    text-decoration: underline;
+    text-decoration-color: var(--sand-400);
+    text-underline-offset: 2px;
+  }
+  .sourced a:hover { color: var(--text-primary); }
+  .sourcedwho { font-size: var(--size-micro); color: var(--text-tertiary); margin-top: 11px; }
+
+  /* ── Frase de los temarios ──────────────────────────────
+     La frase en inglés es el objeto de la pantalla: 25px y peso 700. La
+     pronunciación va debajo en cursiva teal y NO se parte por sílabas
+     —`word-break: keep-all`— porque una pronunciación cortada a la mitad
+     se lee mal en voz alta, que es justo para lo que está. */
+  .phrase {
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+    color: inherit;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 0;
+    transition: transform var(--dur-press) var(--ease-standard);
+  }
+  .phrase:active { transform: scale(.98); }
+  .phrasemain { flex: 1; min-width: 0; display: block; }
+  .phrase-en {
+    display: block;
+    font-size: var(--size-phrase);
+    font-weight: var(--weight-bold);
+    letter-spacing: var(--track-phrase);
+    line-height: 1.18;
+    text-wrap: pretty;
+  }
+  .phrase-pr {
+    display: block;
+    font-size: 18px;
+    font-style: italic;
+    color: var(--accent-deep);
+    line-height: 1.32;
+    margin-top: var(--gap-within-phrase);
+    overflow-wrap: normal;
+    word-break: keep-all;
+    text-wrap: balance;
+  }
+  .phrase-es {
+    display: block;
+    font-size: 16px;
+    color: var(--text-tertiary);
+    line-height: 1.4;
+    margin-top: var(--gap-within-phrase);
+  }
+  .phraselist { display: flex; flex-direction: column; gap: var(--gap-phrase); }
+
+  .playbtn {
+    width: 48px; height: 48px;
+    flex: 0 0 auto;
+    border-radius: 24px;
+    border: 0;
+    cursor: pointer;
+    background: var(--action);
+    color: var(--action-text);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    box-shadow: var(--shadow-button);
+    transition: background var(--dur-press) linear, transform var(--dur-press) var(--ease-standard);
+  }
+  .playbtn:active { transform: scale(.94); background: var(--press-on-navy); }
+  .playbtn.playing { background: var(--accent); color: var(--navy-900); }
+  .playring { position: absolute; inset: -4px; border-radius: 28px; transform: rotate(-90deg); }
+  .playring circle { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; }
+
+  /* ── Módulo en construcción ─────────────────────────────── */
+
+  .promise { display: flex; gap: 12px; align-items: flex-start; }
+  .promisenum {
+    width: 26px; height: 26px;
+    flex: 0 0 auto;
+    border-radius: 13px;
+    background: var(--navy-50);
+    color: var(--navy-700);
+    font-size: var(--size-micro);
+    font-weight: var(--weight-bold);
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 1px;
+  }
+  .promisetext { display: block; font-size: 16px; line-height: 1.48; color: var(--text-secondary); }
+
+  .textarea {
+    width: 100%;
+    min-height: 96px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--line-hairline);
+    background: var(--surface-card);
+    padding: 14px 15px;
+    font-family: inherit;
+    font-size: var(--size-body);
+    line-height: 1.45;
+    color: var(--text-primary);
+    resize: none;
+  }
+  .textarea:focus { outline: 2px solid var(--focus-ring); outline-offset: -1px; border-color: transparent; }
+  .charcount { font-size: var(--size-micro); color: var(--text-tertiary); text-align: right; margin-top: 7px; }
+
+  /* ── Estados de sistema ─────────────────────────────────── */
+
+  .ax-skeleton {
+    background: linear-gradient(90deg,
+      var(--skeleton-base) 25%,
+      var(--skeleton-sheen) 37%,
+      var(--skeleton-base) 63%);
+    background-size: 400% 100%;
+    animation: andex-shimmer 1400ms ease-in-out infinite;
+    border-radius: var(--radius-sm);
+  }
+  @keyframes andex-shimmer {
+    0%   { background-position: 100% 0; }
+    100% { background-position: 0 0; }
+  }
+
+  .statepanel { display: flex; flex-direction: column; align-items: flex-start; }
+  .stateglyph {
+    width: 60px; height: 60px;
+    border-radius: var(--radius-lg);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 26px;
+  }
+  .stateglyph.tone-quiet  { background: var(--navy-50);  color: var(--navy-700); }
+  .stateglyph.tone-accent { background: var(--teal-100); color: var(--teal-800); }
+  .stateglyph.tone-warn   { background: var(--amber-100); color: var(--amber-700); }
+  .stateglyph.tone-alert  { background: var(--red-100);  color: var(--red-700); }
+  .statetitle {
+    font-size: var(--size-title-2);
+    font-weight: var(--weight-black);
+    letter-spacing: var(--track-title);
+    line-height: 1.14;
+  }
+  .statebody { font-size: var(--size-body); line-height: 1.5; color: var(--text-secondary); margin-top: 11px; }
+
+  /* ── Rejilla de módulos ─────────────────────────────────
+     Una baldosa por módulo: el nombre tiene dos líneas de sitio, que es
+     lo que pide «Bóveda Digital y Alertas» en español, y el dato vive
+     debajo sin apretar la fila. */
+  .tilegrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .tile {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 11px;
+    padding: 16px;
+    min-height: 132px;
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    color: inherit;
+    background: var(--surface-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-raise);
+    transition: background var(--dur-press) linear, transform var(--dur-press) var(--ease-standard);
+  }
+  .tile:active { background: var(--press-navy); transform: scale(.985); }
+  .tile.wide { grid-column: 1 / -1; min-height: 0; flex-direction: row; align-items: center; gap: 14px; }
+  .tilename {
+    display: block;
+    font-size: var(--size-body);
+    font-weight: var(--weight-bold);
+    letter-spacing: -.012em;
+    line-height: 1.24;
+    text-wrap: pretty;
+  }
+  .tilemeta { display: block; font-size: var(--size-footnote); color: var(--text-secondary); line-height: 1.35; margin-top: 5px; }
+  .tilefoot { margin-top: auto; display: flex; align-items: center; gap: 8px; }
+  /* Un módulo que aún no abre no se pinta como uno que sí: sin sombra,
+     sin peso, con el nombre en gris. Se ve que está y que no toca. */
+  .tile.quiet { background: transparent; box-shadow: inset 0 0 0 1px var(--line-hairline); min-height: 112px; }
+  .tile.quiet .tilename { font-weight: var(--weight-semibold); color: var(--text-secondary); }
+
+  /* ── Resumen de estado ──────────────────────────────────
+     Tres cuentas en una fila que ADEMÁS son el filtro: dice qué hay y en
+     qué punto está la bóveda antes de que haga falta desplazarse, y
+     sustituye a la tira de filtros y a la rejilla de carpetas en la
+     cabecera. */
+  .tally { display: flex; gap: 9px; }
+  .tallycell {
+    flex: 1;
+    min-width: 0;
+    min-height: 78px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    padding: 13px;
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    color: inherit;
+    background: var(--surface-card);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-raise);
+    position: relative;
+    overflow: hidden;
+    transition: background var(--dur-press) linear;
+  }
+  /* El filete vertical de la izquierda lleva el color del estado. El
+     número también, pero el filete se ve aunque el número sea 0. */
+  .tallycell::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--tally-tone, var(--sand-400));
+  }
+  .tallycell:active { background: var(--press-navy); }
+  .tallynum {
+    display: block;
+    font-size: 26px;
+    font-weight: var(--weight-black);
+    letter-spacing: -.022em;
+    line-height: 1;
+    color: var(--tally-tone, var(--text-primary));
+  }
+  .tallylbl {
+    display: block;
+    font-size: var(--size-caption);
+    font-weight: var(--weight-semibold);
+    color: var(--text-secondary);
+    line-height: 1.3;
+    text-wrap: pretty;
+  }
+  .tallycell[aria-pressed="true"] { background: var(--action); }
+  .tallycell[aria-pressed="true"] .tallynum,
+  .tallycell[aria-pressed="true"] .tallylbl { color: var(--action-text); }
+  .tallycell[aria-pressed="true"]::before { background: var(--action-text); opacity: .5; }
+  .tallycell:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+
+  /* ── Presencia ──────────────────────────────────────────
+     La comunidad son personas, así que las personas se cuentan y se
+     nombran. Iniciales en tipografía, no retratos: no inventamos caras. */
+  .initials {
+    flex: 0 0 auto;
+    width: 34px; height: 34px;
+    border-radius: 17px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    font-weight: var(--weight-bold);
+    letter-spacing: .01em;
+    background: var(--sand-200);
+    color: var(--text-secondary);
+  }
+  .initials.accent { background: var(--teal-100); color: var(--accent-deep); }
+  .ax-stack { display: flex; align-items: center; gap: 4px; }
+  .ax-stack .initials { align-self: center; margin: 0; width: 29px; height: 29px; border-radius: 15px; font-size: 12px; }
+  .livedot {
+    flex: 0 0 auto;
+    width: 9px; height: 9px;
+    border-radius: 5px;
+    background: var(--urgency-ok-fg);
+    box-shadow: 0 0 0 3px var(--urgency-ok-wash);
+  }
+  .dayrule { display: flex; align-items: baseline; gap: 10px; margin: var(--gap-section) 0 12px; }
+  .dayrule span:first-child {
+    flex: 0 1 auto;
+    min-width: 0;
+    text-wrap: pretty;
+    font-size: var(--size-label);
+    font-weight: var(--weight-bold);
+    letter-spacing: var(--track-label);
+    text-transform: uppercase;
+    color: var(--text-primary);
+  }
+  .dayrule span:last-child { flex: 0 0 auto; font-size: var(--size-footnote); color: var(--text-tertiary); white-space: nowrap; }
+  .dayrule::after { content: ""; flex: 1; height: 1px; background: var(--line-hairline); }
+
+  /* ── Movimiento por icono ───────────────────────────────
+     Un bucle de 10 segundos. El gesto ocurre en el último segundo y
+     describe lo que el icono representa: el escudo se sella, la campana
+     suena, el coche avanza, la planta crece. Nada se mueve mientras se
+     lee — el resto del ciclo el icono está quieto.
+
+     Va por `data-icon`, que es el nombre del icono de Lucide, así que un
+     icono nuevo hereda su gesto sin tocar el componente. */
+  .rowicon svg,
+  .stateglyph svg {
+    animation-duration: 10s;
+    animation-timing-function: var(--ease-standard);
+    animation-iteration-count: infinite;
+  }
+  .row:nth-child(2) .rowicon svg { animation-delay: .2s; }
+  .row:nth-child(3) .rowicon svg { animation-delay: .4s; }
+  .row:nth-child(4) .rowicon svg { animation-delay: .6s; }
+  .row:nth-child(5) .rowicon svg { animation-delay: .8s; }
+  .row:nth-child(6) .rowicon svg { animation-delay: 1s; }
+  .row:nth-child(7) .rowicon svg { animation-delay: 1.2s; }
+
+  /* sellar — escudo, candado, verificado */
+  .rowicon svg[data-icon="shield"], .stateglyph svg[data-icon="shield"],
+  .rowicon svg[data-icon="lock"], .rowicon svg[data-icon="shield-check"] { animation-name: ax-seal; }
+  @keyframes ax-seal { 0%,86%,100%{transform:none} 90%{transform:scale(1.13)} 94%{transform:scale(.98)} 97%{transform:scale(1.01)} }
+
+  /* sonar — campanas */
+  .rowicon svg[data-icon="bell"], .rowicon svg[data-icon^="bell"] { animation-name: ax-ring; transform-origin: top center; }
+  @keyframes ax-ring { 0%,86%,100%{transform:none} 88%{transform:rotate(15deg)} 90.5%{transform:rotate(-12deg)} 93%{transform:rotate(8deg)} 95.5%{transform:rotate(-4deg)} }
+
+  /* lanzar el birrete — academia */
+  .rowicon svg[data-icon="graduation-cap"], .stateglyph svg[data-icon="graduation-cap"] { animation-name: ax-toss; transform-origin: center bottom; }
+  @keyframes ax-toss { 0%,86%,100%{transform:none} 90%{transform:translateY(-4px) rotate(-14deg)} 95%{transform:translateY(0) rotate(4deg)} }
+
+  /* mecerse — personas, niños */
+  .rowicon svg[data-icon="users"], .rowicon svg[data-icon="baby"],
+  .rowicon svg[data-icon="circle-user"], .rowicon svg[data-icon="user"] { animation-name: ax-sway; }
+  @keyframes ax-sway { 0%,86%,100%{transform:none} 89%{transform:translateX(-2px) rotate(-6deg)} 93%{transform:translateX(2px) rotate(6deg)} 96.5%{transform:none} }
+
+  /* avanzar — coche, camión */
+  .rowicon svg[data-icon="car"], .rowicon svg[data-icon="truck"] { animation-name: ax-drive; }
+  @keyframes ax-drive { 0%,86%,100%{transform:none} 88%{transform:translateX(-3px)} 94%{transform:translateX(3px)} 98%{transform:none} }
+
+  /* despegar — avión */
+  .rowicon svg[data-icon="plane"] { animation-name: ax-fly; }
+  @keyframes ax-fly { 0%,86%,100%{transform:none} 91%{transform:translate(3px,-3px) rotate(6deg)} 96%{transform:none} }
+
+  /* barrer — escáner, buscador */
+  .rowicon svg[data-icon="scan-line"], .rowicon svg[data-icon="search"] { animation-name: ax-scan; }
+  @keyframes ax-scan { 0%,86%,100%{transform:none} 89%{transform:translateY(-3px)} 93%{transform:translateY(3px)} 97%{transform:none} }
+
+  /* crecer — planta, subida */
+  .rowicon svg[data-icon="sprout"] { animation-name: ax-grow; transform-origin: center bottom; }
+  @keyframes ax-grow { 0%,86%,100%{transform:none} 90%{transform:scaleY(1.16)} 95%{transform:scaleY(1)} }
+  .rowicon svg[data-icon="trending-up"] { animation-name: ax-climb; }
+  @keyframes ax-climb { 0%,86%,100%{transform:none} 91%{transform:translate(2px,-3px)} 96%{transform:none} }
+
+  /* latir — cuidado en casa */
+  .rowicon svg[data-icon="heart-handshake"], .rowicon svg[data-icon="stethoscope"] { animation-name: ax-beat; }
+  @keyframes ax-beat { 0%,86%,100%{transform:none} 88.5%{transform:scale(1.14)} 91%{transform:scale(1)} 93.5%{transform:scale(1.09)} 96%{transform:scale(1)} }
+
+  /* golpear — martillo, mazo */
+  .rowicon svg[data-icon="hammer"], .rowicon svg[data-icon="gavel"] { animation-name: ax-strike; transform-origin: bottom left; }
+  @keyframes ax-strike { 0%,86%,100%{transform:none} 90%{transform:rotate(-20deg)} 94%{transform:rotate(4deg)} 97%{transform:none} }
+
+  /* escribir — lápiz */
+  .rowicon svg[data-icon="pencil"] { animation-name: ax-write; }
+  @keyframes ax-write { 0%,86%,100%{transform:none} 89%{transform:rotate(-9deg) translate(-1px,1px)} 92.5%{transform:rotate(7deg) translate(1px,-1px)} 96%{transform:none} }
+
+  /* asentarse — casa, edificio, institución */
+  .rowicon svg[data-icon="house"], .rowicon svg[data-icon="building-2"],
+  .rowicon svg[data-icon="landmark"], .rowicon svg[data-icon="store"] { animation-name: ax-settle; transform-origin: center bottom; }
+  @keyframes ax-settle { 0%,86%,100%{transform:none} 89%{transform:translateY(-3px)} 93%{transform:translateY(0) scaleY(.97)} 96%{transform:none} }
+
+  /* abrirse — cartera, carpetas, archivo */
+  .rowicon svg[data-icon="wallet"], .rowicon svg[data-icon="folder"],
+  .rowicon svg[data-icon="folder-input"], .stateglyph svg[data-icon="folder-open"],
+  .rowicon svg[data-icon="briefcase"] { animation-name: ax-open; transform-origin: center bottom; }
+  @keyframes ax-open { 0%,86%,100%{transform:none} 90%{transform:scaleY(.84)} 94.5%{transform:scaleY(1.05)} 98%{transform:none} }
+
+  /* hojear — documentos, recibos, credenciales */
+  .rowicon svg[data-icon="file-text"], .rowicon svg[data-icon="receipt"],
+  .rowicon svg[data-icon="id-card"], .rowicon svg[data-icon="book-marked"],
+  .rowicon svg[data-icon="book-open"] { animation-name: ax-leaf; transform-origin: left center; }
+  @keyframes ax-leaf { 0%,86%,100%{transform:none} 90%{transform:perspective(80px) rotateY(-32deg)} 95%{transform:none} }
+
+  /* enfocar — objetivo, cámara, vídeo */
+  .rowicon svg[data-icon="target"], .rowicon svg[data-icon="video"],
+  .stateglyph svg[data-icon="camera-off"] { animation-name: ax-focus; }
+  @keyframes ax-focus { 0%,86%,100%{transform:none} 88.5%{transform:scale(.88)} 93%{transform:scale(1.07)} 97%{transform:none} }
+
+  /* correr el reloj — tiempo, calendario */
+  .rowicon svg[data-icon="clock"], .rowicon svg[data-icon^="calendar"] { animation-name: ax-tick; }
+  @keyframes ax-tick { 0%,86%,100%{transform:none} 89%{transform:rotate(9deg)} 92%{transform:rotate(-6deg)} 95%{transform:rotate(3deg)} 97.5%{transform:none} }
+
+  /* caer — descargar, disco */
+  .rowicon svg[data-icon="download"], .rowicon svg[data-icon="hard-drive"],
+  .stateglyph svg[data-icon="hard-drive"] { animation-name: ax-drop; }
+  @keyframes ax-drop { 0%,86%,100%{transform:none} 90%{transform:translateY(3px)} 95%{transform:none} }
+
+  /* sacudir — borrar */
+  .rowicon svg[data-icon="trash-2"] { animation-name: ax-shake; }
+  @keyframes ax-shake { 0%,86%,100%{transform:none} 88%{transform:translateX(-2px) rotate(-7deg)} 91%{transform:translateX(2px) rotate(7deg)} 94%{transform:translateX(-1px) rotate(-3deg)} 97%{transform:none} }
+
+  /* salir — enlaces externos, compartir */
+  .rowicon svg[data-icon="external-link"], .rowicon svg[data-icon="share-2"],
+  .rowicon svg[data-icon="message-circle"] { animation-name: ax-leave; }
+  @keyframes ax-leave { 0%,86%,100%{transform:none} 91%{transform:translate(2.5px,-2.5px)} 96%{transform:none} }
+
+  /* parpadear sin señal — desconexión */
+  .rowicon svg[data-icon="wifi-off"], .stateglyph svg[data-icon="wifi-off"] { animation-name: ax-blink; }
+  @keyframes ax-blink { 0%,86%,100%{opacity:1} 89%{opacity:.35} 91%{opacity:1} 93%{opacity:.35} 95%{opacity:1} }
+
+  /* rociar — limpieza */
+  .rowicon svg[data-icon="spray-can"] { animation-name: ax-spray; transform-origin: bottom right; }
+  @keyframes ax-spray { 0%,86%,100%{transform:none} 90%{transform:rotate(-13deg)} 94%{transform:rotate(2deg)} 97%{transform:none} }
+
+  /* servir — restaurante */
+  .rowicon svg[data-icon="utensils"] { animation-name: ax-serve; transform-origin: bottom center; }
+  @keyframes ax-serve { 0%,86%,100%{transform:none} 90%{transform:rotate(11deg)} 94.5%{transform:rotate(-5deg)} 98%{transform:none} }
+
+  /* asentir — el gesto por defecto: monedas, tarjeta, idioma, ajustes */
+  .rowicon svg[data-icon="hand-coins"], .rowicon svg[data-icon="credit-card"],
+  .rowicon svg[data-icon="languages"], .rowicon svg[data-icon="sun-moon"],
+  .rowicon svg[data-icon="map-pin"], .rowicon svg[data-icon="hard-hat"],
+  .rowicon svg[data-icon="check"], .rowicon svg[data-icon="eye"],
+  .rowicon svg[data-icon="list-ordered"], .rowicon svg[data-icon="piggy-bank"],
+  .rowicon svg[data-icon="package"], .rowicon svg[data-icon="scale"],
+  .rowicon svg[data-icon="megaphone"], .rowicon svg[data-icon="settings"],
+  .rowicon svg[data-icon="image"] { animation-name: ax-nod; }
+  @keyframes ax-nod { 0%,86%,100%{transform:none} 90%{transform:translateY(-2.5px) scale(1.05)} 95%{transform:none} }
+
+  /* Quien pidió que nada se mueva, no ve nada moverse. */
+  @media (prefers-reduced-motion: reduce) {
+    .rowicon svg, .stateglyph svg { animation: none; }
+    .enter { animation: none; }
+    .ax-skeleton { animation: none; }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   NOCHE — mate, no brillante
+
+   En oscuro una sombra no separa: no hay luz que proyectar. Lo que
+   separa es un filete de un píxel. Nada flota.
+
+   DOS BLOQUES QUE HAY QUE MANTENER EN SYNC, igual que en `globals.css`:
+   la cookie explícita gana; sin cookie decide el sistema.
+   ═══════════════════════════════════════════════════════ */
+
+@layer components {
+  [data-theme="dark"] .ax-card,
+  [data-theme="dark"] .ax-group,
+  [data-theme="dark"] .doccard,
+  [data-theme="dark"] .foldercard,
+  [data-theme="dark"] .tallycell,
+  [data-theme="dark"] .tile,
+  [data-theme="dark"] .subcard,
+  [data-theme="dark"] .segmented button[aria-pressed="true"],
+  [data-theme="dark"] .ax-chip,
+  [data-theme="dark"] .filterchip,
+  [data-theme="dark"] .btn-quiet { box-shadow: inset 0 0 0 1px var(--line-hairline); }
+
+  [data-theme="dark"] .card-highlight { background: var(--surface-highlight-night); box-shadow: inset 0 0 0 1px var(--amber-200); }
+  [data-theme="dark"] .card-accent    { box-shadow: inset 0 0 0 1px var(--urgency-ok-line); }
+  [data-theme="dark"] .card-invert    { box-shadow: inset 0 0 0 1px var(--line-on-invert-night); }
+  [data-theme="dark"] .card-lift      { box-shadow: inset 0 0 0 1px var(--teal-200); }
+  [data-theme="dark"] .card-pending   { box-shadow: none; }
+  [data-theme="dark"] .ax-chip.on,
+  [data-theme="dark"] .filterchip[aria-pressed="true"],
+  [data-theme="dark"] .tallycell[aria-pressed="true"] { box-shadow: none; }
+  /* La acción es teal en oscuro, así que el botón «en vivo» sube a menta
+     para no repetirse con ella. */
+  [data-theme="dark"] .btn-accent { background: var(--teal-200); color: var(--navy-900); }
+  [data-theme="dark"] .btn-accent:hover  { background: var(--accent-hover-night); }
+  [data-theme="dark"] .btn-accent:active { background: var(--teal-500); }
+  [data-theme="dark"] .playbtn { box-shadow: inset 0 0 0 1px var(--urgency-ok-line); }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .ax-card,
+    :root:not([data-theme="light"]) .ax-group,
+    :root:not([data-theme="light"]) .doccard,
+    :root:not([data-theme="light"]) .foldercard,
+    :root:not([data-theme="light"]) .tallycell,
+    :root:not([data-theme="light"]) .tile,
+    :root:not([data-theme="light"]) .subcard,
+    :root:not([data-theme="light"]) .segmented button[aria-pressed="true"],
+    :root:not([data-theme="light"]) .ax-chip,
+    :root:not([data-theme="light"]) .filterchip,
+    :root:not([data-theme="light"]) .btn-quiet { box-shadow: inset 0 0 0 1px var(--line-hairline); }
+
+    :root:not([data-theme="light"]) .card-highlight { background: var(--surface-highlight-night); box-shadow: inset 0 0 0 1px var(--amber-200); }
+    :root:not([data-theme="light"]) .card-accent    { box-shadow: inset 0 0 0 1px var(--urgency-ok-line); }
+    :root:not([data-theme="light"]) .card-invert    { box-shadow: inset 0 0 0 1px var(--line-on-invert-night); }
+    :root:not([data-theme="light"]) .card-lift      { box-shadow: inset 0 0 0 1px var(--teal-200); }
+    :root:not([data-theme="light"]) .card-pending   { box-shadow: none; }
+    :root:not([data-theme="light"]) .ax-chip.on,
+    :root:not([data-theme="light"]) .filterchip[aria-pressed="true"],
+    :root:not([data-theme="light"]) .tallycell[aria-pressed="true"] { box-shadow: none; }
+    :root:not([data-theme="light"]) .btn-accent { background: var(--teal-200); color: var(--navy-900); }
+    :root:not([data-theme="light"]) .btn-accent:hover  { background: var(--accent-hover-night); }
+    :root:not([data-theme="light"]) .btn-accent:active { background: var(--teal-500); }
+    :root:not([data-theme="light"]) .playbtn { box-shadow: inset 0 0 0 1px var(--urgency-ok-line); }
+  }
+}

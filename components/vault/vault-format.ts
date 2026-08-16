@@ -114,6 +114,32 @@ export function expiryToneClass(tone: ExpiryTone): string {
   return TONE_TEXT[tone];
 }
 
+/**
+ * Los cuatro estados de urgencia del sistema de diseño.
+ *
+ * `ExpiryTone` tiene tres valores y sirve para pintar texto. Éste tiene
+ * cuatro porque el diseño distingue «sin fecha» de «vigente»: no son lo
+ * mismo, y confundirlos es justamente el fallo que hace que un documento
+ * sin fecha nunca dispare un aviso y nadie se entere.
+ *
+ * Se apoya en `expiryTone` para no repetir la regla de que un documento
+ * que vence hoy ya cuenta como vencido.
+ */
+export type UrgencyTone = "now" | "soon" | "ok" | "none";
+
+export function urgencyTone(state: ExpiryState): UrgencyTone {
+  if (state.kind === "none") return "none";
+  const tone = expiryTone(state);
+  if (tone === "danger") return "now";
+  if (tone === "warning") return "soon";
+  return "ok";
+}
+
+/** El token de color del estado. Nunca un hex: la matriz lo audita. */
+export function urgencyToneVar(tone: UrgencyTone): string {
+  return `var(--urgency-${tone}-fg)`;
+}
+
 /** El texto exacto del diccionario que le corresponde al estado. */
 export function expiryText(state: ExpiryState, copy: VaultExpiryCopy): string {
   switch (state.kind) {

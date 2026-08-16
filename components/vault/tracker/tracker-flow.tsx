@@ -67,6 +67,19 @@ export const TRACKER_ICONS: Record<TrackerFlowId, LucideIcon> = {
 };
 
 /**
+ * El mismo icono, por su nombre en Lucide. Es lo que el CSS mira para
+ * darle su gesto: el expediente se hojea, el mazo golpea, el avión
+ * despega, el coche avanza. Sin el nombre el icono simplemente se queda
+ * quieto, que es un fallo que no avisa.
+ */
+export const TRACKER_ICON_NAMES: Record<TrackerFlowId, string> = {
+  uscis: "file-text",
+  eoir: "gavel",
+  i94: "plane",
+  dmv: "car",
+};
+
+/**
  * Forma común de los cuatro bloques del diccionario. Cada trámite trae lo
  * suyo (el A-number sólo lo pide EOIR, la lista de papeles sólo el DMV), así
  * que lo que no comparten los cuatro es opcional.

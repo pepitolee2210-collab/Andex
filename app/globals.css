@@ -1,4 +1,8 @@
 @import "tailwindcss";
+/* Las clases del sistema de diseño. Va aquí arriba porque `@import` tiene
+   que preceder a todo lo demás; el contenido entra en `@layer components`,
+   así que su sitio en la cascada no depende de esta línea. */
+@import "./kit.css";
 
 /* ═══════════════════════════════════════════════════════
    ANDEX DESIGN SYSTEM — TOKENS
@@ -93,6 +97,19 @@
   --skeleton-base:  var(--sand-200);
   --skeleton-sheen: var(--sand-300);
 
+  /* Tinte de un contador sobre un fondo de acción ya pintado: no es un
+     color nuevo, es la misma superficie aclarada. */
+  --tint-on-action: rgba(255, 255, 255, 0.18);
+
+  /* ── Los tres tonos que sólo existen de noche ──
+     En oscuro las rampas claras no valen: el ámbar-100 sobre un fondo
+     navy es un bloque luminoso que ciega. Estos tres viven aquí, y no
+     sueltos en `kit.css`, porque un color fuera de este archivo elude la
+     matriz de contraste sin dejar rastro. */
+  --surface-highlight-night: #2B2109; /* el ámbar de aviso, apagado */
+  --line-on-invert-night:    #23485A; /* filete sobre superficie invertida */
+  --accent-hover-night:      #A0EFE3; /* menta: el teal ya es la acción */
+
   /* ═══════════════════════════════════════════════════════
      PUENTE — los nombres que ya usa el producto
 
@@ -134,13 +151,111 @@
   --success-soft: var(--urgency-ok-wash);
   --danger-soft:  var(--urgency-now-wash);
 
-  /* ── Sombras ──
-     Dos capas: una tensa que asienta el borde y una amplia que da la
-     altura. Y teñidas de navy, no negro neutro: una sombra gris sobre
-     papel crema se ve sucia. */
-  --shadow-sm: 0 1px 2px rgba(16, 42, 67, 0.05), 0 6px 18px rgba(16, 42, 67, 0.06);
-  --shadow-md: 0 2px 6px rgba(16, 42, 67, 0.06), 0 12px 28px rgba(16, 42, 67, 0.08);
-  --shadow-lg: 0 12px 34px rgba(16, 42, 67, 0.14);
+  /* ═══════════════════════════════════════════════════════
+     FORMA — radios y sombras
+
+     Tres capas por sombra en vez de dos: un contacto de un píxel que
+     asienta el borde, una difusión media y una muy ancha y muy tenue. La
+     de una capa se ve como un halo pegado; ésta se ve como un objeto
+     apoyado. Y teñidas de navy (#08192B), no negro: una sombra gris
+     sobre papel crema se ve sucia.
+     ═══════════════════════════════════════════════════════ */
+
+  --radius-xs:   6px;
+  --radius-pill: 999px;
+
+  --shadow-raise:       0 1px 1px rgba(8,25,43,.04), 0 2px 6px rgba(8,25,43,.05), 0 8px 22px rgba(8,25,43,.05);
+  --shadow-lift:        0 1px 1px rgba(8,25,43,.05), 0 4px 12px rgba(8,25,43,.07), 0 14px 34px rgba(8,25,43,.07);
+  --shadow-float:       0 2px 4px rgba(8,25,43,.07), 0 12px 28px rgba(8,25,43,.11), 0 28px 60px rgba(8,25,43,.09);
+  --shadow-button:      0 1px 1px rgba(8,25,43,.10), 0 3px 8px rgba(8,25,43,.14);
+  --shadow-button-press: 0 1px 2px rgba(8,25,43,.10);
+  --shadow-sheet:       0 -2px 24px rgba(8,25,43,.10);
+  --blur-bar:           saturate(180%) blur(20px);
+
+  /* Los tres nombres que ya usa el producto, reapuntados. `shadow-sm`
+     aparece en decenas de componentes: en vez de editarlos, se le cambia
+     lo que significa. */
+  --shadow-sm: var(--shadow-raise);
+  --shadow-md: var(--shadow-lift);
+  --shadow-lg: var(--shadow-float);
+
+  /* ═══════════════════════════════════════════════════════
+     TIPO — la escala y su interletraje
+
+     Los pasos no son números redondos: cada uno es una relación con el
+     anterior. Y el interletraje va por tamaño, porque un titular de 32px
+     con el mismo tracking que un pie de 13px se ve suelto y flojo.
+     Cuanto más grande el tipo, más cerrado.
+     ═══════════════════════════════════════════════════════ */
+
+  --size-micro:      13px;
+  --size-caption:    14px;
+  --size-footnote:   15px;
+  --size-label:      13px;
+  --size-body:       17px;
+  --size-body-lg:    19px;
+  --size-title-3:    22px;
+  --size-title-2:    26px;
+  --size-title-1:    32px;
+  --size-display:    38px;
+  --size-display-lg: 48px;
+  /* La frase en inglés de los temarios: es el objeto de la pantalla, no
+     un titular. Tiene tamaño propio. */
+  --size-phrase:     25px;
+
+  --track-display: -0.03em;
+  --track-title:   -0.022em;
+  --track-phrase:  -0.02em;
+  --track-body:    -0.006em;
+  --track-label:    0.07em;
+
+  --weight-regular: 400; --weight-medium: 500; --weight-semibold: 600;
+  --weight-bold:    700; --weight-black:  800;
+
+  --leading-tight: 1.05; --leading-snug: 1.22;
+  --leading-body:  1.5;  --leading-loose: 1.6;
+
+  /* Regla dura: el cuerpo nunca baja de aquí. Se lee bajo el sol, con
+     vista cansada, en un teléfono de gama baja. */
+  --min-body-size: 16px;
+
+  /* ═══════════════════════════════════════════════════════
+     ESPACIO — el dedo manda
+
+     44px es el mínimo que se puede tocar sin fallar; 52 es el que se
+     toca cómodo; 56 el de la acción principal. No son estética: son la
+     diferencia entre acertar y volver a intentarlo.
+     ═══════════════════════════════════════════════════════ */
+
+  --tap-min: 44px; --tap-comfortable: 52px; --tap-primary: 56px;
+
+  --gutter-screen: 20px; --gutter-card: 20px;
+  --gap-section:   32px; --gap-stack:   12px;
+  /* Ritmo de los temarios: lejos lo que no va junto, cerca lo que sí. */
+  --gap-phrase:    30px; --gap-within-phrase: 7px;
+
+  --width-min: 360px; --width-target: 390px; --width-max: 414px;
+
+  /* ═══════════════════════════════════════════════════════
+     MOVIMIENTO
+
+     Una sola curva para casi todo. `ease-spring` sólo donde algo
+     aparece; nunca donde algo se lee.
+     ═══════════════════════════════════════════════════════ */
+
+  --ease-standard: cubic-bezier(.32, .72, 0, 1);
+  --ease-out:      cubic-bezier(.16, 1, .3, 1);
+  --ease-spring:   cubic-bezier(.34, 1.32, .5, 1);
+
+  --dur-press:  120ms;
+  --dur-fast:   160ms;
+  --dur-base:   240ms;
+  --dur-reveal: 400ms;
+  --stagger-step: 40ms;
+
+  /* Lo que se hunde un botón al tocarlo. Es el único acuse de recibo que
+     hay antes de que responda la red. */
+  --press-scale: .98;
 }
 
 /* ── MODO OSCURO (§2.6) ──
@@ -257,11 +372,17 @@
   --color-current: currentColor;
 
   /* Radios (§2.3) */
+  /* La escala del sistema de diseño. Cada paso sube ~40%, que es lo que
+     hace falta para que dos radios contiguos se distingan de verdad; la
+     escala anterior (8/12/16/24) subía menos y todo se veía igual de
+     redondeado. `inline` hace que Tailwind escriba el valor en la
+     utilidad, así que `rounded-lg` cambia sin tocar ningún componente. */
   --radius-*: initial;
-  --radius-sm:   8px;  /* inputs, chips */
-  --radius-md:   12px; /* botones */
-  --radius-lg:   16px; /* tarjetas de módulo */
-  --radius-xl:   24px; /* modales, hero card */
+  --radius-xs:   6px;   /* insignias, contadores */
+  --radius-sm:   10px;  /* campos, chips, iconos de fila */
+  --radius-md:   14px;  /* botones */
+  --radius-lg:   20px;  /* tarjetas */
+  --radius-xl:   26px;  /* hojas, modales */
   --radius-full: 999px;
 
   /* Sombras (§2.3) */
