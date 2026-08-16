@@ -262,77 +262,182 @@
    Tres estados: data-theme explícito (cookie) gana; sin cookie
    decide prefers-color-scheme. Mantener AMBOS bloques en sync. */
 
+/* ═══════════════════════════════════════════════════════
+   NOCHE — negro mate de tinta
+
+   Portado de `tokens/theme-ink.css` del sistema de diseño. No es «el
+   mismo azul, más oscuro»: es otro material. Casi negro (#0B0B0D) en vez
+   de negro puro, superficies que son escalones cortos de luz, y grises de
+   TINTA — no azulados.
+
+   Dos cosas que lo definen y que se pierden si se toca:
+
+   1. **De noche ninguna sombra separa.** No hay luz que proyectar. Todas
+      valen `none` y separa un filete de un píxel. Por eso los tres pesos
+      de tarjeta viven en CSS y nunca en línea: una sombra en línea ganaría
+      aquí y cancelaría el filete que la sustituye.
+
+   2. **La acción pasa a ser el teal de la marca**, con texto navy encima
+      (7.1:1). De día la acción es el navy y el teal es sólo superficie; de
+      noche el navy no se distingue del fondo. Por eso el botón de «sala
+      abierta» sube a menta: teal es «hazlo», menta es «está pasando».
+
+   Medido por el diseño: primario 16.3:1, secundario 9.2:1, etiquetas
+   14.3:1, estados entre 6.5 y 9.9:1.
+
+   DOS BLOQUES QUE HAY QUE MANTENER EN SYNC: la cookie explícita gana; sin
+   cookie decide el sistema.
+   ═══════════════════════════════════════════════════════ */
+
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg:            #0B1929;
-    --surface:       #16283D;
-    --surface-alt:   #1E3550;
-    --text:          #E8EDF2;
-    --text-muted:    #9DB2C8;
-    --text-disabled: #6B8199;
-    --line:          #2A4159;
+    --ink-1000: #0B0B0D; --ink-900: #101012; --ink-800: #151517;
+    --ink-700:  #1D1D20; --ink-600: #26262A; --ink-500: #33333A;
+    --ink-400:  #45464D; --cream-text: #F4F2EC;
 
-    --teal:        #2DD4BF; /* teal aclarado para fondo oscuro */
-    --teal-deep:   #2DD4BF;
-    --teal-soft:   rgba(45, 212, 191, 0.14);
-    --amber:       #F9CE6B;
-    --amber-deep:  #F9CE6B;
-    --amber-soft:  rgba(249, 206, 107, 0.14);
+    --bg-app: var(--ink-1000);   --bg-sunken: var(--ink-900);
+    --surface-card: var(--ink-800); --surface-quiet: var(--ink-700);
+    --surface-invert: #17323F;
+    --line-hairline: #26262A;    --line-strong: #38383E;
 
-    --on-accent:    #0B1929; /* texto navy-oscuro sobre teal claro */
-    --on-highlight: #0B1929;
+    --text-primary: var(--cream-text); --text-secondary: #BAB8B2;
+    --text-tertiary: #918F8A;
+    --text-on-invert: var(--cream-text); --text-on-invert-quiet: #AFC4CB;
+    --text-on-invert-accent: var(--teal-200);
 
-    --success: #34D399;
-    --warning: #F9CE6B;
-    --danger:  #F87171;
-    --info:    #2DD4BF;
-    --success-soft: rgba(52, 211, 153, 0.14);
-    --danger-soft:  rgba(248, 113, 113, 0.14);
+    --navy-50: var(--ink-700); --navy-100: #33333A; --navy-600: #C9C7C1;
+    --navy-700: #DEDCD6;       --navy-800: #17323F;
+    --teal-50: #0A2A27;  --teal-100: #0C3632; --teal-200: #8AE7D9;
+    --teal-700: #6FE0D0; --teal-800: #7FE6D7;
+    --amber-50: #211A06; --amber-100: #2B2109; --amber-200: #4E3B11;
+    --amber-600: #F2C264; --amber-700: #F8D391;
+    --red-50: #28120C; --red-100: #301610; --red-200: #50261D;
+    --red-600: #FF9C8A; --red-700: #FFB4A4;
+    --sand-200: #202024; --sand-300: #2E2E33; --sand-400: #3E3E45;
+    --skeleton-base: #202024; --skeleton-sheen: #2E2E33;
 
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
-    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.45);
+    --action: var(--teal-500); --action-hover: var(--teal-600);
+    --action-text: var(--navy-900);
+    --accent-deep: var(--teal-800); --accent-wash: var(--teal-50);
+    --highlight-wash: var(--amber-50);
+
+    --press-navy: var(--ink-600); --press-teal: var(--teal-600);
+    --press-amber: #4E3B11;      --press-sand: #2E2E33;
+    --press-on-navy: var(--teal-700); --press-on-teal: var(--teal-200);
+    --press-on-red: #301610;
+
+    --urgency-now-fg:  #FF9C8A; --urgency-now-wash:  #28120C; --urgency-now-line:  #50261D;
+    --urgency-soon-fg: #F2C264; --urgency-soon-wash: #271E08; --urgency-soon-line: #4E3B11;
+    --urgency-ok-fg:   #6FE0D0; --urgency-ok-wash:   #0C3632; --urgency-ok-line:   #11504B;
+    --urgency-none-fg: #A3A19B; --urgency-none-wash: #242428; --urgency-none-line: #33333A;
+
+    --focus-ring: #39D2C0;
+    --bar-bg: rgba(11, 11, 13, .88);
+    --camera-surface: #101216;
+    --hairline-on-invert: rgba(244, 242, 236, .22);
+
+    --surface-highlight-night: #2B2109;
+    --line-on-invert-night:    #23485A;
+    --accent-hover-night:      #A0EFE3;
+    --tint-on-action: rgba(11, 11, 13, .20);
+
+    /* Mate: nada flota. */
+    --shadow-raise: none; --shadow-lift: none; --shadow-float: none;
+    --shadow-button: none; --shadow-button-press: none;
+    --shadow-sheet: 0 -1px 0 var(--line-hairline);
+
+    /* El puente, para los 224 archivos que escriben los nombres viejos. */
+    --bg: var(--bg-app);           --surface: var(--surface-card);
+    --surface-alt: var(--bg-sunken);
+    --text: var(--text-primary);   --text-muted: var(--text-secondary);
+    --text-disabled: var(--text-tertiary); --line: var(--line-hairline);
+    --navy: var(--surface-invert); --navy-hover: var(--ink-700);
+    --navy-soft: var(--ink-700);   --cream: var(--ink-1000);
+    --teal: var(--teal-500);       --teal-deep: var(--accent-deep);
+    --teal-soft: var(--accent-wash);
+    --amber: var(--amber-600);     --amber-deep: var(--amber-600);
+    --amber-soft: var(--highlight-wash);
+    --on-accent: var(--navy-900);  --on-highlight: var(--navy-900);
+    --success: var(--urgency-ok-fg);   --warning: var(--urgency-soon-fg);
+    --danger:  var(--urgency-now-fg);  --info:    var(--accent-deep);
+    --success-soft: var(--urgency-ok-wash); --danger-soft: var(--urgency-now-wash);
+    --shadow-sm: none; --shadow-md: none; --shadow-lg: none;
   }
 }
 
 [data-theme="dark"] {
-  --bg:            #0B1929;
-  --surface:       #16283D;
-  --surface-alt:   #1E3550;
-  --text:          #E8EDF2;
-  --text-muted:    #9DB2C8;
-  --text-disabled: #6B8199;
-  --line:          #2A4159;
+  --ink-1000: #0B0B0D; --ink-900: #101012; --ink-800: #151517;
+  --ink-700:  #1D1D20; --ink-600: #26262A; --ink-500: #33333A;
+  --ink-400:  #45464D; --cream-text: #F4F2EC;
 
-  --teal:        #2DD4BF;
-  --teal-deep:   #2DD4BF;
-  --teal-soft:   rgba(45, 212, 191, 0.14);
-  --amber:       #F9CE6B;
-  --amber-deep:  #F9CE6B;
-  --amber-soft:  rgba(249, 206, 107, 0.14);
+  --bg-app: var(--ink-1000);   --bg-sunken: var(--ink-900);
+  --surface-card: var(--ink-800); --surface-quiet: var(--ink-700);
+  --surface-invert: #17323F;
+  --line-hairline: #26262A;    --line-strong: #38383E;
 
-  --on-accent:    #0B1929;
-  --on-highlight: #0B1929;
+  --text-primary: var(--cream-text); --text-secondary: #BAB8B2;
+  --text-tertiary: #918F8A;
+  --text-on-invert: var(--cream-text); --text-on-invert-quiet: #AFC4CB;
+  --text-on-invert-accent: var(--teal-200);
 
-  --success: #34D399;
-  --warning: #F9CE6B;
-  --danger:  #F87171;
-  --info:    #2DD4BF;
-  --success-soft: rgba(52, 211, 153, 0.14);
-  --danger-soft:  rgba(248, 113, 113, 0.14);
+  --navy-50: var(--ink-700); --navy-100: #33333A; --navy-600: #C9C7C1;
+  --navy-700: #DEDCD6;       --navy-800: #17323F;
+  --teal-50: #0A2A27;  --teal-100: #0C3632; --teal-200: #8AE7D9;
+  --teal-700: #6FE0D0; --teal-800: #7FE6D7;
+  --amber-50: #211A06; --amber-100: #2B2109; --amber-200: #4E3B11;
+  --amber-600: #F2C264; --amber-700: #F8D391;
+  --red-50: #28120C; --red-100: #301610; --red-200: #50261D;
+  --red-600: #FF9C8A; --red-700: #FFB4A4;
+  --sand-200: #202024; --sand-300: #2E2E33; --sand-400: #3E3E45;
+  --skeleton-base: #202024; --skeleton-sheen: #2E2E33;
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.45);
+  --action: var(--teal-500); --action-hover: var(--teal-600);
+  --action-text: var(--navy-900);
+  --accent-deep: var(--teal-800); --accent-wash: var(--teal-50);
+  --highlight-wash: var(--amber-50);
+
+  --press-navy: var(--ink-600); --press-teal: var(--teal-600);
+  --press-amber: #4E3B11;      --press-sand: #2E2E33;
+  --press-on-navy: var(--teal-700); --press-on-teal: var(--teal-200);
+  --press-on-red: #301610;
+
+  --urgency-now-fg:  #FF9C8A; --urgency-now-wash:  #28120C; --urgency-now-line:  #50261D;
+  --urgency-soon-fg: #F2C264; --urgency-soon-wash: #271E08; --urgency-soon-line: #4E3B11;
+  --urgency-ok-fg:   #6FE0D0; --urgency-ok-wash:   #0C3632; --urgency-ok-line:   #11504B;
+  --urgency-none-fg: #A3A19B; --urgency-none-wash: #242428; --urgency-none-line: #33333A;
+
+  --focus-ring: #39D2C0;
+  --bar-bg: rgba(11, 11, 13, .88);
+  --camera-surface: #101216;
+  --hairline-on-invert: rgba(244, 242, 236, .22);
+
+  --surface-highlight-night: #2B2109;
+  --line-on-invert-night:    #23485A;
+  --accent-hover-night:      #A0EFE3;
+  --tint-on-action: rgba(11, 11, 13, .20);
+
+  /* Mate: nada flota. */
+  --shadow-raise: none; --shadow-lift: none; --shadow-float: none;
+  --shadow-button: none; --shadow-button-press: none;
+  --shadow-sheet: 0 -1px 0 var(--line-hairline);
+
+  /* El puente, para los 224 archivos que escriben los nombres viejos. */
+  --bg: var(--bg-app);           --surface: var(--surface-card);
+  --surface-alt: var(--bg-sunken);
+  --text: var(--text-primary);   --text-muted: var(--text-secondary);
+  --text-disabled: var(--text-tertiary); --line: var(--line-hairline);
+  --navy: var(--surface-invert); --navy-hover: var(--ink-700);
+  --navy-soft: var(--ink-700);   --cream: var(--ink-1000);
+  --teal: var(--teal-500);       --teal-deep: var(--accent-deep);
+  --teal-soft: var(--accent-wash);
+  --amber: var(--amber-600);     --amber-deep: var(--amber-600);
+  --amber-soft: var(--highlight-wash);
+  --on-accent: var(--navy-900);  --on-highlight: var(--navy-900);
+  --success: var(--urgency-ok-fg);   --warning: var(--urgency-soon-fg);
+  --danger:  var(--urgency-now-fg);  --info:    var(--accent-deep);
+  --success-soft: var(--urgency-ok-wash); --danger-soft: var(--urgency-now-wash);
+  --shadow-sm: none; --shadow-md: none; --shadow-lg: none;
 }
-
-/* ── Mapeo a utilidades Tailwind v4 ──
-   Clases resultantes: bg-page, bg-surface, bg-surface-alt, text-ink,
-   text-muted, text-disabled, border-line, bg-teal / teal-deep / teal-soft,
-   bg-amber / amber-deep / amber-soft, bg-navy / navy-hover / navy-soft,
-   text-on-accent, text-on-highlight, bg-cream, text-success|warning|danger|info,
-   shadow-sm|md|lg, rounded-sm|md|lg|xl, font-heading, font-body,
-   text-display|h1|h2|h3|body-lg|body|label|caption. */
 
 @theme inline {
   --color-*: initial;

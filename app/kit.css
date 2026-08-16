@@ -59,6 +59,35 @@
     align-items: center;
     gap: 14px;
   }
+  /* El botón de icono de la cabecera. Lleva clase propia y NO utilidades
+     de Tailwind, y eso es deliberado: la regla que esconde la campana vive
+     en esta misma capa, y una utilidad `inline-flex` puesta en el elemento
+     ganaría al `display:none` —las utilidades van en una capa posterior— y
+     la campana reaparecería. Costó un rato entenderlo. */
+  .ax-iconbtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--tap-min);
+    height: var(--tap-min);
+    flex: 0 0 auto;
+    border: 0;
+    cursor: pointer;
+    background: none;
+    font-family: inherit;
+    color: var(--text-tertiary);
+    border-radius: var(--radius-sm);
+    transition: background var(--dur-press) linear, color var(--dur-press) linear;
+  }
+  .ax-iconbtn:hover  { background: var(--surface-quiet); color: var(--text-primary); }
+  .ax-iconbtn:active { background: var(--press-navy); }
+  .ax-iconbtn:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+
+  /* Si la pantalla puso su propio icono, la campana por defecto se retira.
+     Un icono, como en el diseño — no dos. El atributo lo pone
+     `HeaderAction` al montarse; con `:has()` la regla no sobrevivía a la
+     compilación del CSS. */
+  .navright[data-screen-action] .ax-bell { display: none; }
   /* El sobretítulo dice de qué módulo es la pantalla; el título dice
      qué es esta pantalla. Separarlos deja que el título sea corto. */
   .navover {
@@ -996,11 +1025,19 @@
 /* ═══════════════════════════════════════════════════════
    NOCHE — mate, no brillante
 
-   En oscuro una sombra no separa: no hay luz que proyectar. Lo que
-   separa es un filete de un píxel. Nada flota.
+   Casi todo lo resuelven ya los tokens: en `globals.css` el tema noche
+   pone TODAS las sombras a `none`, así que `.ax-card`, `.doccard`,
+   `.tallycell` y compañía dejan de flotar solas, sin una regla por clase.
 
-   DOS BLOQUES QUE HAY QUE MANTENER EN SYNC, igual que en `globals.css`:
-   la cookie explícita gana; sin cookie decide el sistema.
+   Aquí sólo queda lo que un token no puede hacer: poner el filete de un
+   píxel que sustituye a la sombra. Es una propiedad distinta —`box-shadow`
+   con `inset`— y hay que escribirla.
+
+   Por eso mismo NUNCA se pone una sombra en línea sobre una tarjeta: de
+   noche ganaría a este filete y la tarjeta se quedaría sin separación
+   ninguna.
+
+   DOS BLOQUES QUE HAY QUE MANTENER EN SYNC, igual que en `globals.css`.
    ═══════════════════════════════════════════════════════ */
 
 @layer components {
@@ -1014,6 +1051,7 @@
   [data-theme="dark"] .segmented button[aria-pressed="true"],
   [data-theme="dark"] .ax-chip,
   [data-theme="dark"] .filterchip,
+  [data-theme="dark"] .playbtn,
   [data-theme="dark"] .btn-quiet { box-shadow: inset 0 0 0 1px var(--line-hairline); }
 
   [data-theme="dark"] .card-highlight { background: var(--surface-highlight-night); box-shadow: inset 0 0 0 1px var(--amber-200); }
@@ -1021,15 +1059,15 @@
   [data-theme="dark"] .card-invert    { box-shadow: inset 0 0 0 1px var(--line-on-invert-night); }
   [data-theme="dark"] .card-lift      { box-shadow: inset 0 0 0 1px var(--teal-200); }
   [data-theme="dark"] .card-pending   { box-shadow: none; }
+  /* Lo que ya lleva un fondo de acción no necesita filete. */
   [data-theme="dark"] .ax-chip.on,
   [data-theme="dark"] .filterchip[aria-pressed="true"],
   [data-theme="dark"] .tallycell[aria-pressed="true"] { box-shadow: none; }
-  /* La acción es teal en oscuro, así que el botón «en vivo» sube a menta
-     para no repetirse con ella. */
+  /* La acción ya es teal de noche, así que «sala abierta» sube a menta
+     para no repetirse con ella: teal es «hazlo», menta es «está pasando». */
   [data-theme="dark"] .btn-accent { background: var(--teal-200); color: var(--navy-900); }
   [data-theme="dark"] .btn-accent:hover  { background: var(--accent-hover-night); }
   [data-theme="dark"] .btn-accent:active { background: var(--teal-500); }
-  [data-theme="dark"] .playbtn { box-shadow: inset 0 0 0 1px var(--urgency-ok-line); }
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) .ax-card,
@@ -1042,6 +1080,7 @@
     :root:not([data-theme="light"]) .segmented button[aria-pressed="true"],
     :root:not([data-theme="light"]) .ax-chip,
     :root:not([data-theme="light"]) .filterchip,
+    :root:not([data-theme="light"]) .playbtn,
     :root:not([data-theme="light"]) .btn-quiet { box-shadow: inset 0 0 0 1px var(--line-hairline); }
 
     :root:not([data-theme="light"]) .card-highlight { background: var(--surface-highlight-night); box-shadow: inset 0 0 0 1px var(--amber-200); }
@@ -1055,6 +1094,5 @@
     :root:not([data-theme="light"]) .btn-accent { background: var(--teal-200); color: var(--navy-900); }
     :root:not([data-theme="light"]) .btn-accent:hover  { background: var(--accent-hover-night); }
     :root:not([data-theme="light"]) .btn-accent:active { background: var(--teal-500); }
-    :root:not([data-theme="light"]) .playbtn { box-shadow: inset 0 0 0 1px var(--urgency-ok-line); }
   }
 }

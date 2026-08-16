@@ -73,6 +73,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Glyph,
+  HeaderAction,
   KitBadge,
   KitButton,
   KitNotice,
@@ -376,27 +377,30 @@ export function VaultScreen({
 
   return (
     <article className="mx-auto w-full max-w-4xl">
+      {/* La lupa va arriba del todo, al lado de la marca, como en el
+          diseño — no en una segunda fila propia. */}
+      {!isEmpty ? (
+        <HeaderAction>
+          <button
+            type="button"
+            onClick={toggleSearch}
+            aria-expanded={searchOpen}
+            aria-label={searchOpen ? copy.search.clear : copy.search.label}
+            className="ax-iconbtn"
+          >
+            {searchOpen ? (
+              <X aria-hidden="true" className="size-5" />
+            ) : (
+              <Glyph name="search" icon={Search} size={21} />
+            )}
+          </button>
+        </HeaderAction>
+      ) : null}
+
       <ScreenHeader
         overline={copy.summary.overline}
         title={copy.summary.title}
         sub={isEmpty ? undefined : summarySub}
-        right={
-          !isEmpty ? (
-            <button
-              type="button"
-              onClick={toggleSearch}
-              aria-expanded={searchOpen}
-              aria-label={searchOpen ? copy.search.clear : copy.search.label}
-              className="inline-flex size-11 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface-alt hover:text-ink"
-            >
-              {searchOpen ? (
-                <X aria-hidden="true" className="size-5" />
-              ) : (
-                <Glyph name="search" icon={Search} size={21} />
-              )}
-            </button>
-          ) : null
-        }
       />
 
       {/* ── Buscar ── */}

@@ -23,8 +23,51 @@
  *    `type` y dentro de un formulario eso los convierte en enviar.
  */
 
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import type { ComponentType, CSSProperties, ReactNode, SVGProps } from "react";
 import { cn } from "@/lib/utils";
+
+/* ─────────────────────────────────────────────────────────
+   La acción de la cabecera
+
+   En el diseño la cabecera lleva la marca y UN icono, y ese icono es de
+   la pantalla: el Panel pone la campana, la Bóveda pone la lupa. Pero la
+   cabecera la dibuja el armazón, no la pantalla.
+
+   Se resuelve con un portal a un hueco fijo. Se probó antes con contexto
+   y estado, y no vale: el nodo de React es distinto en cada render, así
+   que `setState` en un efecto sin dependencias entra en bucle, y con
+   dependencias el icono se queda congelado cuando cambia (la lupa que
+   pasa a equis al abrir la búsqueda).
+
+   Cuál se ve lo decide el CSS con `:has()`: si la pantalla puso algo, la
+   campana por defecto se esconde. Cero estado, cero bucles.
+   ───────────────────────────────────────────────────────── */
+
+/** El hueco de la cabecera donde aterriza la acción de la pantalla. */
+export const HEADER_ACTION_ID = "ax-nav-action";
+
+export function HeaderAction({ children }: { children: ReactNode }) {
+  const [host, setHost] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const node = document.getElementById(HEADER_ACTION_ID);
+    setHost(node);
+    if (!node?.parentElement) return;
+    // Se marca el contenedor para que la campana por defecto se retire.
+    // Se probó con `:has()` y no sobrevive a la compilación del CSS según
+    // los objetivos de navegador: la regla se escribe y no llega. Un
+    // atributo funciona en todas partes y se ve en el inspector.
+    const barra = node.parentElement;
+    barra.dataset.screenAction = "true";
+    return () => {
+      delete barra.dataset.screenAction;
+    };
+  }, []);
+
+  return host ? createPortal(children, host) : null;
+}
 
 /* ─────────────────────────────────────────────────────────
    Icono
@@ -77,28 +120,25 @@ export type ScreenHeaderProps = {
   title: string;
   /** El dato de estado: «12 documentos en 5 carpetas». */
   sub?: string;
-  /** Acciones de la esquina (buscar, ajustes). */
-  right?: ReactNode;
   id?: string;
   className?: string;
 };
 
+/**
+ * Sin fila de acciones: el icono de la esquina va en la cabecera del
+ * armazón, con la marca, y se pone desde la pantalla con `HeaderAction`.
+ * Cuando esto dibujaba su propia fila salían dos —campana arriba, lupa
+ * debajo— y el titular quedaba empujado media pantalla.
+ */
 export function ScreenHeader({
   overline,
   title,
   sub,
-  right,
   id,
   className,
 }: ScreenHeaderProps) {
   return (
     <header className={className}>
-      {right ? (
-        <div className="navrow">
-          <span />
-          <span className="navright">{right}</span>
-        </div>
-      ) : null}
       {overline ? <p className="navover">{overline}</p> : null}
       <h1 id={id} className="largeTitle">
         {title}
