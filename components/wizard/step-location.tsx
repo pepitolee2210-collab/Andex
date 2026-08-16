@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { Check } from "lucide-react";
+import { Info, MapPin, Plane } from "lucide-react";
 import type {
   Lang,
   LocationContext,
@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/track";
 import { COUNTRY_NOT_LISTED, countriesGrouped } from "@/lib/catalogs/countries";
 import { statesGrouped } from "@/lib/catalogs/states";
+import { Glyph, KitBadge, KitNotice } from "@/components/ui/kit";
 import { Combobox, type ComboboxItem } from "@/components/ui/combobox";
 import { OptionChips, type ChipOption } from "@/components/ui/option-chips";
 import { Modal } from "@/components/ui/modal";
@@ -133,7 +134,11 @@ export function StepLocation({
 
   return (
     <div className="flex flex-col gap-6">
-      <div role="radiogroup" aria-label={t.title} className="flex flex-col gap-3">
+      {/* Dos filas en una lista agrupada, con su ficha de icono y el
+          distintivo de la elegida. Antes eran dos tarjetas con emoji: el
+          sistema de diseño no admite emoji como icono —y una bandera, además,
+          afirma cosas sobre la persona que aquí nadie ha preguntado. */}
+      <div role="radiogroup" aria-label={t.title} className="ax-group">
         {BRANCHES.map((value, index) => {
           const card = t.cards[value];
           const selected = branch === value;
@@ -149,34 +154,34 @@ export function StepLocation({
               tabIndex={index === focusIndex ? 0 : -1}
               onClick={() => requestBranch(value)}
               onKeyDown={(e) => handleCardKeyDown(e, index)}
-              className={cn(
-                "flex w-full items-start gap-3 rounded-lg border p-4 text-left transition-colors duration-150",
-                selected
-                  ? "border-teal-deep bg-teal-soft shadow-sm"
-                  : "border-line bg-surface hover:border-teal-deep",
-              )}
+              className="row tappable"
             >
-              <span aria-hidden="true" className="text-h1 leading-none">
-                {card.emoji}
+              <span className={cn("rowicon", selected ? "tone-accent" : "tone-quiet")}>
+                <Glyph
+                  name={value === "in_us" ? "map-pin" : "plane"}
+                  icon={value === "in_us" ? MapPin : Plane}
+                />
               </span>
-              <span className="min-w-0 flex-1">
-                <span className="block font-heading text-h3 text-ink">
-                  {card.title}
-                </span>
-                <span className="mt-1 block text-body text-muted">
-                  {card.description}
-                </span>
+              <span className="rowmain">
+                <span className="rowtitle">{card.title}</span>
+                <span className="rowmeta">{card.description}</span>
               </span>
               {selected ? (
-                <Check aria-hidden="true" className="mt-1 size-5 shrink-0 text-teal-deep" />
+                <span className="rowtrail">
+                  <KitBadge tone="accent">{t.selectedBadge}</KitBadge>
+                </span>
               ) : null}
             </button>
           );
         })}
       </div>
 
+      <KitNotice iconName="info" icon={Info}>
+        {t.branchNotice}
+      </KitNotice>
+
       {errors.location ? (
-        <p role="alert" className="text-body text-danger">
+        <p role="alert" className="text-label text-danger">
           {errors.location}
         </p>
       ) : null}

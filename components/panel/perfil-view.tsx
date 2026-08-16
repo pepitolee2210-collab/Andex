@@ -1,28 +1,60 @@
 "use client";
 
 /**
- * PERFIL (§3.2 regla UX 8: "Todo cambiable después desde Perfil, con recálculo
- * del ranking y toast de confirmación"; §4.7 último caso borde).
+ * PERFIL — la pantalla del sistema de diseño (`ui_kits/app/screens.jsx`,
+ * componente `Perfil`).
  *
- * Reglas que se cumplen aquí:
- *  · Cambiar ubicación, situación, intereses, objetivo o "para quién" RECALCULA
- *    el ranking al guardar y lo confirma con un toast.
- *  · Cambiar de RAMA exige la misma confirmación textual de §3.2.2 y limpia los
- *    datos de la rama anterior (regla dura: nunca conviven estado de EE. UU. y
- *    país extranjero). Se registra como transición de contexto (§3.2.3) con
- *    `trigger_source: 'profile'`.
- *  · La membresía se cancela en UN CLIC (§3.4.6) — ver <SubscriptionCard>.
- *  · §3.4.7: con la membresía vencida el panel queda bloqueado, pero ESTA
- *    pantalla sigue accesible y los datos, intactos.
+ * ── Qué cambió, y por qué ──
+ *
+ * Antes esto era un formulario de siete bloques abiertos a la vez —cuatro
+ * campos, dos comboboxes, tres tiras de fichas, el objetivo, la membresía y
+ * el cierre de sesión—, con una barra pegajosa de "Guardar cambios" al pie.
+ * Dos problemas reales:
+ *
+ *   1. La barra pegajosa vivía a `bottom-2` con `z-10`, y la barra de cinco
+ *      pestañas del armazón va a `bottom-0` con `z-30`. El botón de guardar
+ *      quedaba DEBAJO de las pestañas: el verificador visual lo cazaba en
+ *      cada pasada ("pulsable TAPADO por una barra fija"). Ya no existe esa
+ *      barra: cada bloque se edita en su propia hoja y el botón vive en el
+ *      pie de esa hoja, donde nada lo tapa.
+ *   2. Con todo abierto a la vez, la pantalla no decía qué guarda ANDEX de
+ *      ti; había que leerse el formulario entero para averiguarlo.
+ *
+ * Ahora Perfil es una LISTA, como en el diseño: cada fila dice qué guarda y
+ * qué hay dentro, y se abre sola. La lógica es la misma de antes —el
+ * recálculo del ranking al guardar (§3.2 regla 8), la confirmación textual
+ * al cambiar de rama (§3.2.2), el orden de intereses de D14, la membresía de
+ * §3.4.6/§3.4.7 y el cierre de sesión—, sólo cambia la forma.
+ *
+ * ── El control de tema ──
+ *
+ * Vive aquí, en su propio grupo, con dos opciones y ninguna tercera. No hay
+ * "según mi dispositivo" a propósito: el sistema de diseño lo escribe con
+ * todas las letras —"no sigue al sistema ni a la hora"— porque la app se usa
+ * bajo sol directo y de noche en la misma media hora, y si alguien lo eligió,
+ * no se le mueve. Escribe la cookie `andex_theme`, que es lo que el armazón
+ * ya lee; aquí no se toca nada del armazón.
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { LogOut } from "lucide-react";
-import { ROUTES } from "@/lib/config";
+import {
+  ChevronRight,
+  Compass,
+  Languages,
+  ListOrdered,
+  Lock,
+  LogOut,
+  MapPin,
+  SunMoon,
+  Target,
+  User,
+  Users,
+} from "lucide-react";
+import { COOKIES, ROUTES } from "@/lib/config";
 import { signOut } from "@/lib/auth/client";
 import { track } from "@/lib/analytics/track";
-import { interestOptionLabel, situationLabel } from "@/lib/i18n";
+import { goalLabel, interestOptionLabel, situationLabel } from "@/lib/i18n";
 import { interestsForBranch } from "@/lib/catalogs/interests";
 import { situationsForContext } from "@/lib/catalogs/situations";
 import { COUNTRY_NOT_LISTED } from "@/lib/catalogs/countries";
@@ -36,26 +68,37 @@ import type {
   TravelPlanTag,
 } from "@/lib/types";
 import { sanitizeFreeText } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { LanguageToggle } from "@/components/ui/language-toggle";
 import { Modal } from "@/components/ui/modal";
 import { OptionChips } from "@/components/ui/option-chips";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { toast } from "@/components/ui/toaster";
+import {
+  Glyph,
+  KitBadge,
+  KitCard,
+  KitNotice,
+  ListGroup,
+  ListRow,
+  ScreenHeader,
+  SectionLabel,
+  Segmented,
+} from "@/components/ui/kit";
 import { GoalCard } from "./goal-card";
 import { usePanel } from "./panel-context";
 import { SubscriptionCard } from "./subscription-card";
 import {
   countryComboboxItems,
   daysBetween,
+  scopeName,
   stateComboboxItems,
 } from "./panel-utils";
 
 const FREE_TEXT_MAX = 120;
 const NAME_MAX = 100;
+const YEAR_S = 60 * 60 * 24 * 365;
 
 const TIME_TAGS: readonly TimeInUSTag[] = [
   "menos_6_meses",
@@ -71,6 +114,25 @@ const TRAVEL_TAGS: readonly TravelPlanTag[] = [
   "no_se",
 ];
 const SEEKING: readonly SeekingFor[] = ["self", "family", "both"];
+
+/** Las hojas de detalle. Cada fila de la lista abre exactamente una. */
+type Detail =
+  | "account"
+  | "language"
+  | "location"
+  | "situation"
+  | "interests"
+  | "goal"
+  | "family";
+
+/** Las hojas que escriben en el perfil llevan pie con Guardar. */
+const SAVES: ReadonlySet<Detail> = new Set<Detail>([
+  "account",
+  "location",
+  "situation",
+  "interests",
+  "family",
+]);
 
 /** Campos del perfil editables desde esta pantalla. */
 type Draft = Pick<
@@ -127,32 +189,50 @@ function mergeSelectionOrder(previous: InterestTag[], next: string[]): InterestT
   return [...kept, ...added];
 }
 
-function Section({
-  id,
-  title,
-  description,
-  children,
-}: {
-  id?: string;
-  title: string;
-  description?: string;
-  children: React.ReactNode;
-}) {
-  const headingId = `seccion-${id ?? title.replace(/\s+/g, "-").toLowerCase()}`;
+/* ── El tema, sin tercera opción ─────────────────────────── */
+
+type Theme = "light" | "dark";
+
+/**
+ * Qué tema hay puesto AHORA. Primero la cookie —es lo que decidió la
+ * persona—, y si nunca eligió, lo que se esté viendo: el atributo que puso el
+ * armazón o, en su defecto, la preferencia del navegador. Así el control
+ * arranca marcando lo que la pantalla enseña, no un valor por defecto que
+ * contradice lo que se ve.
+ */
+function readTheme(): Theme {
+  if (typeof document === "undefined") return "light";
+  const cookie = document.cookie.match(
+    new RegExp(`(?:^|;\\s*)${COOKIES.theme}=(light|dark)`),
+  );
+  if (cookie) return cookie[1] as Theme;
+  const attr = document.documentElement.dataset.theme;
+  if (attr === "light" || attr === "dark") return attr;
+  return window.matchMedia?.("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
+function writeTheme(next: Theme) {
+  document.documentElement.setAttribute("data-theme", next);
+  document.cookie = `${COOKIES.theme}=${next}; path=/; max-age=${YEAR_S}; samesite=lax`;
+  // El servidor queda en sync para el siguiente render; sin red no pasa nada,
+  // porque la cookie local ya está escrita y el atributo ya está puesto.
+  fetch(`/api/prefs?theme=${next}&back=/`, { keepalive: true }).catch(() => {
+    /* sin conexión el tema ya cambió en este dispositivo */
+  });
+}
+
+/** El galón de la derecha: esta fila lleva a algún sitio. */
+function Trail() {
   return (
-    <section
-      id={id}
-      aria-labelledby={headingId}
-      className="scroll-mt-20 rounded-lg border border-line bg-surface p-4 shadow-sm sm:p-5"
-    >
-      <h2 id={headingId} className="font-heading text-h3 text-ink">
-        {title}
-      </h2>
-      {description ? (
-        <p className="mt-1 text-body text-muted">{description}</p>
-      ) : null}
-      <div className="mt-4 space-y-5">{children}</div>
-    </section>
+    <Glyph
+      name="chevron-right"
+      icon={ChevronRight}
+      size={18}
+      strokeWidth={2}
+      className="shrink-0 text-disabled"
+    />
   );
 }
 
@@ -162,12 +242,20 @@ export function PerfilView() {
   const router = useRouter();
 
   const [draft, setDraft] = useState<Draft | null>(null);
+  const [detail, setDetail] = useState<Detail | null>(null);
   const [pendingBranch, setPendingBranch] = useState<LocationContext | null>(null);
   const [saving, setSaving] = useState(false);
+  const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
     if (profile) setDraft(draftFrom(profile));
   }, [profile]);
+
+  // El tema real sólo se conoce en el cliente (cookie o preferencia del
+  // navegador): se lee tras montar para no pintar el control mintiendo.
+  useEffect(() => {
+    setTheme(readTheme());
+  }, []);
 
   const interestOptions = useMemo(
     () =>
@@ -191,6 +279,12 @@ export function PerfilView() {
   }
 
   const dirty = JSON.stringify(draft) !== JSON.stringify(draftFrom(profile));
+
+  /** Cerrar sin guardar deja el perfil como estaba: el borrador se descarta. */
+  function closeDetail() {
+    setDetail(null);
+    setDraft(draftFrom(profile!));
+  }
 
   async function handleSave() {
     if (!draft) return;
@@ -222,8 +316,12 @@ export function PerfilView() {
     });
     setSaving(false);
     // §3.2 regla 8 / §4.7 — el toast confirma que el plan se recalculó.
-    if (ok) toast.success(t.toasts.recalculated);
-    else toast.error(t.toasts.saveFailed);
+    if (ok) {
+      setDetail(null);
+      toast.success(t.toasts.recalculated);
+    } else {
+      toast.error(t.toasts.saveFailed);
+    }
   }
 
   /** §3.2.2 — cambio de rama: confirmación textual antes de borrar nada. */
@@ -264,21 +362,70 @@ export function PerfilView() {
     ? "declined"
     : (draft.situation ?? null);
 
-  return (
-    <div className="mx-auto w-full max-w-2xl">
-      <header>
-        <h1 className="font-heading text-h1 text-ink">{t.title}</h1>
-        <p className="mt-1 text-body-lg text-muted">{t.subtitle}</p>
-        {readOnly ? (
-          <p className="mt-3 rounded-sm bg-amber-soft px-3 py-2 text-body text-ink">
-            {dict.panel.shell.readOnlyHint}
-          </p>
-        ) : null}
-      </header>
+  /* ── Lo que dice cada fila sin abrirla ─────────────────── */
 
-      <div className="mt-6 space-y-4">
-        {/* ── Cuenta ── */}
-        <Section id="cuenta" title={t.sections.account}>
+  const fullName = `${profile.firstName} ${profile.lastName ?? ""}`.trim();
+  const initials =
+    [profile.firstName, profile.lastName]
+      .filter((part): part is string => Boolean(part && part.trim()))
+      .map((part) => part.trim()[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2) || fullName.slice(0, 2).toUpperCase();
+
+  const created = new Date(profile.createdAt);
+  const since = Number.isNaN(created.getTime())
+    ? ""
+    : new Intl.DateTimeFormat(lang === "en" ? "en-US" : "es-419", {
+        month: "long",
+        year: "numeric",
+      }).format(created);
+  const scope = scopeName(profile, lang);
+  const identityMeta = scope
+    ? t.identity.meta(scope, since)
+    : t.identity.metaNoScope(since);
+
+  const branchLabel = inUs ? t.location.inUsLabel : t.location.preArrivalLabel;
+  const locationMeta = scope
+    ? `${branchLabel} · ${scope}`
+    : `${branchLabel} · ${t.rows.locationEmpty}`;
+
+  const situationMeta = profile.situationDeclined
+    ? situationLabel("declined", context, lang)
+    : profile.situation
+      ? situationLabel(profile.situation, context, lang)
+      : t.rows.situationEmpty;
+
+  const interestsMeta =
+    profile.interests.length > 0
+      ? t.rows.interestsCount(profile.interests.length)
+      : t.rows.interestsEmpty;
+
+  const goalMeta =
+    profile.immediateGoal === "custom"
+      ? (profile.immediateGoalCustom ?? "").trim() || t.rows.goalEmpty
+      : profile.immediateGoal
+        ? goalLabel(profile.immediateGoal, lang)
+        : t.rows.goalEmpty;
+
+  /* ── Las hojas de detalle ──────────────────────────────── */
+
+  const DETAIL_TITLES: Record<Detail, string> = {
+    account: t.rows.account,
+    language: t.rows.language,
+    location: t.rows.location,
+    situation: t.rows.situation,
+    interests: t.rows.interests,
+    goal: t.rows.goal,
+    family: t.rows.family,
+  };
+
+  function detailBody(which: Detail): ReactNode {
+    if (!draft) return null;
+
+    if (which === "account") {
+      return (
+        <div className="space-y-5">
           <Input
             label={t.account.firstNameLabel}
             value={draft.firstName}
@@ -296,7 +443,7 @@ export function PerfilView() {
           <Input
             label={t.account.emailLabel}
             type="email"
-            value={profile.email}
+            value={profile!.email}
             help={t.account.emailHelp}
             disabled
             readOnly
@@ -309,15 +456,36 @@ export function PerfilView() {
             disabled={readOnly}
             onChange={(e) => patch({ phone: e.target.value })}
           />
-        </Section>
+        </div>
+      );
+    }
 
-        {/* ── Ubicación (la bifurcación) ── */}
-        <Section id="ubicacion" title={t.sections.location}>
+    if (which === "language") {
+      // Sigue siendo un enlace a /api/prefs: el idioma se resuelve en el
+      // servidor y funciona sin JavaScript (§3.1.1).
+      return (
+        <div>
+          <LanguageToggle
+            lang={lang}
+            backPath={ROUTES.perfil}
+            ariaLabel={dict.common.lang.ariaSwitch}
+          />
+          <p className="mt-3 text-body text-muted">{t.preferences.languageHelp}</p>
+        </div>
+      );
+    }
+
+    if (which === "location") {
+      return (
+        <div className="space-y-5">
           <OptionChips
             label={t.location.contextLabel}
             value={context}
             onChange={(value) => {
               if (readOnly || value === context) return;
+              // La confirmación sustituye a esta hoja en vez de apilarse
+              // encima: dos diálogos a la vez es una trampa de foco.
+              setDetail(null);
               setPendingBranch(value as LocationContext);
             }}
             options={[
@@ -401,12 +569,15 @@ export function PerfilView() {
               />
             </>
           )}
-        </Section>
+        </div>
+      );
+    }
 
-        {/* ── Situación ── */}
-        <Section id="situacion" title={t.sections.situation}>
+    if (which === "situation") {
+      return (
+        <div className="space-y-5">
           <OptionChips
-            label={t.sections.situation}
+            label={t.rows.situation}
             hideLabel
             value={situationValue}
             onChange={(value) => {
@@ -436,13 +607,17 @@ export function PerfilView() {
               onChange={(e) => patch({ situationOther: e.target.value })}
             />
           ) : null}
-        </Section>
+        </div>
+      );
+    }
 
-        {/* ── Intereses (el orden decide el interés principal, D14) ── */}
-        <Section id="intereses" title={t.sections.interests} description={t.interests.help}>
+    if (which === "interests") {
+      return (
+        <div className="space-y-5">
+          <p className="text-body text-muted">{t.interests.help}</p>
           <OptionChips
             multiple
-            label={t.sections.interests}
+            label={t.rows.interests}
             hideLabel
             value={draft.interests}
             onChange={(value) =>
@@ -468,121 +643,242 @@ export function PerfilView() {
 
           {draft.interests.length > 1 ? (
             <div>
-              <h3 className="text-label font-medium text-ink">
-                {t.interests.orderTitle}
-              </h3>
-              <ol className="mt-2 space-y-1">
+              <SectionLabel as="h3">{t.interests.orderTitle}</SectionLabel>
+              <ListGroup as="ul">
                 {draft.interests.map((tag, index) => (
-                  <li
-                    key={tag}
-                    className="flex min-h-11 items-center gap-2 rounded-sm border border-line px-3 py-1.5"
-                  >
-                    <span className="min-w-0 flex-1 truncate text-body text-ink">
-                      {interestOptionLabel(tag, lang)}
+                  <li key={tag} className="row">
+                    <span className="rowmain">
+                      <span className="rowtitle">
+                        {interestOptionLabel(tag, lang)}
+                      </span>
                     </span>
-                    {index === 0 ? (
-                      <Badge variant="teal">{t.interests.primaryBadge}</Badge>
-                    ) : readOnly ? null : (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          patch({
-                            interests: [
-                              tag,
-                              ...draft.interests.filter((other) => other !== tag),
-                            ],
-                          })
-                        }
-                        className="inline-flex min-h-11 shrink-0 items-center rounded-md px-2 text-caption text-muted underline underline-offset-4 transition-colors hover:text-ink"
-                      >
-                        {t.interests.makePrimary}
-                      </button>
-                    )}
+                    <span className="rowtrail">
+                      {index === 0 ? (
+                        <KitBadge tone="accent">{t.interests.primaryBadge}</KitBadge>
+                      ) : readOnly ? null : (
+                        <Button
+                          variant="ghost"
+                          onClick={() =>
+                            patch({
+                              interests: [
+                                tag,
+                                ...draft.interests.filter((other) => other !== tag),
+                              ],
+                            })
+                          }
+                        >
+                          {t.interests.makePrimary}
+                        </Button>
+                      )}
+                    </span>
                   </li>
                 ))}
-              </ol>
+              </ListGroup>
             </div>
           ) : null}
-        </Section>
+        </div>
+      );
+    }
 
-        {/* ── Objetivo de 30 días ──
-            Es EL MISMO componente del dashboard, no una copia: así el editor,
-            el recálculo y el toast se comportan igual en los dos sitios. */}
-        <GoalCard />
+    if (which === "goal") {
+      // El MISMO componente del panel, no una copia: así el editor, el
+      // recálculo y el toast se comportan igual en los dos sitios.
+      return <GoalCard />;
+    }
 
-        {/* ── ¿Para quién buscas ayuda? ── */}
-        <Section id="familia" title={t.sections.family}>
-          <OptionChips
-            label={t.sections.family}
-            hideLabel
-            value={draft.seekingFor}
-            onChange={(value) => patch({ seekingFor: value as SeekingFor })}
-            options={SEEKING.map((value) => ({
-              value,
-              label: dict.wizard.step35.options[value],
-              disabled: readOnly,
-            }))}
-          />
-        </Section>
+    return (
+      <OptionChips
+        label={t.rows.family}
+        hideLabel
+        value={draft.seekingFor}
+        onChange={(value) => patch({ seekingFor: value as SeekingFor })}
+        options={SEEKING.map((value) => ({
+          value,
+          label: dict.wizard.step35.options[value],
+          disabled: readOnly,
+        }))}
+      />
+    );
+  }
 
-        {/* ── Guardar: recálculo + toast (§3.2 regla 8) ── */}
-        {readOnly ? null : (
-          <div className="sticky bottom-2 z-10 rounded-lg border border-line bg-surface p-3 shadow-md">
-            <Button
-              fullWidth
-              size="lg"
-              onClick={handleSave}
-              disabled={!dirty}
-              loading={saving}
-              loadingLabel={dict.common.actions.loading}
+  return (
+    <div className="mx-auto w-full">
+      <ScreenHeader title={t.title} />
+
+      {/* ── Quién eres, y desde cuándo ── */}
+      <KitCard className="mt-[18px] flex items-center gap-3.5">
+        <span
+          aria-hidden="true"
+          className="flex size-13 shrink-0 items-center justify-center rounded-full font-extrabold"
+          style={{
+            background: "var(--navy-50)",
+            color: "var(--navy-700)",
+            fontSize: "var(--size-body-lg)",
+          }}
+        >
+          {initials}
+        </span>
+        <div className="min-w-0">
+          <p
+            className="text-body-lg font-bold text-ink"
+            style={{ letterSpacing: "-.018em" }}
+          >
+            {fullName}
+          </p>
+          <p className="mt-1 text-muted" style={{ fontSize: 16 }}>
+            {identityMeta}
+          </p>
+        </div>
+      </KitCard>
+
+      {/* ── Cuenta ── */}
+      <SectionLabel as="h2">{t.sections.account}</SectionLabel>
+      <ListGroup>
+        <ListRow
+          iconName="user"
+          icon={User}
+          title={t.rows.account}
+          meta={t.rows.accountMeta}
+          trail={<Trail />}
+          onClick={() => setDetail("account")}
+        />
+        <ListRow
+          iconName="languages"
+          icon={Languages}
+          title={t.rows.language}
+          meta={dict.common.lang[lang]}
+          trail={<Trail />}
+          onClick={() => setDetail("language")}
+        />
+      </ListGroup>
+
+      {/* ── El tema: su propio grupo, y sin tercera opción ── */}
+      <ListGroup className="mt-2.5 px-4 py-[15px]">
+        <div className="flex items-start gap-3.5">
+          <span className="rowicon tone-quiet">
+            <Glyph name="sun-moon" icon={SunMoon} size={19} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="rowtitle">{t.rows.theme}</p>
+            <p
+              className="mt-1.5 text-muted"
+              style={{ fontSize: "var(--size-footnote)", lineHeight: 1.45 }}
             >
-              {t.account.save}
-            </Button>
-          </div>
-        )}
-
-        {/* ── Idioma y apariencia ── */}
-        <Section id="preferencias" title={t.sections.preferences}>
-          <div>
-            <p className="mb-2 text-label font-medium text-ink">
-              {t.preferences.languageLabel}
-            </p>
-            <LanguageToggle
-              lang={lang}
-              backPath={ROUTES.perfil}
-              ariaLabel={dict.common.lang.ariaSwitch}
-            />
-            <p className="mt-1.5 text-caption text-muted">
-              {t.preferences.languageHelp}
+              {t.rows.themeHelp}
             </p>
           </div>
+        </div>
+        <Segmented
+          className="mt-3"
+          groupLabel={t.rows.themeAria}
+          value={theme}
+          onChange={(next) => {
+            setTheme(next);
+            writeTheme(next);
+          }}
+          items={[
+            { key: "light" as Theme, label: t.rows.themeDay },
+            { key: "dark" as Theme, label: t.rows.themeNight },
+          ]}
+        />
+      </ListGroup>
 
-          <div>
-            <p className="mb-2 text-label font-medium text-ink">
-              {t.preferences.themeLabel}
-            </p>
-            <ThemeToggle
-              ariaLabel={dict.common.theme.ariaSwitch}
-              labels={{
-                light: t.preferences.themeLight,
-                dark: t.preferences.themeDark,
-                system: t.preferences.themeSystem,
-              }}
-            />
-          </div>
-        </Section>
+      {/* ── Dónde estoy (la bifurcación de §3.2.2) ── */}
+      <ListGroup className="mt-2.5">
+        <ListRow
+          iconName="map-pin"
+          icon={MapPin}
+          title={t.rows.location}
+          meta={locationMeta}
+          trail={<Trail />}
+          onClick={() => setDetail("location")}
+        />
+      </ListGroup>
 
-        {/* ── Membresía ── */}
-        <SubscriptionCard />
+      {/* ── Tu plan: lo que ordena el panel ── */}
+      <SectionLabel as="h2">{t.sections.plan}</SectionLabel>
+      <ListGroup>
+        <ListRow
+          iconName="compass"
+          icon={Compass}
+          title={t.rows.situation}
+          meta={situationMeta}
+          trail={<Trail />}
+          onClick={() => setDetail("situation")}
+        />
+        <ListRow
+          iconName="list-ordered"
+          icon={ListOrdered}
+          title={t.rows.interests}
+          meta={interestsMeta}
+          trail={<Trail />}
+          onClick={() => setDetail("interests")}
+        />
+        <ListRow
+          iconName="target"
+          icon={Target}
+          title={t.rows.goal}
+          meta={goalMeta}
+          trail={<Trail />}
+          onClick={() => setDetail("goal")}
+        />
+        <ListRow
+          iconName="users"
+          icon={Users}
+          title={t.rows.family}
+          meta={dict.wizard.step35.options[profile.seekingFor]}
+          trail={<Trail />}
+          onClick={() => setDetail("family")}
+        />
+      </ListGroup>
 
-        {/* ── Sesión ── */}
-        <Section id="sesion" title={t.sections.danger}>
-          <Button variant="ghost" onClick={handleSignOut}>
-            <LogOut aria-hidden="true" className="size-4" />
-            {t.danger.logout}
-          </Button>
-        </Section>
-      </div>
+      {/* ── Suscripción (§3.4.6 y §3.4.7) ── */}
+      <SubscriptionCard />
+
+      {/* ── Tus datos ── */}
+      <SectionLabel as="h2">{t.sections.data}</SectionLabel>
+      <ListGroup>
+        <ListRow
+          iconName="log-out"
+          icon={LogOut}
+          title={t.rows.logout}
+          meta={t.rows.logoutMeta}
+          onClick={handleSignOut}
+        />
+      </ListGroup>
+
+      {/* La promesa de cifrado dice su límite en la misma frase. */}
+      <KitNotice className="mt-3" iconName="lock" icon={Lock}>
+        {t.vaultNotice}
+      </KitNotice>
+
+      {/* ── La hoja de detalle ── */}
+      <Modal
+        open={detail !== null}
+        onClose={closeDetail}
+        title={detail ? DETAIL_TITLES[detail] : t.title}
+        closeLabel={dict.common.aria.closeModal}
+        variant="fullscreen-mobile"
+        footer={
+          detail && SAVES.has(detail) && !readOnly ? (
+            <>
+              <Button variant="ghost" onClick={closeDetail}>
+                {dict.common.actions.cancel}
+              </Button>
+              <Button
+                onClick={handleSave}
+                disabled={!dirty}
+                loading={saving}
+                loadingLabel={dict.common.actions.loading}
+              >
+                {t.account.save}
+              </Button>
+            </>
+          ) : undefined
+        }
+      >
+        {detail ? detailBody(detail) : null}
+      </Modal>
 
       {/* §3.2.2 — confirmación TEXTUAL antes de cambiar de rama. */}
       <Modal

@@ -1,14 +1,20 @@
 "use client";
 
 /**
- * Formulario de registro (§0.2-B, §3: landing → REGISTRO → entrevista).
+ * REGISTRO (§0.2-B, §3: landing → REGISTRO → entrevista).
+ *
+ * Réplica de `onboarding.jsx → Registro` del sistema de diseño con nuestro
+ * contenido. Lo que manda en esta pantalla: «un campo por pantalla y el
+ * aviso de para qué sirve el dato al lado del dato». Por eso los tres
+ * campos van en una sola lista agrupada, cada uno con su nota debajo, y no
+ * en tarjetas sueltas con la letra pequeña al final.
+ *
+ * El aviso de cifrado cierra la pantalla, junto al botón: es donde surge la
+ * pregunta («¿qué van a hacer con mis papeles?»). Dice la promesa y su
+ * límite en la misma frase, que es la regla del proyecto.
  *
  * Al crear la cuenta el usuario va SIEMPRE a `/entrevista`: el embudo no
  * enseña precio antes de haber armado el plan.
- *
- * Copy: `auth` para todo lo propio de la pantalla. La etiqueta del nombre se
- * toma de `wizard.step1.firstName` — es el mismo dato con el mismo nombre y
- * el diccionario de auth no lo trae (ver reporte del agente de Auth).
  *
  * Cumplimiento §3.4.6: la casilla de términos llega SIN marcar y el
  * consentimiento se registra con `TERMS_VERSION` al crear la cuenta.
@@ -17,24 +23,23 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Eye, EyeOff, Lock } from "lucide-react";
 import { ROUTES, isDemoMode } from "@/lib/config";
 import { getDictionary } from "@/lib/i18n";
 import type { Lang } from "@/lib/types";
-import { isValidEmail } from "@/lib/utils";
+import { cn, isValidEmail } from "@/lib/utils";
 import {
   MIN_PASSWORD_LENGTH,
   signInWithMagicLink,
   signUpWithPassword,
 } from "@/lib/auth/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Glyph, KitButton, KitNotice, ScreenHeader } from "@/components/ui/kit";
 import { toast } from "@/components/ui/toaster";
-import { AuthHeading } from "./auth-heading";
 import { CheckboxField } from "./checkbox-field";
 import { FormAlert } from "./form-alert";
+import { KitField, KIT_INPUT_CLASS } from "./kit-field";
 import { MagicLinkSent } from "./magic-link-sent";
 import { OrDivider } from "./or-divider";
-import { PasswordField } from "./password-field";
 import { focusField } from "./focus";
 
 const FIELD_IDS = {
@@ -69,7 +74,7 @@ function LegalLink({ href, label }: { href: string; label: string }) {
       // El clic en el enlace no debe marcar/desmarcar la casilla que lo
       // envuelve: aceptar y leer son dos acciones distintas.
       onClick={(event) => event.stopPropagation()}
-      className="font-medium text-teal-deep underline underline-offset-4"
+      className="font-semibold text-teal-deep underline underline-offset-4"
     >
       {label}
     </Link>
@@ -84,6 +89,7 @@ export function RegistroForm({ lang }: { lang: Lang }) {
   const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [wantsMarketing, setWantsMarketing] = useState(false);
 
@@ -220,62 +226,112 @@ export function RegistroForm({ lang }: { lang: Lang }) {
   }
 
   return (
-    <div>
-      <AuthHeading
-        eyebrow={t.registro.eyebrow}
-        title={t.registro.title}
-        subtitle={t.registro.subtitle}
-      />
+    /**
+     * El armazón de `/registro` envuelve la pantalla en una tarjeta blanca
+     * con relleno propio. El diseño pone la lista agrupada sobre el fondo de
+     * página, no sobre otra tarjeta, así que aquí se anula ese relleno y se
+     * repinta el fondo. Lo correcto sería tocar el layout, pero está fuera
+     * del alcance de esta pasada (ver informe).
+     */
+    <div className="-m-5 flex flex-col rounded-xl bg-page p-5 sm:-m-8 sm:p-8">
+      <ScreenHeader title={t.registro.title} sub={t.registro.subtitle} />
 
-      <form noValidate onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <Input
-          id={FIELD_IDS.firstName}
-          label={dict.wizard.step1.firstName.label}
-          placeholder={dict.wizard.step1.firstName.placeholder}
-          value={firstName}
-          onChange={(event) => setFirstName(event.target.value)}
-          autoComplete="given-name"
-          autoCapitalize="words"
-          enterKeyHint="next"
-          maxLength={100}
-          aria-required="true"
-          error={errors.firstName}
-        />
+      <form noValidate onSubmit={handleSubmit} className="flex flex-col">
+        {/* Los tres datos, en una sola lista: un dato por fila y su nota
+            justo debajo. */}
+        <div className="ax-group mt-5">
+          <KitField
+            id={FIELD_IDS.firstName}
+            label={dict.wizard.step1.firstName.label}
+            error={errors.firstName}
+          >
+            <input
+              id={FIELD_IDS.firstName}
+              type="text"
+              className={cn(KIT_INPUT_CLASS, "w-full")}
+              placeholder={dict.wizard.step1.firstName.placeholder}
+              value={firstName}
+              onChange={(event) => setFirstName(event.target.value)}
+              autoComplete="given-name"
+              autoCapitalize="words"
+              enterKeyHint="next"
+              maxLength={100}
+              aria-required="true"
+              aria-invalid={errors.firstName ? true : undefined}
+              aria-describedby={
+                errors.firstName ? `${FIELD_IDS.firstName}-hint` : undefined
+              }
+            />
+          </KitField>
 
-        <Input
-          id={FIELD_IDS.email}
-          label={t.shared.emailLabel}
-          placeholder={t.shared.emailPlaceholder}
-          type="email"
-          inputMode="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          autoComplete="email"
-          autoCapitalize="none"
-          autoCorrect="off"
-          spellCheck={false}
-          enterKeyHint="next"
-          maxLength={254}
-          aria-required="true"
-          error={errors.email}
-        />
+          <KitField
+            id={FIELD_IDS.email}
+            label={t.shared.emailLabel}
+            hint={dict.wizard.step1.email.help}
+            error={errors.email}
+          >
+            <input
+              id={FIELD_IDS.email}
+              type="email"
+              inputMode="email"
+              className={cn(KIT_INPUT_CLASS, "w-full")}
+              placeholder={t.shared.emailPlaceholder}
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              autoComplete="email"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              enterKeyHint="next"
+              maxLength={254}
+              aria-required="true"
+              aria-invalid={errors.email ? true : undefined}
+              aria-describedby={`${FIELD_IDS.email}-hint`}
+            />
+          </KitField>
 
-        <PasswordField
-          id={FIELD_IDS.password}
-          label={t.shared.passwordLabel}
-          placeholder={t.shared.passwordPlaceholder}
-          value={password}
-          onChange={setPassword}
-          autoComplete="new-password"
-          showLabel={t.shared.passwordShow}
-          hideLabel={t.shared.passwordHide}
-          help={t.shared.passwordHelp}
-          error={errors.password}
-          meter
-          strengthLabels={t.passwordStrength}
-        />
+          <KitField
+            id={FIELD_IDS.password}
+            label={t.shared.passwordLabel}
+            hint={t.shared.passwordHelp}
+            error={errors.password}
+            action={
+              /* Icono y no texto: «Mostrar contraseña» son 19 caracteres que
+                 se comen la mitad de la fila y dejan el valor recortado. */
+              <button
+                type="button"
+                onClick={() => setShowPassword((current) => !current)}
+                aria-pressed={showPassword}
+                aria-label={
+                  showPassword ? t.shared.passwordHide : t.shared.passwordShow
+                }
+                className="ax-iconbtn -my-3 shrink-0"
+              >
+                <Glyph
+                  name={showPassword ? "eye-off" : "eye"}
+                  icon={showPassword ? EyeOff : Eye}
+                />
+              </button>
+            }
+          >
+            <input
+              id={FIELD_IDS.password}
+              type={showPassword ? "text" : "password"}
+              className={cn(KIT_INPUT_CLASS, "w-full")}
+              placeholder={t.shared.passwordPlaceholder}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              autoComplete="new-password"
+              enterKeyHint="done"
+              aria-required="true"
+              aria-invalid={errors.password ? true : undefined}
+              aria-describedby={`${FIELD_IDS.password}-hint`}
+            />
+          </KitField>
+        </div>
 
-        <div className="flex flex-col gap-1">
+        {/* El consentimiento, con su salida al lado. */}
+        <div className="mt-5">
           <CheckboxField
             id={FIELD_IDS.terms}
             checked={acceptedTerms}
@@ -285,8 +341,10 @@ export function RegistroForm({ lang }: { lang: Lang }) {
             }}
             required
             error={termsError}
+            meta={t.registro.termsMeta}
           >
-            {t.registro.termsPrefix} <LegalLink href={ROUTES.terminos} label={t.registro.termsLink} />{" "}
+            {t.registro.termsPrefix}{" "}
+            <LegalLink href={ROUTES.terminos} label={t.registro.termsLink} />{" "}
             {t.registro.termsMiddle}{" "}
             <LegalLink href={ROUTES.privacidad} label={t.registro.privacyLink} />.
           </CheckboxField>
@@ -295,6 +353,7 @@ export function RegistroForm({ lang }: { lang: Lang }) {
             id="registro-marketing"
             checked={wantsMarketing}
             onChange={setWantsMarketing}
+            meta={t.registro.marketingMeta}
           >
             {t.registro.marketingOptIn}
           </CheckboxField>
@@ -302,37 +361,37 @@ export function RegistroForm({ lang }: { lang: Lang }) {
 
         <FormAlert message={formError} />
 
-        <Button
-          type="submit"
-          size="lg"
-          fullWidth
-          loading={pending === "signup"}
-          loadingLabel={t.shared.submitting}
-          disabled={pending === "magic"}
-        >
-          {t.registro.submit}
-        </Button>
+        {/* La acción y, pegado a ella, el límite de lo que prometemos. */}
+        <div className="mt-8 flex flex-col gap-3">
+          <KitButton type="submit" wide disabled={pending !== "none"}>
+            {pending === "signup" ? t.shared.submitting : t.registro.submit}
+          </KitButton>
+
+          <KitNotice iconName="lock" icon={Lock}>
+            {t.registro.vaultNotice}
+          </KitNotice>
+        </div>
       </form>
 
+      {/* La vía sin contraseña y la salida a la sesión existente: no están en
+          el diseño, pero son funcionalidad nuestra y no pueden desaparecer. */}
       <OrDivider label={t.shared.or} />
 
-      <Button
-        variant="secondary"
-        fullWidth
+      <KitButton
+        kind="ghost"
+        wide
         onClick={handleMagicLink}
-        loading={pending === "magic"}
-        loadingLabel={t.shared.submitting}
-        disabled={pending === "signup"}
+        disabled={pending !== "none"}
       >
-        {t.registro.magicLink}
-      </Button>
+        {pending === "magic" ? t.shared.submitting : t.registro.magicLink}
+      </KitButton>
       <p className="mt-2 text-caption text-muted">{t.registro.magicLinkHelp}</p>
 
       <p className="mt-6 border-t border-line pt-5 text-body text-muted">
         {t.registro.haveAccount}{" "}
         <Link
           href={ROUTES.login}
-          className="font-medium text-teal-deep underline underline-offset-4"
+          className="font-semibold text-teal-deep underline underline-offset-4"
         >
           {t.registro.haveAccountLink}
         </Link>

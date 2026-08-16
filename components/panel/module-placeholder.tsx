@@ -1,39 +1,61 @@
 "use client";
 
 /**
- * PANTALLA PLACEHOLDER DE MÓDULO (§4.6).
+ * MÓDULO EN CONSTRUCCIÓN — la pantalla del sistema de diseño
+ * (`screens.jsx` → `Construccion`, componente `ComingSoonModule`).
  *
- * "Cada módulo abre a una pantalla completa, no a un toast de 'próximamente'."
- * Los cinco elementos que exige el PRD, en orden:
+ * Sirve a los cuatro módulos que abren durante el piloto: migración,
+ * finanzas, negocio y empleo.
  *
- *   1. Header del módulo con su icono, nombre y color.
- *   2. Descripción de qué va a resolver, en lenguaje del usuario.
- *   3. Lista de las 3–4 funcionalidades que traerá.
- *   4. Captura de interés: "¿Qué es lo primero que necesitas de este módulo?"
- *      + campo libre + "Avísame cuando esté listo" → `module_interest_signals`.
- *   5. Enlace de retorno al dashboard.
+ * ── Qué manda aquí, según el diseño ──
  *
- * El contenido cambia según `contentVariant` (§4.2): un `pre_arrival` que abre
- * M7 lee "cómo funciona el mercado laboral", no vacantes.
+ * «Dice qué falta y cuándo, **sin lista de espera ni contador**.» Y de la
+ * ficha del componente: *"Never promise a date. «Falta poco» is the
+ * strongest thing this screen may say."* Por eso no hay fecha de apertura,
+ * ni cuenta atrás, ni «ya somos N esperando»: es exactamente el registro
+ * visual de quien estafó a este público, y el PRD lo veta.
  *
- * Aquí se emite `module_opened` (§7.5), el evento clave del MVP: se dispara al
- * abrirse la pantalla, así que cuenta igual una entrada desde la hero card,
- * desde el grid, desde el sidebar o desde un enlace directo.
+ * ── La forma, de arriba abajo ──
+ *
+ *   1. Insignia «En construcción» (`tone="building"`).
+ *   2. El nombre del módulo, grande.
+ *   3. Una línea que dice el estado y nada más.
+ *   4. Lo que se va a poder hacer, NUMERADO — no con vistos. Un número
+ *      dice «esto es una lista de cosas por venir»; un visto dice «esto ya
+ *      está hecho», que aquí sería mentira.
+ *   5. La pregunta abierta, 240 caracteres. *"The free-text answer is a
+ *      real product signal"*: es la investigación de producto más barata
+ *      que se va a hacer, y por eso se le da el doble de sitio que al
+ *      campo libre de la entrevista (§3.2.1 regla 3 lo acota a 120).
+ *
+ * ── La confirmación ocurre EN EL MISMO BOTÓN ──
+ *
+ * Sin toast y sin modal, como en el resto del sistema («Apuntarme» →
+ * «Te avisamos 30 min antes»). El botón cambia de tono, de icono y de
+ * texto, y el texto escrito se queda en pantalla: quien acaba de contar
+ * algo quiere seguir viéndolo.
+ *
+ * Aquí se emite `module_opened` (§7.5), el evento clave del MVP: se
+ * dispara al abrirse la pantalla, así que cuenta igual una entrada desde
+ * la hero card, desde el grid o desde un enlace directo.
  */
 
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, BellRing, Check } from "lucide-react";
+import { BellRing, Check, ChevronLeft } from "lucide-react";
 import { ROUTES } from "@/lib/config";
 import { track } from "@/lib/analytics/track";
 import { getDataStore } from "@/lib/data";
-import { moduleById } from "@/lib/catalogs/modules";
 import type { ModuleId } from "@/lib/types";
 import { sanitizeFreeText } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ModuleIcon } from "@/components/module-icon";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Glyph,
+  KitBadge,
+  KitButton,
+  PromiseItem,
+  SectionLabel,
+} from "@/components/ui/kit";
 import { usePanel } from "./panel-context";
 import { moduleTitle } from "./panel-utils";
 
@@ -44,6 +66,10 @@ import { moduleTitle } from "./panel-utils";
  * que vas a hacer" y cortar la respuesta a la mitad la desperdicia.
  */
 const FREE_TEXT_MAX = 240;
+
+/** Rótulos que además nombran a lo que va debajo. */
+const PROMESAS_ID = "modulo-promesas";
+const PREGUNTA_ID = "modulo-pregunta";
 
 export function ModulePlaceholder({ moduleId }: { moduleId: ModuleId }) {
   const { dict, loading, profile, readOnly, openModule } = usePanel();
@@ -74,24 +100,17 @@ export function ModulePlaceholder({ moduleId }: { moduleId: ModuleId }) {
 
   if (loading || !profile) {
     return (
-      <div className="mx-auto w-full max-w-2xl" aria-busy="true">
+      <div className="w-full" aria-busy="true">
         <Skeleton variant="card" className="h-32 rounded-xl" />
         <Skeleton lines={4} className="mt-6" />
       </div>
     );
   }
 
-  const meta = moduleById(moduleId);
   const variant = profile.locationContext;
   const title = moduleTitle(dict, moduleId, variant);
   const copy = dict.modules.byModule[moduleId][variant];
   const p = dict.modules.placeholder;
-
-  // D16 — el accent color del seed §7.4 solo como TINTE de superficie tras el
-  // icono; jamás como color de texto ni fondo pleno (§2.1.1).
-  const accentTile: CSSProperties = {
-    backgroundColor: `color-mix(in srgb, ${meta.accentColor} 14%, transparent)`,
-  };
 
   async function handleSubmit() {
     setSubmitting(true);
@@ -116,122 +135,79 @@ export function ModulePlaceholder({ moduleId }: { moduleId: ModuleId }) {
   }
 
   return (
-    <article className="mx-auto w-full max-w-2xl">
-      {/* 1 — Header: icono, nombre y color del módulo. */}
-      <header className="rounded-xl border border-line bg-surface p-5 shadow-sm sm:p-6">
-        <div className="flex items-start gap-4">
-          <span
-            style={accentTile}
-            aria-hidden="true"
-            className="flex size-12 shrink-0 items-center justify-center rounded-md text-ink"
-          >
-            <ModuleIcon slug={meta.slug} size={26} />
-          </span>
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="font-heading text-h1 text-ink">{title}</h1>
-              <Badge variant="neutral">{p.badge}</Badge>
-            </div>
-            <p className="mt-1 text-caption text-muted">{p.statusLine}</p>
-          </div>
-        </div>
+    <article className="w-full">
+      {/* En el diseño el «Atrás» sustituye a la marca dentro de la barra de
+          navegación. Aquí la barra la dibuja el armazón, así que la vuelta
+          abre la pantalla: mismo control, una fila más abajo. */}
+      <Link href={ROUTES.panel} className="navback">
+        <Glyph name="chevron-left" icon={ChevronLeft} size={22} strokeWidth={2.1} />
+        {p.back}
+      </Link>
 
-        {/* 2 — Qué va a resolver, en lenguaje del usuario. */}
-        <p className="mt-4 text-body-lg text-ink">{copy.purpose}</p>
-      </header>
+      <div className="mt-1.5">
+        <KitBadge tone="building">{p.badge}</KitBadge>
+      </div>
 
-      {/* 3 — Las 3–4 funcionalidades que traerá. */}
-      <section aria-labelledby="funcionalidades" className="mt-6">
-        <h2 id="funcionalidades" className="font-heading text-h3 text-ink">
-          {p.featuresTitle}
-        </h2>
-        <ul className="mt-3 space-y-2">
-          {copy.features.map((feature) => (
-            <li key={feature} className="flex items-start gap-2.5 text-body text-ink">
-              <Check aria-hidden="true" className="mt-1 size-4 shrink-0 text-teal-deep" />
-              <span className="min-w-0">{feature}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <h1 className="largeTitle">{title}</h1>
+      <p className="mt-3 text-body text-muted">{p.statusLine}</p>
 
-      {/* 4 — Captura de interés. */}
-      <section
-        aria-labelledby="captura-interes"
-        className="mt-6 rounded-lg border border-line bg-surface p-4 shadow-sm sm:p-5"
-      >
-        {submitted ? (
-          <div aria-live="polite">
-            <h2
-              id="captura-interes"
-              className="flex items-center gap-2 font-heading text-h3 text-ink"
-            >
-              <BellRing aria-hidden="true" className="size-5 text-teal-deep" />
-              {p.submittedTitle}
-            </h2>
-            <p className="mt-1.5 text-body text-muted">{p.submittedBody}</p>
-          </div>
-        ) : (
-          <>
-            <h2 id="captura-interes" className="font-heading text-h3 text-ink">
-              {p.captureQuestion}
-            </h2>
-            <p className="mt-1 text-body text-muted">{p.captureHelp}</p>
+      {/* ── Lo que se va a poder hacer ── */}
+      <SectionLabel as="h2" id={PROMESAS_ID}>
+        {p.featuresTitle}
+      </SectionLabel>
+      <div aria-labelledby={PROMESAS_ID} className="flex flex-col gap-3.5">
+        {copy.features.map((feature, i) => (
+          <PromiseItem key={feature} n={i + 1}>
+            {feature}
+          </PromiseItem>
+        ))}
+      </div>
 
-            <label htmlFor="captura-texto" className="sr-only">
-              {p.captureQuestion}
-            </label>
-            <textarea
-              id="captura-texto"
-              rows={3}
-              value={freeText}
-              maxLength={FREE_TEXT_MAX}
-              placeholder={p.capturePlaceholder}
-              disabled={readOnly}
-              aria-describedby="captura-contador"
-              onChange={(e) => setFreeText(e.target.value)}
-              // `placeholder:text-muted` y no `text-disabled`: piso AA del
-              // placeholder, ver la nota en components/ui/input.tsx.
-              className="mt-3 block w-full rounded-sm border border-line bg-surface px-3.5 py-2.5 text-body text-ink placeholder:text-muted transition-colors duration-150 hover:border-muted focus:border-teal-deep disabled:cursor-not-allowed disabled:bg-surface-alt disabled:text-disabled"
-            />
-            <p id="captura-contador" className="mt-1.5 text-caption text-muted">
-              {p.captureCounter(freeText.length, FREE_TEXT_MAX)}
-            </p>
+      {/* ── La pregunta abierta ── */}
+      <SectionLabel as="h2" id={PREGUNTA_ID}>
+        {p.captureQuestion}
+      </SectionLabel>
 
-            {error ? (
-              <p role="alert" className="mt-2 text-caption text-danger">
-                {error}
-              </p>
-            ) : null}
-
-            <Button
-              className="mt-4"
-              onClick={handleSubmit}
-              loading={submitting}
-              loadingLabel={p.submitting}
-              disabled={readOnly}
-            >
-              {p.submit}
-            </Button>
-            {readOnly ? (
-              <p className="mt-2 text-caption text-muted">
-                {dict.panel.shell.readOnlyBlocked}
-              </p>
-            ) : null}
-          </>
-        )}
-      </section>
-
-      {/* 5 — Enlace de retorno al dashboard. */}
-      <p className="mt-6">
-        <Link
-          href={ROUTES.panel}
-          className="inline-flex min-h-11 items-center gap-2 rounded-md px-1 text-body text-muted underline underline-offset-4 transition-colors hover:text-ink"
-        >
-          <ArrowLeft aria-hidden="true" className="size-4" />
-          {p.backToPanel}
-        </Link>
+      <textarea
+        id="captura-texto"
+        rows={3}
+        value={freeText}
+        maxLength={FREE_TEXT_MAX}
+        placeholder={p.capturePlaceholder}
+        disabled={readOnly}
+        readOnly={submitted}
+        aria-labelledby={PREGUNTA_ID}
+        aria-describedby="captura-contador"
+        onChange={(e) => setFreeText(e.target.value)}
+        className="textarea"
+      />
+      <p id="captura-contador" className="charcount">
+        {p.captureCounter(freeText.length, FREE_TEXT_MAX)}
       </p>
+
+      {error ? (
+        <p role="alert" className="mt-2 text-body text-danger">
+          {error}
+        </p>
+      ) : null}
+
+      {/* La confirmación pasa aquí dentro: sin toast, sin modal. */}
+      <div role="status" className="mt-3">
+        <KitButton
+          wide
+          kind={submitted ? "quiet" : "primary"}
+          iconName={submitted ? "check" : "bell"}
+          icon={submitted ? Check : BellRing}
+          onClick={submitted ? undefined : handleSubmit}
+          disabled={readOnly || submitting}
+        >
+          {submitted ? p.submitted : submitting ? p.submitting : p.submit}
+        </KitButton>
+      </div>
+
+      {readOnly ? (
+        <p className="mt-3 text-body text-muted">{dict.panel.shell.readOnlyBlocked}</p>
+      ) : null}
     </article>
   );
 }

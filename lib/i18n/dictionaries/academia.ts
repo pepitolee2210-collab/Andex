@@ -5,49 +5,54 @@
  * de sección, botones, etiquetas—. El contenido del curso (las frases, sus
  * significados y su pronunciación) vive en `lib/catalogs/ingles.ts`, porque
  * es dato bilingüe por naturaleza y en la base viaja dentro de un JSONB.
+ *
+ * ── Lo que el rediseño se llevó por delante ──
+ *
+ * Ya no hay `pitch` (la tarjeta que argumentaba el módulo) ni `classes` (el
+ * bloque que presentaba las clases en vivo). Los dos decían con un párrafo
+ * lo que ahora dice el subtítulo en una línea: «No es un curso. Son las
+ * frases exactas que vas a necesitar». El resto del espacio es para las
+ * frases, que son el objeto de la pantalla.
+ *
+ * Tampoco hay `tracks.meta` («N lecciones · N frases · N semanas»): el
+ * temario ya no se abre en el sitio, se entra en él, y lo que decide si
+ * alguien entra es de qué oficio es y cuánto tiene dentro.
  */
 
 const es = {
+  /** Va encima del titular: dice de qué módulo es esta pantalla. */
+  overline: "Academia",
   title: "Inglés para el trabajo",
-  subtitle:
-    "No es un curso de inglés. Son las frases exactas de tu entrevista y de tu primer día.",
+  // El argumento entero del módulo, en una línea. Antes ocupaba una
+  // tarjeta con insignia, titular y dos párrafos.
+  subtitle: "No es un curso. Son las frases exactas que vas a necesitar.",
+  /** Volver al nivel anterior dentro del módulo. */
+  back: "Volver",
 
-  /** El argumento del módulo, arriba y sin rodeos. */
-  pitch: {
-    badge: "Aprende lo que vas a usar",
-    headline: "Empieza por el trabajo que buscas",
-    body:
-      "Cada temario está armado alrededor de un oficio y de los momentos que de verdad ocurren: la entrevista, el primer día, cuando algo sale mal. Nada de gramática que no vayas a necesitar.",
-    // La razón por la que el módulo funciona, dicha una vez y bien.
-    highlight:
-      "Cada frase trae su pronunciación escrita como suena en español, para que puedas practicarla esta noche en tu casa.",
-  },
-
-  classes: {
-    eyebrow: "Clases en vivo",
-    title: "Practica con un maestro y con gente como tú",
-    body: "Martes a viernes. Entras desde aquí, sin instalar nada.",
+  /**
+   * La clase en vivo. Es lo único de esta pantalla que tiene fecha, así que
+   * va arriba: si hay clase hoy, es lo primero que hace falta saber.
+   */
+  liveClass: {
+    title: "Clase en vivo",
+    // «Hoy · 7:00 p.m. en tu hora». La hora es SIEMPRE la del navegador,
+    // nunca la de Utah, y se dice que lo es.
+    when: "{day} · {time} en tu hora",
+    today: "Hoy",
+    cta: "Entrar a la clase",
   },
 
   tracks: {
-    eyebrow: "Los temarios",
-    title: "Elige tu oficio",
-    // Los transversales van aparte y ARRIBA: nadie sabe que necesita saber
-    // qué hacer cuando no le pagan, así que no se puede esperar a que lo
-    // busque.
-    everyoneEyebrow: "Para cualquier trabajo",
-    everyoneTitle: "Esto le sirve a todo el mundo",
-    everyoneBody:
-      "No depende de a qué te dediques. Es lo que hay que saber para que te paguen bien, para no lastimarte, y para resolver la vida fuera del trabajo.",
-    byTradeBody: "El inglés exacto del trabajo que buscas.",
-    // Se dice el tamaño real antes de entrar: nadie empieza algo que no sabe
-    // cuánto dura.
-    meta: "{lessons} lecciones · {phrases} frases · {weeks} semanas",
-    lessonsOne: "1 lección",
+    // Los transversales van PRIMERO, y es una decisión de producto: nadie
+    // sabe que necesita saber qué hacer cuando no le pagan, así que no se
+    // puede esperar a que baje a buscarlo.
+    everyoneLabel: "Sirve en cualquier trabajo",
+    byTradeLabel: "Por oficio",
+    // Lo que hay dentro, antes de entrar: «17 frases en 3 momentos».
+    phrasesInMoments: "{phrases} frases en {moments} momentos",
+    momentsBody: "Elige el momento. Las frases están agrupadas por cuándo las vas a usar.",
+    phrases: "{n} frases",
     phrasesOne: "1 frase",
-    weeksOne: "1 semana",
-    open: "Ver el temario",
-    close: "Cerrar",
     empty: "Todavía no hay temarios publicados.",
   },
 
@@ -76,6 +81,9 @@ const es = {
   },
 
   phrase: {
+    // Sólo lo usa el PDF. En la pantalla la pronunciación no lleva rótulo:
+    // la cursiva y el teal ya dicen qué es, y «Se dice:» delante roba
+    // ancho a la frase.
     sayLabel: "Se dice",
     // El botón que lee la frase en voz alta, si el navegador puede.
     listen: "Escuchar",
@@ -84,10 +92,9 @@ const es = {
   },
 
   download: {
-    title: "Llévate el manual",
-    body:
-      "Un PDF con todas las frases, sus significados y cómo se pronuncian. Se abre sin internet, así que puedes estudiarlo donde sea.",
-    cta: "Descargar el manual",
+    /** Rótulo de la sección donde vive el manual. */
+    label: "Para leer sin datos",
+    cta: "Descargar el manual en PDF",
     building: "Preparando tu manual",
     failed: "No se pudo crear el manual. Inténtalo otra vez.",
     fileName: "manual",
@@ -107,39 +114,25 @@ const es = {
 };
 
 const en: typeof es = {
+  overline: "Academy",
   title: "English for work",
-  subtitle:
-    "This isn't an English course. These are the exact phrases for your interview and your first day.",
+  subtitle: "This isn't a course. These are the exact phrases you're going to need.",
+  back: "Back",
 
-  pitch: {
-    badge: "Learn what you'll actually use",
-    headline: "Start with the job you're looking for",
-    body:
-      "Every track is built around one trade and the moments that really happen: the interview, the first day, when something goes wrong. No grammar you won't need.",
-    highlight:
-      "Every phrase comes with its pronunciation written the way it sounds in Spanish, so you can practice tonight at home.",
-  },
-
-  classes: {
-    eyebrow: "Live classes",
-    title: "Practice with a teacher and with people like you",
-    body: "Tuesday to Friday. Join from here, nothing to install.",
+  liveClass: {
+    title: "Live class",
+    when: "{day} · {time} your time",
+    today: "Today",
+    cta: "Join the class",
   },
 
   tracks: {
-    eyebrow: "The tracks",
-    title: "Pick your trade",
-    everyoneEyebrow: "For any job",
-    everyoneTitle: "This is for everyone",
-    everyoneBody:
-      "It doesn't depend on what you do. It's what you need to know to get paid right, to stay safe, and to handle life outside work.",
-    byTradeBody: "The exact English of the job you're looking for.",
-    meta: "{lessons} lessons · {phrases} phrases · {weeks} weeks",
-    lessonsOne: "1 lesson",
+    everyoneLabel: "Useful in any job",
+    byTradeLabel: "By trade",
+    phrasesInMoments: "{phrases} phrases across {moments} moments",
+    momentsBody: "Pick the moment. The phrases are grouped by when you'll use them.",
+    phrases: "{n} phrases",
     phrasesOne: "1 phrase",
-    weeksOne: "1 week",
-    open: "See the track",
-    close: "Close",
     empty: "No tracks published yet.",
   },
 
@@ -171,10 +164,8 @@ const en: typeof es = {
   },
 
   download: {
-    title: "Take the manual with you",
-    body:
-      "A PDF with every phrase, what it means and how to say it. It opens without internet, so you can study anywhere.",
-    cta: "Download the manual",
+    label: "To read without data",
+    cta: "Download the manual as PDF",
     building: "Preparing your manual",
     failed: "We couldn't create the manual. Try again.",
     fileName: "manual",

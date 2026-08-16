@@ -5,10 +5,15 @@
  * EDITABLE). Cambiarlo recalcula el ranking y confirma con toast
  * (§3.2 regla UX 8, §4.7 último caso borde) — el recálculo lo hace
  * `saveProfile` del contexto del panel.
+ *
+ * En el diseño no es una tarjeta con su propio título y su propio botón de
+ * lápiz: es un ROTULO de sección y UNA fila, como el resto de la pantalla.
+ * La fila entera abre el editor, así que el objetivo se lee y se cambia en
+ * el mismo sitio, sin un control de 24px al lado del texto.
  */
 
 import { useState } from "react";
-import { Pencil } from "lucide-react";
+import { ChevronRight, Target } from "lucide-react";
 import { goalLabel, interestOptionLabel } from "@/lib/i18n";
 import { interestsForBranch } from "@/lib/catalogs/interests";
 import type { InterestTag } from "@/lib/types";
@@ -18,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { OptionChips } from "@/components/ui/option-chips";
 import { toast } from "@/components/ui/toaster";
+import { Glyph, ListGroup, ListRow, SectionLabel } from "@/components/ui/kit";
 import { usePanel } from "./panel-context";
 
 /** §3.2.1 regla 3 — todo texto libre, máximo 120 caracteres. */
@@ -78,31 +84,48 @@ export function GoalCard() {
     }
   }
 
-  return (
-    <section
-      aria-labelledby="objetivo-30-dias"
-      className="rounded-lg border border-line bg-surface p-4 shadow-sm"
-    >
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div className="min-w-0">
-          <h2
-            id="objetivo-30-dias"
-            className="text-caption font-semibold uppercase tracking-wide text-muted"
-          >
-            {g.label}
-          </h2>
-          <p className="mt-1 text-body-lg text-ink">
-            {currentText.length > 0 ? currentText : g.empty}
-          </p>
-        </div>
+  const tieneObjetivo = currentText.length > 0;
 
-        {readOnly ? null : (
-          <Button variant="ghost" onClick={openEditor}>
-            <Pencil aria-hidden="true" className="size-4" />
-            {currentText.length > 0 ? g.edit : g.emptyCta}
-          </Button>
-        )}
-      </div>
+  /**
+   * `goalLabel` devuelve el objetivo como TROZO DE FRASE —«resolver tus
+   * trámites migratorios»—, porque ahí es donde nació: dentro de «Porque
+   * dijiste que quieres…». Como título de fila empieza en minúscula y
+   * parece un descuido. Se le sube la primera letra al mostrarlo; el texto
+   * sigue siendo el mismo y sigue viviendo en i18n.
+   */
+  const titulo = tieneObjetivo
+    ? currentText.charAt(0).toLocaleUpperCase(lang) + currentText.slice(1)
+    : g.empty;
+
+  return (
+    <section aria-labelledby="objetivo-30-dias">
+      <SectionLabel as="h2" id="objetivo-30-dias">
+        {g.label}
+      </SectionLabel>
+
+      <ListGroup>
+        {/* En solo lectura la fila deja de ser pulsable: sin galón y sin
+            cursor, porque tocarla no podría guardar nada (§3.4.7). */}
+        <ListRow
+          iconName="target"
+          icon={Target}
+          iconTone="highlight"
+          title={titulo}
+          meta={readOnly ? undefined : tieneObjetivo ? g.hint : g.emptyCta}
+          trail={
+            readOnly ? undefined : (
+              <Glyph
+                name="chevron-right"
+                icon={ChevronRight}
+                size={18}
+                strokeWidth={2}
+                className="text-disabled"
+              />
+            )
+          }
+          onClick={readOnly ? undefined : openEditor}
+        />
+      </ListGroup>
 
       <Modal
         open={open}

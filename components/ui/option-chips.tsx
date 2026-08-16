@@ -135,7 +135,7 @@ export function OptionChips(props: OptionChipsProps) {
       <div
         role={props.multiple ? "group" : "radiogroup"}
         aria-labelledby={labelId}
-        className="flex flex-wrap gap-2"
+        className="chiplist"
       >
         {options.map((opt, i) => {
           const selected = isSelected(opt.value);
@@ -152,17 +152,18 @@ export function OptionChips(props: OptionChipsProps) {
               tabIndex={chipTabIndex(opt, i)}
               onClick={() => select(opt.value)}
               onKeyDown={(e) => handleKeyDown(e, i)}
+              /* La píldora del sistema de diseño. Antes era un rectángulo
+                 con filete: dos formas distintas para el mismo gesto de
+                 elegir, según la pantalla. `.ax-chip` es la del kit y ya
+                 trae sus 44px, su sombra y su pulsación. */
               className={cn(
-                "inline-flex min-h-11 items-center gap-1.5 rounded-sm border px-4 py-2 text-left text-body text-ink",
-                "transition-colors duration-150",
-                selected
-                  ? "border-teal-deep bg-teal-soft font-medium"
-                  : "border-line bg-surface hover:border-teal-deep",
-                "disabled:cursor-not-allowed disabled:border-line disabled:bg-surface-alt disabled:text-disabled",
+                "ax-chip",
+                selected && "on",
+                "disabled:cursor-not-allowed disabled:opacity-40",
               )}
             >
               {selected ? (
-                <Check aria-hidden="true" className="size-4 shrink-0 text-teal-deep" />
+                <Check aria-hidden="true" className="size-4 shrink-0" />
               ) : null}
               {opt.label}
             </button>

@@ -587,7 +587,16 @@
 
   h1, h2, h3, h4 {
     font-family: var(--font-heading);
-    color: var(--text);
+    /* `inherit`, no `var(--text)`.
+       Fijar el color aquí ganaba SIEMPRE a lo que pusiera el contenedor:
+       cualquier titular dentro de una superficie oscura —la tarjeta de
+       recomendación, la portada navy, el escáner— nacía navy sobre navy,
+       invisible, con un hueco donde debía ir el texto. Lo encontraron tres
+       revisiones distintas por separado, que es la señal de que el fallo
+       estaba en la raíz y no en cada pantalla.
+       `body` ya fija el color de partida, así que en superficie normal no
+       cambia nada; y donde el contenedor dice otro color, se respeta. */
+    color: inherit;
     /* `pretty` en vez de `balance`: con títulos largos en español —«Bóveda
        Digital y Alertas»— `balance` reparte las líneas a lo ancho y deja
        huérfanas raras. `pretty` sólo evita la palabra suelta al final. */

@@ -5,40 +5,75 @@
  *
  * Dos bloques, en este orden a propósito:
  *
- *  1. **Negocios para empezar.** Es lo que necesita la mayoría de quien
- *     entra: llegó hace poco y hace falta que entre dinero ya.
- *  2. **Inversiones.** Para quien ya tiene capital ahorrado.
+ *  1. **Negocios para arrancar.** Es lo que necesita la mayoría de quien
+ *     entra: llegó hace poco y hace falta que entre dinero ya. Una lista
+ *     agrupada, con lo único que decide antes de escribir: cuánto capital
+ *     hace falta.
+ *  2. **Fondos de inversión.** Una sola opción, desde $100. Entrar con cien
+ *     dólares es lo que la hace alcanzable para quien acaba de llegar;
+ *     poner al lado una de $20.000 convertiría la sección en un escaparate
+ *     donde casi todo queda fuera de alcance.
  *
- * Todo desemboca en WhatsApp. Cada tarjeta lleva su botón con el mensaje ya
+ * Todo desemboca en WhatsApp. Cada fila y cada botón llevan el mensaje ya
  * escrito, así que quien llega no tiene que redactar nada — escribir el
  * primer mensaje a un negocio es justo la fricción que hace que no se
  * escriba.
  *
- * §9 — en el enlace no viaja ni un dato del usuario: sólo de qué
- * oportunidad viene.
+ * ── Dos reglas que se ven en la pantalla ──
+ *
+ * · **§9 — en el enlace no viaja ni un dato del usuario**: sólo de qué
+ *   oportunidad viene. Lo garantiza `lib/inversiones/whatsapp.ts`.
+ * · **La flecha diagonal significa «esto sale de la aplicación».** Estas
+ *   filas abren WhatsApp, así que llevan la flecha y no el galón: un galón
+ *   promete una pantalla de detalle que no existe.
+ *
+ * El color NO se usa por categoría —ni un teal para limpieza ni un ámbar
+ * para construcción—: si cada cosa tuviera su color, el ámbar de «vence en
+ * 7 días» dejaría de significar algo en el resto del producto.
  */
 
 import {
+  ArrowUpRight,
   Hammer,
   MessageCircle,
-  Sparkles,
+  SprayCan,
   TrendingUp,
   Truck,
-  UtensilsCrossed,
+  Utensils,
   type LucideIcon,
 } from "lucide-react";
 import { WHATSAPP_INVERSIONES } from "@/lib/config";
-import { oportunidadesPor, type Opportunity } from "@/lib/catalogs/inversiones";
+import { oportunidadesPor, oportunidadPorId } from "@/lib/catalogs/inversiones";
 import { buildWhatsAppLink, opportunityMessage } from "@/lib/inversiones/whatsapp";
 import type { InversionesDict } from "@/lib/i18n/dictionaries/inversiones";
-import { Button } from "@/components/ui/button";
+import {
+  Glyph,
+  KitCard,
+  KitNotice,
+  ListGroup,
+  ListRow,
+  ScreenHeader,
+  SectionLabel,
+} from "@/components/ui/kit";
 
-const ICONS: Record<string, LucideIcon> = {
-  Sparkles,
-  UtensilsCrossed,
-  Truck,
-  Hammer,
-  TrendingUp,
+/**
+ * El glifo de cada oportunidad.
+ *
+ * La clave es el nombre que el catálogo declara, y el valor trae el icono
+ * más su nombre en kebab-case, que es lo que activa su gesto en el CSS: el
+ * bote rocía, los cubiertos sirven, el camión avanza, el martillo golpea.
+ *
+ * El catálogo pedía antes «Sparkles» y «UtensilsCrossed», que no tienen
+ * gesto y se quedaban quietos. Se corrigió allí, en el origen, en vez de
+ * traducirlo aquí: si el nombre del catálogo y el del CSS no son el mismo,
+ * el icono deja de moverse sin que nada avise.
+ */
+const ICONS: Record<string, { icon: LucideIcon; name: string }> = {
+  SprayCan: { icon: SprayCan, name: "spray-can" },
+  Utensils: { icon: Utensils, name: "utensils" },
+  Truck: { icon: Truck, name: "truck" },
+  Hammer: { icon: Hammer, name: "hammer" },
+  TrendingUp: { icon: TrendingUp, name: "trending-up" },
 };
 
 const fill = (t: string, v: Record<string, string | number>): string =>
@@ -66,144 +101,145 @@ export type InversionesScreenProps = {
 
 export function InversionesScreen({ copy }: InversionesScreenProps) {
   const negocios = oportunidadesPor("negocio");
-  const inversiones = oportunidadesPor("inversion");
+  const fondo = oportunidadPorId("fondo");
 
-  function Tarjeta({ o }: { o: Opportunity }) {
-    const texto = copy.opportunities[o.id as keyof typeof copy.opportunities];
-    const Icon = ICONS[o.icon] ?? Sparkles;
-    const enlace = buildWhatsAppLink({
+  /** El enlace de una oportunidad concreta, con su mensaje ya escrito. */
+  const enlaceDe = (titulo: string): string | null =>
+    buildWhatsAppLink({
       phone: WHATSAPP_INVERSIONES,
-      message: opportunityMessage(copy.cta.message, texto.title),
+      message: opportunityMessage(copy.cta.message, titulo),
     });
-
-    return (
-      <li className="rounded-xl border border-line bg-surface p-4 shadow-sm sm:p-5">
-        <div className="flex items-start gap-3">
-          <span
-            aria-hidden="true"
-            className="flex size-11 shrink-0 items-center justify-center rounded-md"
-            style={{
-              color: `var(${o.accent})`,
-              background: `color-mix(in srgb, var(${o.accent}) 12%, transparent)`,
-            }}
-          >
-            <Icon className="size-5" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <h3 className="font-heading text-h3 text-ink">{texto.title}</h3>
-            <p className="mt-1 text-body text-muted">{texto.body}</p>
-
-            {/* Las cifras, juntas y en una línea: es lo que decide si sigue
-                leyendo o no. */}
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              {o.monthlyReturn ? (
-                <span className="inline-flex min-h-8 items-center rounded-full bg-success-soft px-3 text-caption font-bold text-success">
-                  {fill(copy.inversion.returnLabel, {
-                    min: o.monthlyReturn.min,
-                    max: o.monthlyReturn.max,
-                  })}
-                </span>
-              ) : null}
-              {o.fromUsd !== null ? (
-                <span className="inline-flex min-h-8 items-center rounded-full bg-surface-alt px-3 text-caption font-medium text-muted">
-                  {fill(
-                    o.kind === "inversion" ? copy.inversion.from : copy.negocio.from,
-                    { amount: money(o.fromUsd) },
-                  )}
-                </span>
-              ) : null}
-            </div>
-
-            {/* El final del ciclo. Sin número configurado no se pinta un
-                botón que abriría un chat vacío: se dice lo que pasa. */}
-            {enlace ? (
-              <Button
-                href={enlace}
-                className="mt-4"
-                aria-label={fill(copy.cta.aria, { opportunity: texto.title })}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <MessageCircle aria-hidden="true" className="size-5" />
-                {copy.cta.label}
-              </Button>
-            ) : (
-              <p role="status" className="mt-4 text-caption text-muted">
-                {copy.unavailable}
-              </p>
-            )}
-          </div>
-        </div>
-      </li>
-    );
-  }
 
   const enlaceGeneral = buildWhatsAppLink({
     phone: WHATSAPP_INVERSIONES,
     message: copy.cta.generalMessage,
   });
 
+  const enlaceFondo = enlaceDe(copy.opportunities.fondo.title);
+
+  /** «Esto sale de la aplicación». No significa ninguna otra cosa. */
+  const flecha = (
+    <Glyph
+      name="arrow-up-right"
+      icon={ArrowUpRight}
+      size={18}
+      strokeWidth={2}
+      className="text-disabled"
+    />
+  );
+
   return (
     <article className="mx-auto w-full max-w-4xl">
-      <header>
-        <h1 className="font-heading text-h2 text-ink sm:text-h1">{copy.title}</h1>
-        <p className="mt-1 text-body text-muted sm:text-body-lg">{copy.subtitle}</p>
-      </header>
+      <ScreenHeader title={copy.title} />
 
-      {/* ── Negocios para empezar ── */}
-      <section aria-labelledby="inv-negocio" className="mt-8">
-        <p className="text-caption font-bold uppercase tracking-widest text-teal-deep">
-          {copy.negocio.eyebrow}
-        </p>
-        <h2 id="inv-negocio" className="mt-1 font-heading text-h2 text-ink">
-          {copy.negocio.headline}
-        </h2>
-        <p className="mt-1 max-w-2xl text-body text-muted">{copy.negocio.body}</p>
-        <ul className="mt-4 space-y-3">
-          {negocios.map((o) => (
-            <Tarjeta key={o.id} o={o} />
-          ))}
-        </ul>
+      {/* ── Negocios para arrancar ── */}
+      <section aria-labelledby="inv-negocios">
+        <SectionLabel as="h2" id="inv-negocios">
+          {copy.negocio.label}
+        </SectionLabel>
+        <ListGroup as="ul">
+          {negocios.map((o) => {
+            const texto = copy.opportunities[o.id as keyof typeof copy.opportunities];
+            const glifo = ICONS[o.icon] ?? ICONS.TrendingUp;
+            const enlace = enlaceDe(texto.title);
+            return (
+              <li key={o.id}>
+                <ListRow
+                  icon={glifo.icon}
+                  iconName={glifo.name}
+                  title={texto.title}
+                  meta={
+                    o.fromUsd !== null
+                      ? fill(copy.negocio.from, { amount: money(o.fromUsd) })
+                      : undefined
+                  }
+                  /* Sin número configurado la fila no lleva a ningún sitio, y
+                     lo dice: un galón que no abre nada se toca tres veces
+                     antes de que alguien se rinda. */
+                  {...(enlace
+                    ? { href: enlace, external: true, trail: flecha }
+                    : { warn: copy.unavailable })}
+                />
+              </li>
+            );
+          })}
+        </ListGroup>
       </section>
 
-      {/* ── Inversiones ── */}
-      <section aria-labelledby="inv-capital" className="mt-10">
-        <p className="text-caption font-bold uppercase tracking-widest text-teal-deep">
-          {copy.inversion.eyebrow}
-        </p>
-        <h2 id="inv-capital" className="mt-1 font-heading text-h2 text-ink">
-          {copy.inversion.headline}
-        </h2>
-        <p className="mt-1 max-w-2xl text-body text-muted">{copy.inversion.body}</p>
-        <ul className="mt-4 space-y-3">
-          {inversiones.map((o) => (
-            <Tarjeta key={o.id} o={o} />
-          ))}
-        </ul>
-      </section>
+      {/* ── Fondos de inversión ──
+          Una sola tarjeta: el rendimiento y su límite en la misma frase. */}
+      {fondo ? (
+        <section aria-labelledby="inv-fondos">
+          <SectionLabel as="h2" id="inv-fondos">
+            {copy.inversion.label}
+          </SectionLabel>
+          <KitCard>
+            <p className="text-h3 font-extrabold">
+              {fondo.monthlyReturn
+                ? fill(copy.inversion.headline, {
+                    min: fondo.monthlyReturn.min,
+                    max: fondo.monthlyReturn.max,
+                  })
+                : copy.inversion.label}
+            </p>
+            <p className="mt-2 text-pretty text-body leading-[1.5] text-muted">
+              {fill(copy.inversion.body, {
+                amount: money(fondo.fromUsd ?? 0),
+              })}
+            </p>
+            <div className="mt-4">
+              {/* Un enlace, no un botón: abre WhatsApp fuera de ANDEX. Lleva
+                  las clases del sistema porque `KitButton` sólo sabe
+                  dibujar `<button>`. */}
+              {enlaceFondo ? (
+                <a
+                  href={enlaceFondo}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ax-btn btn-primary btn-sm"
+                >
+                  <Glyph name="message-circle" icon={MessageCircle} size={17} strokeWidth={2} />
+                  {copy.cta.label}
+                </a>
+              ) : (
+                <p role="status" className="text-label text-muted">
+                  {copy.unavailable}
+                </p>
+              )}
+            </div>
+          </KitCard>
+        </section>
+      ) : null}
 
-      {/* ── El cierre ──
-          Para quien no se decidió por ninguna: una salida más, sin obligarle
-          a elegir primero. */}
-      <section
-        aria-labelledby="inv-cierre"
-        className="mt-10 rounded-xl border border-line bg-teal-soft p-5 shadow-sm"
-      >
-        <h2 id="inv-cierre" className="font-heading text-h3 text-ink">
-          {copy.closing.title}
-        </h2>
-        <p className="mt-1 text-body text-ink">{copy.closing.body}</p>
-        {enlaceGeneral ? (
-          <Button href={enlaceGeneral} className="mt-4" target="_blank" rel="noopener noreferrer">
-            <MessageCircle aria-hidden="true" className="size-5" />
-            {copy.cta.general}
-          </Button>
-        ) : (
-          <p role="status" className="mt-4 text-caption text-muted">
-            {copy.unavailable}
-          </p>
-        )}
-      </section>
+      {/* ── La salida para quien no se decidió por ninguna ──
+          Sin obligarle a elegir primero. Va en contorno fino: el primario de
+          la pantalla ya está gastado en el fondo. */}
+      <KitCard tone="quiet" className="mt-8">
+        <h2 className="text-h3">{copy.closing.title}</h2>
+        <p className="mt-2 text-pretty text-body leading-[1.5] text-muted">{copy.closing.body}</p>
+        <div className="mt-4">
+          {enlaceGeneral ? (
+            <a
+              href={enlaceGeneral}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ax-btn btn-ghost btn-sm"
+            >
+              <Glyph name="message-circle" icon={MessageCircle} size={17} strokeWidth={2} />
+              {copy.cta.general}
+            </a>
+          ) : (
+            <p role="status" className="text-label text-muted">
+              {copy.unavailable}
+            </p>
+          )}
+        </div>
+      </KitCard>
+
+      {/* Cómo termina esto, y quién cobra qué. */}
+      <KitNotice iconName="message-circle" icon={MessageCircle} className="mt-5">
+        {copy.whatsappNote}
+      </KitNotice>
     </article>
   );
 }

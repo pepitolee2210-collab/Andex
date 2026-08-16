@@ -48,7 +48,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Glyph, HEADER_ACTION_ID, type IconComponent } from "@/components/ui/kit";
+import {
+  Glyph,
+  HEADER_ACTION_ID,
+  HEADER_BACK_ID,
+  type IconComponent,
+} from "@/components/ui/kit";
 import { usePanel } from "./panel-context";
 import { formatDate } from "./panel-utils";
 
@@ -144,9 +149,14 @@ function TabBar({ dict, pathname }: { dict: Dictionary; pathname: string }) {
  * fabricar urgencia; un contador inventado sería justo el patrón que el PRD
  * veta. Cuando exista la fuente de eventos, este es su sitio.
  */
-function TopNotices() {
+function TopNotices({ pathname }: { pathname: string }) {
   const { dict, subscription, access, lang } = usePanel();
   const notices = dict.panel.notices;
+
+  /* En Perfil vive la tarjeta entera del estado de la suscripción, con su
+     copy propio. Repetir aquí la banda decía lo mismo dos veces y con otro
+     tono, que es peor que no decirlo: la persona no sabe cuál creer. */
+  if (pathname === ROUTES.perfil) return null;
 
   if (access === "read-only") {
     return (
@@ -221,9 +231,12 @@ export function PanelShell({ children }: { children: ReactNode }) {
             {/* 44×44 de área táctil, pero el símbolo se queda donde lo pone
                 el diseño: a 20px del borde. El margen negativo de 10px
                 compensa exactamente el centrado dentro de la caja. */}
+            {/* Si la pantalla puso un «Atrás», aterriza aquí y el CSS retira
+                la marca: en el diseño la sustituye, no se le suma. */}
+            <span id={HEADER_BACK_ID} className="contents" />
             <Link
               href={ROUTES.panel}
-              className="-ml-2.5 inline-flex size-11 items-center justify-center rounded-md"
+              className="ax-mark -ml-2.5 inline-flex size-11 items-center justify-center rounded-md"
               title={dict.common.brand.tagline}
             >
               {/* El símbolo original del cliente, no redibujado. El nombre
@@ -254,7 +267,7 @@ export function PanelShell({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <TopNotices />
+        <TopNotices pathname={pathname} />
 
         <main id="contenido" className="min-w-0 flex-1 px-5 pb-6">
           {loading ? (

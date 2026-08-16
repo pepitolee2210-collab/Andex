@@ -1,7 +1,7 @@
 "use client";
 
 import { useId } from "react";
-import { Badge } from "@/components/ui/badge";
+import { KitBadge, KitCard } from "@/components/ui/kit";
 import { Seal } from "@/components/seal";
 import { PRICES } from "@/lib/config";
 import type { Dictionary } from "@/lib/i18n";
@@ -9,12 +9,15 @@ import type { PlanType } from "@/lib/types";
 import { cn, formatUsd } from "@/lib/utils";
 
 /**
- * Las dos tarjetas de plan del paywall (§3.4.2 y §3.4.4).
+ * Las dos tarjetas de plan (§3.4.2 y §3.4.4), con la forma del sistema de
+ * diseño: una debajo de otra, el importe como titular de la tarjeta y la
+ * elegida en navy. Sin rejilla de dos columnas — en un teléfono de 360px
+ * dos tarjetas lado a lado dejan el precio en dos líneas.
  *
  * ANCLAJE LEGÍTIMO, no patrón oscuro (§3.4.4):
- *   · El anual llega preseleccionado.
+ *   · El anual llega preseleccionado y va arriba.
  *   · El mensual está **visible, al mismo nivel jerárquico y a un clic**:
- *     misma rejilla, mismo tamaño, mismo tipo de control, sin acordeones ni
+ *     misma anchura, mismo tamaño, mismo tipo de control, sin acordeones ni
  *     pasos extra. §3.4.4 lo dice con todas las letras: "No se admite ningún
  *     patrón donde la opción cara esté preseleccionada y la barata escondida
  *     o requiera pasos extra".
@@ -32,6 +35,9 @@ import { cn, formatUsd } from "@/lib/utils";
  * que el clic funcione en cualquier punto, y el anillo de foco se pinta con
  * `has-[:focus-visible]`. Nada de meter el sello dentro de un `<button>` o de
  * un `<label>`: es contenido de flujo y ahí sería HTML inválido.
+ *
+ * NUNCA se le pone sombra en línea a estas tarjetas: de noche el token vale
+ * `none` y una sombra escrita a mano cancelaría el filete que la sustituye.
  */
 
 export type PlanCardsProps = {
@@ -40,16 +46,14 @@ export type PlanCardsProps = {
   dict: Dictionary;
 };
 
-const CARD_BASE = cn(
-  "relative flex flex-col gap-3 rounded-lg border-2 p-5",
-  "transition-colors duration-150",
-  "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-teal-deep has-[:focus-visible]:ring-offset-2",
-);
-
-function cardTone(isSelected: boolean): string {
-  return isSelected
-    ? "border-teal-deep bg-teal-soft"
-    : "border-line bg-surface hover:border-muted";
+/** El importe, como titular de la tarjeta. */
+function Price({ amount, period }: { amount: string; period: string }) {
+  return (
+    <span className="text-h3 font-extrabold tracking-[-0.02em]">
+      {amount}
+      <span className="font-bold">{period}</span>
+    </span>
+  );
 }
 
 export function PlanCards({ selected, onSelect, dict }: PlanCardsProps) {
@@ -64,63 +68,47 @@ export function PlanCards({ selected, onSelect, dict }: PlanCardsProps) {
   const annualMonthly = formatUsd(PRICES.annual.monthlyEquivalentUsd);
   const savings = formatUsd(PRICES.annual.savingsUsd);
 
+  const isAnnual = selected === "annual";
+  const isMonthly = selected === "monthly";
+
+  /** El texto de apoyo se apaga un paso, y sobre navy se apaga hacia claro. */
+  const support = (inverted: boolean) =>
+    cn(
+      "mt-2 text-label",
+      inverted ? "text-[color:var(--text-on-invert-quiet)]" : "text-muted",
+    );
+
   return (
     <fieldset>
       <legend className="sr-only">{t.chooseLabel}</legend>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        {/* ── Mensual ─────────────────────────────────────── */}
-        <div className={cn(CARD_BASE, cardTone(selected === "monthly"))}>
-          <input
-            id={monthlyId}
-            type="radio"
-            name={groupName}
-            value="monthly"
-            checked={selected === "monthly"}
-            onChange={() => onSelect("monthly")}
-            className="sr-only"
-          />
-          {/* Capa de clic: cubre la tarjeta entera, target muy por encima de
-              los 44px exigidos (§9). */}
-          <label htmlFor={monthlyId} className="absolute inset-0 cursor-pointer rounded-lg">
-            <span className="sr-only">{t.monthly.select}</span>
-          </label>
-
-          <p className="font-heading text-h3 text-ink">{t.monthly.name}</p>
-          <p className="flex items-baseline gap-1">
-            <span className="font-heading text-h1 text-ink">{monthlyPrice}</span>
-            <span className="text-body text-muted">{t.monthly.period}</span>
-          </p>
-          <p className="text-body text-muted">{t.monthly.pitch}</p>
-        </div>
-
+      <div className="stack-sm">
         {/* ── Anual (preseleccionado) — aquí vive EL SELLO ─── */}
-        <div className={cn(CARD_BASE, cardTone(selected === "annual"))}>
+        <KitCard
+          tone={isAnnual ? "invert" : undefined}
+          className="relative cursor-pointer has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[color:var(--focus-ring)]"
+        >
           <input
             id={annualId}
             type="radio"
             name={groupName}
             value="annual"
-            checked={selected === "annual"}
+            checked={isAnnual}
             onChange={() => onSelect("annual")}
             className="sr-only"
           />
+          {/* Capa de clic: cubre la tarjeta entera, target muy por encima de
+              los 44px exigidos (§9). */}
           <label htmlFor={annualId} className="absolute inset-0 cursor-pointer rounded-lg">
             <span className="sr-only">{t.annual.select}</span>
           </label>
 
-          <p>
-            <Badge variant="amber">{t.annual.badge}</Badge>
-          </p>
-          <p className="font-heading text-h3 text-ink">{t.annual.name}</p>
-          <p className="flex items-baseline gap-1">
-            <span className="font-heading text-h1 text-ink">{annualPrice}</span>
-            <span className="text-body text-muted">{t.annual.period}</span>
-          </p>
-          <p className="text-body text-muted">{t.annual.equivalent(annualMonthly)}</p>
-          <p>
-            <Badge variant="teal">{t.annual.savings(savings)}</Badge>
-          </p>
+          <div className="flex items-baseline justify-between gap-3">
+            <Price amount={annualPrice} period={t.annual.period} />
+            <KitBadge tone="accent">{t.annual.badge}</KitBadge>
+          </div>
+          <p className={support(isAnnual)}>{t.annual.equivalent(annualMonthly)}</p>
+          <p className={support(isAnnual)}>{t.annual.savings(savings)}</p>
 
           {/*
             EL SELLO — §2.9: única aparición decorativa de todo el producto.
@@ -131,14 +119,41 @@ export function PlanCards({ selected, onSelect, dict }: PlanCardsProps) {
           <div
             role="group"
             aria-label={seal.ariaLabel}
-            className="mt-2 flex flex-col items-center gap-3"
+            className="relative mt-5 flex flex-col items-center gap-3"
           >
             <Seal title={seal.title} />
-            <p className="text-center text-caption text-muted">
+            <p
+              className={cn(
+                "text-center text-caption",
+                isAnnual ? "text-[color:var(--text-on-invert-quiet)]" : "text-muted",
+              )}
+            >
               {seal.body(annualPrice)}
             </p>
           </div>
-        </div>
+        </KitCard>
+
+        {/* ── Mensual ─────────────────────────────────────── */}
+        <KitCard
+          tone={isMonthly ? "invert" : undefined}
+          className="relative cursor-pointer has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[color:var(--focus-ring)]"
+        >
+          <input
+            id={monthlyId}
+            type="radio"
+            name={groupName}
+            value="monthly"
+            checked={isMonthly}
+            onChange={() => onSelect("monthly")}
+            className="sr-only"
+          />
+          <label htmlFor={monthlyId} className="absolute inset-0 cursor-pointer rounded-lg">
+            <span className="sr-only">{t.monthly.select}</span>
+          </label>
+
+          <Price amount={monthlyPrice} period={t.monthly.period} />
+          <p className={support(isMonthly)}>{t.monthly.pitch}</p>
+        </KitCard>
       </div>
     </fieldset>
   );

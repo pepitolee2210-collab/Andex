@@ -28,7 +28,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
 } from "react";
-import { Info, TriangleAlert } from "lucide-react";
+import { Camera, Check, Move } from "lucide-react";
 import { useReducedMotion } from "motion/react";
 import {
   defaultQuad,
@@ -38,7 +38,7 @@ import {
   type Point,
   type Quad,
 } from "@/lib/scanner";
-import { Button } from "@/components/ui/button";
+import { KitButton } from "@/components/ui/kit";
 import { cn } from "@/lib/utils";
 
 // ─── Utilidad compartida: ImageData → URL de objeto ──────
@@ -106,12 +106,20 @@ export type CornerAdjusterCopy = {
     bottomRight: string;
     bottomLeft: string;
   };
-  /** Aviso cuando el recorte no da un documento legible. */
-  unusableWarning: string;
-  /** Vuelve al cuadro por defecto. Ej.: "Usar la foto completa". */
-  resetLabel: string;
+  /**
+   * RECORTE FALLIDO. Titular y salida, sin culpar a nadie: el sujeto de la
+   * frase es el recorte, nunca la persona.
+   */
+  unusableTitle: string;
+  unusableBody: string;
+  /** Rehace el cuadro y deja el dedo (o el foco) en una esquina. */
+  adjustLabel: string;
   backLabel: string;
+  /** Sale del escáner entero. Va arriba a la izquierda. */
+  cancelLabel: string;
   continueLabel: string;
+  /** La promesa: la foto no sale del teléfono. Se dice aquí, no al final. */
+  privacyNote: string;
   /** Texto alternativo de la foto. */
   imageAlt: string;
 };
@@ -126,6 +134,10 @@ export type CornerAdjusterProps = {
   initialQuad?: Quad;
   onConfirm: (quad: Quad) => void;
   onBack: () => void;
+  /** Sale del escáner entero. Sin ella, arriba no hay salida. */
+  onCancel?: () => void;
+  /** «Paso 3 de 6», ya redactado. Dice cuánto falta sin ocupar una línea. */
+  stepLabel?: string;
   /** Lupa mientras se arrastra. Por defecto, sí. */
   magnifier?: boolean;
   /** Aviso corto en la cabecera (p. ej. "Te quedan 2 fotos"). */
@@ -156,11 +168,15 @@ export function CornerAdjuster({
   initialQuad,
   onConfirm,
   onBack,
+  onCancel,
+  stepLabel,
   magnifier = true,
   notice,
   className,
 }: CornerAdjusterProps) {
   const frameRef = useRef<HTMLDivElement>(null);
+  /** La manija de arriba a la izquierda, para poder devolverle el foco. */
+  const firstCornerRef = useRef<HTMLButtonElement>(null);
   const rectRef = useRef<DOMRect | null>(null);
   const reduced = useReducedMotion();
   const src = useImageDataUrl(image);
@@ -327,29 +343,84 @@ export function CornerAdjuster({
         }
       : undefined;
 
+  /**
+   * Rehace el cuadro y deja el foco en una esquina.
+   *
+   * Es lo que hace falta cuando el recorte salió inservible: se vuelve a un
+   * rectángulo utilizable —la foto entera— y el dedo (o el teclado) tiene ya
+   * una manija donde agarrar. Repetir la foto es la otra salida, y está al
+   * lado.
+   */
+  function restartCrop() {
+    setQuad(defaultQuad(image.width, image.height));
+    window.requestAnimationFrame(() => firstCornerRef.current?.focus());
+  }
+
+  /**
+   * Fondo oscuro POR NECESIDAD DE LA CÁMARA, no por estilo: sobre crema, el
+   * ojo se calibra con el papel de la pantalla y no se ve si la foto salió
+   * subexpuesta. Es la única superficie invertida del producto junto al
+   * escáner.
+   */
   return (
-    <div className={cn("flex min-h-0 w-full flex-1 flex-col bg-page", className)}>
-      {/* ── Cabecera ── */}
-      <div className="shrink-0 px-4 pb-2 pt-4 sm:px-6">
-        {notice ? (
-          <p className="mb-2 inline-flex items-center gap-2 rounded-sm bg-surface-alt px-3 py-1.5 text-caption text-muted">
-            <Info aria-hidden="true" className="size-4 shrink-0" />
-            {notice}
-          </p>
+    <div
+      className={cn("flex min-h-0 w-full flex-1 flex-col px-5 pb-6 pt-2", className)}
+      style={{ background: "var(--surface-invert)", color: "var(--text-on-invert)" }}
+    >
+      {/* ── Barra: la salida a la izquierda, el paso a la derecha ── */}
+      <div className="flex min-h-11 shrink-0 items-center justify-between gap-3">
+        {onCancel ? (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="min-h-11 text-body font-semibold"
+          >
+            {copy.cancelLabel}
+          </button>
+        ) : (
+          <span />
+        )}
+        {stepLabel ? (
+          <span
+            className="text-caption font-bold"
+            style={{ color: "var(--text-on-invert-quiet)" }}
+          >
+            {stepLabel}
+          </span>
         ) : null}
-        <h2 className="font-heading text-h3 text-ink">{copy.title}</h2>
-        <p className="mt-1 text-body text-muted">{copy.hint}</p>
-        <p id="andex-corner-keys" className="mt-1 text-caption text-muted">
-          {copy.keyboardHint}
-        </p>
       </div>
 
+      {/* ── Qué está pasando ahora ──
+          En el recorte fallido el titular baja debajo de la foto: lo que hay
+          que mirar primero es el recorte, no el aviso. */}
+      {/* El color va escrito: `globals.css` pinta todo `h1..h4` con
+          `--text`, que sobre esta superficie invertida es invisible. */}
+      {usable ? (
+        <h2
+          className="mt-3 shrink-0 font-heading text-h3"
+          style={{ color: "var(--text-on-invert)" }}
+        >
+          {copy.title}
+        </h2>
+      ) : null}
+      {notice ? (
+        <p className="mt-2 text-caption" style={{ color: "var(--text-on-invert-quiet)" }}>
+          {notice}
+        </p>
+      ) : null}
+      <p id="andex-corner-keys" className="sr-only">
+        {copy.keyboardHint}
+      </p>
+
       {/* ── Lienzo ── */}
-      <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden px-4 py-2 sm:px-6">
+      <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden py-4">
         <div
           ref={frameRef}
-          style={{ aspectRatio: `${image.width} / ${image.height}` }}
-          className="relative max-h-full w-full max-w-2xl touch-none select-none overflow-hidden rounded-lg bg-navy"
+          style={{
+            aspectRatio: `${image.width} / ${image.height}`,
+            background: "var(--camera-surface)",
+          }}
+          className="relative max-h-full w-full max-w-2xl touch-none select-none overflow-hidden rounded-lg"
         >
           {src ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -383,14 +454,14 @@ export function CornerAdjuster({
                 mask="url(#andex-quad-mask)"
                 className="fill-navy/60"
               />
+              {/* Teal cuando el recorte sirve, ámbar cuando no. El ámbar es
+                  el color de aviso del sistema; el rojo estaba diciendo
+                  «error» de una foto que sólo hay que reencuadrar. */}
               <polygon
                 points={points}
                 strokeWidth={2}
                 vectorEffect="non-scaling-stroke"
-                className={cn(
-                  "fill-transparent",
-                  usable ? "stroke-teal" : "stroke-danger",
-                )}
+                className={cn("fill-transparent", usable ? "stroke-teal" : "stroke-amber")}
               />
             </svg>
           ) : null}
@@ -401,6 +472,7 @@ export function CornerAdjuster({
                 <button
                   key={key}
                   type="button"
+                  ref={key === "topLeft" ? firstCornerRef : undefined}
                   aria-label={copy.corners[key]}
                   aria-describedby="andex-corner-keys"
                   onPointerDown={(event) => handlePointerDown(event, key)}
@@ -421,7 +493,7 @@ export function CornerAdjuster({
                     aria-hidden="true"
                     className={cn(
                       "block size-5 rounded-full border-2 border-white shadow-md",
-                      usable ? "bg-teal" : "bg-danger",
+                      usable ? "bg-teal" : "bg-amber",
                       !reduced && "transition-transform duration-150",
                       dragging === key && "scale-125",
                     )}
@@ -456,39 +528,73 @@ export function CornerAdjuster({
         </div>
       </div>
 
-      {/* ── Aviso y acciones ── */}
-      <div className="shrink-0 border-t border-line bg-surface px-4 py-4 sm:px-6">
+      {/* ── Lo que hay que hacer, y con qué ──
+          Dos guiones distintos según el recorte sirva o no. En el que no
+          sirve, el titular va aquí, debajo de la foto: primero se mira el
+          recorte torcido, después se lee por qué. */}
+      <div className="shrink-0">
         {quad && !usable ? (
-          <p
-            role="alert"
-            className="mb-3 flex items-start gap-2 rounded-sm bg-danger-soft px-3 py-2 text-body text-danger"
-          >
-            <TriangleAlert aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
-            {copy.unusableWarning}
-          </p>
-        ) : null}
-
-        <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-          <Button variant="ghost" fullWidth onClick={onBack} className="sm:w-auto">
-            {copy.backLabel}
-          </Button>
-          <Button
-            variant="secondary"
-            fullWidth
-            onClick={() => setQuad(defaultQuad(image.width, image.height))}
-            className="sm:w-auto"
-          >
-            {copy.resetLabel}
-          </Button>
-          <Button
-            fullWidth
-            disabled={!quad || !usable || detecting}
-            onClick={handleConfirm}
-            className="sm:w-auto"
-          >
-            {copy.continueLabel}
-          </Button>
-        </div>
+          <>
+            <div role="alert">
+              <h2
+                className="font-heading text-h3"
+                style={{ color: "var(--text-on-invert)" }}
+              >
+                {copy.unusableTitle}
+              </h2>
+              <p
+                className="mt-3 text-body"
+                style={{ color: "var(--text-on-invert-quiet)" }}
+              >
+                {copy.unusableBody}
+              </p>
+            </div>
+            <div className="mt-5 space-y-3">
+              <KitButton kind="accent" iconName="move" icon={Move} wide onClick={restartCrop}>
+                {copy.adjustLabel}
+              </KitButton>
+              <KitButton kind="onInvert" iconName="camera" icon={Camera} wide onClick={onBack}>
+                {copy.backLabel}
+              </KitButton>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="text-body" style={{ color: "var(--text-on-invert-quiet)" }}>
+              {copy.hint}
+            </p>
+            <div className="mt-5">
+              <KitButton
+                kind="accent"
+                iconName="check"
+                icon={Check}
+                wide
+                disabled={!quad || detecting}
+                onClick={handleConfirm}
+              >
+                {copy.continueLabel}
+              </KitButton>
+            </div>
+            {/* La promesa, donde se está tomando la foto. */}
+            <p
+              className="mt-4 text-caption"
+              style={{ color: "var(--text-on-invert-quiet)" }}
+            >
+              {copy.privacyNote}
+            </p>
+            {/* La salida de siempre: si la foto salió mal, se repite. No la
+                dibuja el diseño, y sin ella la única forma de repetirla sería
+                abandonar el escáner entero. */}
+            <button
+              type="button"
+              onClick={onBack}
+              className="mt-1 min-h-11 w-full text-caption font-semibold underline underline-offset-4"
+              style={{ color: "var(--text-on-invert-quiet)" }}
+            >
+              {copy.backLabel}
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

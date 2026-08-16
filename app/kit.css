@@ -88,6 +88,8 @@
      `HeaderAction` al montarse; con `:has()` la regla no sobrevivía a la
      compilación del CSS. */
   .navright[data-screen-action] .ax-bell { display: none; }
+  /* Y el «Atrás» sustituye a la marca, no se le suma. */
+  .navrow[data-screen-back] .ax-mark { display: none; }
   /* El sobretítulo dice de qué módulo es la pantalla; el título dice
      qué es esta pantalla. Separarlos deja que el título sea corto. */
   .navover {
@@ -260,6 +262,15 @@
     box-shadow: var(--shadow-raise);
     padding: var(--gutter-card);
   }
+  /* Los titulares dentro de una superficie invertida HEREDAN su color.
+     `@layer base` fija `h1..h4 { color: var(--text) }`, que es navy, y
+     ganaba a la herencia: el titular de la tarjeta de recomendación salía
+     navy sobre navy —invisible, con un hueco donde debía estar el texto—.
+     Esta regla vive en la capa de componentes, que sí gana a la base. */
+  .card-invert :is(h1, h2, h3, h4),
+  .tone-invert :is(h1, h2, h3, h4),
+  .rowicon.tone-invert :is(h1, h2, h3, h4) { color: inherit; }
+
   .card-accent    { background: var(--accent-wash); box-shadow: none; }
   .card-highlight { background: var(--amber-100);   box-shadow: var(--shadow-raise); }
   .card-invert    { background: var(--surface-invert); color: var(--text-on-invert); box-shadow: var(--shadow-float); }

@@ -4,25 +4,86 @@
  * Todo lo del wizard se puede cambiar aquí, con recálculo del ranking
  * y toast de confirmación. La cancelación es de UN CLIC, por el mismo
  * medio (web), sin llamada, sin formulario y sin retención por chat.
+ *
+ * ── Lo que cambió al portar la pantalla del sistema de diseño ──
+ *
+ * Perfil dejó de ser un formulario largo y pasó a ser una LISTA: cada fila
+ * dice qué guarda y abre su propio detalle. Por eso aparecen `rows` (los
+ * rótulos de esas filas, con su dato al lado) y desaparecen las etiquetas
+ * de sección con forma de titular.
+ *
+ * El control de tema vive aquí, en su propio grupo, con dos opciones y
+ * ninguna tercera: el diseño lo dice explícitamente —"no sigue al sistema
+ * ni a la hora, a propósito"—, porque la app se usa bajo sol directo y de
+ * noche en la misma media hora, y si alguien lo eligió no se le mueve.
+ *
+ * El aviso de pago vencido se redactó de nuevo siguiendo la pantalla
+ * "Pago vencido": qué pasa con la bóveda si no se paga, dicho sin amenaza
+ * y sin cuenta atrás, y diciendo en la misma frase que nadie borra nada.
  */
 
 import type { Lang } from "@/lib/types";
 
 const es = {
-  title: "Tu perfil",
-  subtitle: "Cambia lo que quieras. Tu plan se recalcula al guardar.",
+  title: "Perfil",
 
+  /** Rótulos de sección: separan, no compiten. Los del diseño, literales. */
   sections: {
-    account: "Tu cuenta",
-    location: "Tu ubicación",
-    situation: "Tu situación",
-    interests: "Tus intereses",
-    goal: "Tu objetivo de 30 días",
-    family: "¿Para quién buscas ayuda?",
-    preferences: "Idioma y apariencia",
-    subscription: "Tu membresía",
-    danger: "Tu cuenta",
+    account: "Cuenta",
+    plan: "Tu plan",
+    subscription: "Suscripción",
+    data: "Tus datos",
   },
+
+  /** La tarjeta de identidad: quién eres y desde cuándo. */
+  identity: {
+    /** «Utah · desde mayo de 2025» */
+    meta: (scope: string, since: string) => `${scope} · desde ${since}`,
+    /** Un perfil antiguo puede no tener ámbito: entonces sólo la fecha. */
+    metaNoScope: (since: string) => `Desde ${since}`,
+  },
+
+  /** Las filas de la lista. Cada una abre su detalle. */
+  rows: {
+    account: "Mis datos",
+    accountMeta: "Nombre, correo, teléfono",
+
+    language: "Idioma",
+
+    theme: "Tema",
+    themeHelp:
+      "De noche la pantalla no brilla. Se queda como lo dejes, no cambia solo.",
+    themeDay: "Día",
+    themeNight: "Noche",
+    themeAria: "Tema de la aplicación",
+
+    location: "Dónde estoy",
+    locationEmpty: "Sin ubicación",
+
+    situation: "Tu situación",
+    situationEmpty: "Sin responder",
+
+    interests: "Tus intereses",
+    interestsCount: (count: number) =>
+      count === 1 ? "1 tema marcado" : `${count} temas marcados`,
+    interestsEmpty: "Ninguno marcado",
+
+    goal: "Tu objetivo de 30 días",
+    goalEmpty: "Todavía sin escribir",
+
+    family: "Para quién buscas ayuda",
+
+    logout: "Cerrar sesión",
+    /** Promesa y límite en la misma frase (§2.7). */
+    logoutMeta: "Se cierra en este teléfono. Tus documentos se quedan aquí.",
+  },
+
+  /**
+   * El cierre de la pantalla. Dice el límite del cifrado en la misma frase
+   * que lo promete: este público ya oyó "nivel bancario" de quien lo estafó.
+   */
+  vaultNotice:
+    "Los documentos están cifrados en este teléfono y no hay copia en otro sitio. Si lo pierdes, no podemos recuperarlos.",
 
   account: {
     firstNameLabel: "Nombre",
@@ -30,14 +91,13 @@ const es = {
     emailLabel: "Correo electrónico",
     emailHelp: "Aquí llegan tus alertas y tus recibos.",
     phoneLabel: "Teléfono",
-    changePassword: "Cambiar mi contraseña",
     save: "Guardar cambios",
   },
 
   location: {
     contextLabel: "¿Dónde estás ahora?",
-    inUsLabel: "🇺🇸 Ya estoy en Estados Unidos",
-    preArrivalLabel: "✈️ Estoy fuera de Estados Unidos",
+    inUsLabel: "Ya estoy en EE. UU.",
+    preArrivalLabel: "Estoy fuera de EE. UU.",
     stateLabel: "Estado",
     countryLabel: "País de residencia",
     nationalityLabel: "Nacionalidad",
@@ -53,26 +113,19 @@ const es = {
 
   interests: {
     help: "Marca todas las que quieras. La primera que elijas es la que más pesa.",
-    reorderHint: "Arrastra para cambiar el orden de prioridad.",
     /**
-     * CLAVES NUEVAS (agente Dashboard). El orden de los intereses decide el
-     * PRIMARY_INTEREST del motor (§3.3.1, D14), así que tiene que poder
-     * cambiarse. Se hace con un botón por interés en vez de arrastrando:
-     * arrastrar no funciona con teclado ni con lector de pantalla (§9).
+     * El orden de los intereses decide el PRIMARY_INTEREST del motor
+     * (§3.3.1, D14), así que tiene que poder cambiarse. Se hace con un botón
+     * por interés en vez de arrastrando: arrastrar no funciona con teclado
+     * ni con lector de pantalla (§9).
      */
     orderTitle: "Tu orden de prioridad",
     makePrimary: "Poner primero",
     primaryBadge: "Principal",
   },
 
-  goal: {
-    help: "Se muestra tal cual lo escribas, arriba en tu panel.",
-    counter: (used: number, max: number) => `${used} de ${max} caracteres`,
-  },
-
   /** Recálculo del ranking al guardar (§4.7). */
   toasts: {
-    saved: "Guardado.",
     /** Exacto del brief: confirmación de recálculo */
     recalculated: "Tu plan se actualizó.",
     saveFailed:
@@ -80,34 +133,27 @@ const es = {
   },
 
   preferences: {
-    languageLabel: "Idioma",
     languageHelp: "Cambia toda la aplicación, incluidos los correos.",
-    themeLabel: "Apariencia",
-    themeLight: "Claro",
-    themeDark: "Oscuro",
-    themeSystem: "Según mi dispositivo",
-    notificationsLabel: "Avisos por correo",
-    notificationsDeadlines: "Fechas límite de mis documentos",
-    notificationsEvents: "Eventos y talleres de mi comunidad",
-    notificationsProduct: "Novedades de ANDEX",
   },
 
   /** Estado de la suscripción (§3.4.7). */
   subscription: {
-    planLabel: "Tu plan",
-    planAnnual: "Anual",
-    planMonthly: "Mensual",
-    priceLabel: "Precio",
+    planAnnual: "Plan anual",
+    planMonthly: "Plan mensual",
     priceAnnual: (price: string) => `${price} al año`,
     priceMonthly: (price: string) => `${price} al mes`,
+    /** El dato de la fila: precio y qué pasa después, en una línea. */
+    rowMeta: (price: string, when: string) => `${price} · ${when}`,
+    renewsShort: (date: string) => `se renueva el ${date}`,
+    trialShort: (date: string) => `la prueba termina el ${date}`,
+    accessShort: (date: string) => `tienes acceso hasta el ${date}`,
     /** Promesa del sello — se repite aquí porque es vinculante */
     lockedRate: (price: string) =>
       `Tu tarifa está congelada en ${price} mientras mantengas la membresía.`,
 
-    statusLabel: "Estado",
     statusActive: "Activa",
     statusTrialing: "En prueba",
-    statusPastDue: "Pago pendiente",
+    statusPastDue: "Pago vencido",
     statusCanceled: "Cancelada",
 
     renewsOn: (date: string) => `Se renueva el ${date}.`,
@@ -116,18 +162,18 @@ const es = {
     renewalNotice: "Te avisamos por correo 48 h antes de cada cobro.",
 
     invoicesTitle: "Recibos",
-    invoicesHelp: "Cada cobro te llega por correo. Aquí puedes verlos todos.",
     invoicesEmpty: "Todavía no hay recibos.",
-    paymentMethodLabel: "Método de pago",
-    paymentMethodCard: (brand: string, last4: string) =>
-      `${brand} terminada en ${last4}`,
-    updatePaymentMethod: "Cambiar mi método de pago",
 
-    /** Aviso past_due §3.4.7 — 7 días de solo lectura */
-    pastDueTitle: "Tu último pago no se procesó",
-    pastDueBody: (days: number, date: string) =>
-      `Tu banco rechazó el cobro. Tienes acceso de solo lectura ${days} días, hasta el ${date}. Actualiza tu método de pago y todo vuelve a la normalidad.`,
-    pastDueCta: "Actualizar mi método de pago",
+    /**
+     * §3.4.7 — pago vencido. La pantalla del diseño manda: qué pasa con la
+     * bóveda si no se paga, sin amenaza y sin cuenta atrás, y diciendo que
+     * los documentos no se tocan.
+     */
+    pastDueEyebrow: "Pago vencido",
+    pastDueTitle: "Puedes leer tus documentos, pero no añadir nuevos",
+    pastDueBody: (days: number) =>
+      `Tienes ${days} días para actualizar el pago. Tus documentos siguen en tu teléfono y nadie los borra.`,
+    pastDueCta: "Actualizar el pago",
 
     /** CANCELACIÓN EN UN CLIC (§3.4.6): mismo medio, sin retención. */
     cancel: "Cancelar membresía",
@@ -139,8 +185,6 @@ const es = {
     cancelConfirmCancel: "Seguir con mi membresía",
     canceledToast: (date: string) =>
       `Membresía cancelada. Tienes acceso hasta el ${date}.`,
-    canceledBanner: (date: string) =>
-      `Cancelaste tu membresía. Tienes acceso hasta el ${date}.`,
     cancelFailed:
       "No pudimos registrar la cancelación: se perdió la conexión. Toca Cancelar membresía otra vez; no se hizo ningún cobro nuevo.",
 
@@ -162,35 +206,60 @@ const es = {
     noneBody: "Tu perfil y tus respuestas siguen guardados. Actívala cuando quieras.",
     noneCta: "Ver los planes",
   },
-
-  danger: {
-    logout: "Cerrar sesión",
-    deleteAccount: "Eliminar mi cuenta",
-    deleteConfirmTitle: "¿Eliminar tu cuenta?",
-    deleteConfirmBody:
-      "Se borran tu perfil, tus documentos y tus respuestas. Esto no se puede deshacer. Si solo quieres dejar de pagar, cancela la membresía y conserva tus datos.",
-    deleteConfirmAccept: "Sí, eliminar todo",
-    deleteConfirmCancel: "Mejor no",
-  },
 };
 
 export type PerfilDict = typeof es;
 
 const en = {
-  title: "Your profile",
-  subtitle: "Change whatever you want. Your plan recalculates when you save.",
+  title: "Profile",
 
   sections: {
-    account: "Your account",
-    location: "Your location",
-    situation: "Your situation",
-    interests: "Your interests",
-    goal: "Your 30-day goal",
-    family: "Who are you looking for help for?",
-    preferences: "Language and appearance",
-    subscription: "Your membership",
-    danger: "Your account",
+    account: "Account",
+    plan: "Your plan",
+    subscription: "Subscription",
+    data: "Your data",
   },
+
+  identity: {
+    meta: (scope: string, since: string) => `${scope} · since ${since}`,
+    metaNoScope: (since: string) => `Since ${since}`,
+  },
+
+  rows: {
+    account: "My details",
+    accountMeta: "Name, email, phone",
+
+    language: "Language",
+
+    theme: "Theme",
+    themeHelp:
+      "At night the screen doesn't glare. It stays how you leave it, it doesn't change on its own.",
+    themeDay: "Day",
+    themeNight: "Night",
+    themeAria: "App theme",
+
+    location: "Where I am",
+    locationEmpty: "No location",
+
+    situation: "Your situation",
+    situationEmpty: "Not answered",
+
+    interests: "Your interests",
+    interestsCount: (count: number) =>
+      count === 1 ? "1 topic checked" : `${count} topics checked`,
+    interestsEmpty: "None checked",
+
+    goal: "Your 30-day goal",
+    goalEmpty: "Not written yet",
+
+    family: "Who you're looking for help for",
+
+    logout: "Log out",
+    logoutMeta: "It logs out on this phone. Your documents stay here.",
+  },
+
+  vaultNotice:
+    "Your documents are encrypted on this phone and there's no copy anywhere else. If you lose it, we can't recover them.",
 
   account: {
     firstNameLabel: "First name",
@@ -198,14 +267,13 @@ const en = {
     emailLabel: "Email",
     emailHelp: "This is where your alerts and receipts go.",
     phoneLabel: "Phone",
-    changePassword: "Change my password",
     save: "Save changes",
   },
 
   location: {
     contextLabel: "Where are you right now?",
-    inUsLabel: "🇺🇸 I'm already in the United States",
-    preArrivalLabel: "✈️ I'm outside the United States",
+    inUsLabel: "I'm already in the U.S.",
+    preArrivalLabel: "I'm outside the U.S.",
     stateLabel: "State",
     countryLabel: "Country of residence",
     nationalityLabel: "Nationality",
@@ -220,51 +288,36 @@ const en = {
 
   interests: {
     help: "Check as many as you want. The first one you pick carries the most weight.",
-    reorderHint: "Drag to change the priority order.",
     orderTitle: "Your priority order",
     makePrimary: "Move to first",
     primaryBadge: "Primary",
   },
 
-  goal: {
-    help: "It shows exactly as you write it, at the top of your dashboard.",
-    counter: (used: number, max: number) => `${used} of ${max} characters`,
-  },
-
   toasts: {
-    saved: "Saved.",
     recalculated: "Your plan has been updated.",
     saveFailed:
       "Your changes weren't saved: the connection dropped. What you typed is still on screen; tap Save again.",
   },
 
   preferences: {
-    languageLabel: "Language",
     languageHelp: "Changes the whole app, emails included.",
-    themeLabel: "Appearance",
-    themeLight: "Light",
-    themeDark: "Dark",
-    themeSystem: "Match my device",
-    notificationsLabel: "Email alerts",
-    notificationsDeadlines: "Deadlines for my documents",
-    notificationsEvents: "Events and workshops in my community",
-    notificationsProduct: "ANDEX updates",
   },
 
   subscription: {
-    planLabel: "Your plan",
-    planAnnual: "Annual",
-    planMonthly: "Monthly",
-    priceLabel: "Price",
+    planAnnual: "Annual plan",
+    planMonthly: "Monthly plan",
     priceAnnual: (price: string) => `${price} a year`,
     priceMonthly: (price: string) => `${price} a month`,
+    rowMeta: (price: string, when: string) => `${price} · ${when}`,
+    renewsShort: (date: string) => `renews on ${date}`,
+    trialShort: (date: string) => `the trial ends on ${date}`,
+    accessShort: (date: string) => `you have access until ${date}`,
     lockedRate: (price: string) =>
       `Your rate is locked at ${price} for as long as you keep the membership.`,
 
-    statusLabel: "Status",
     statusActive: "Active",
     statusTrialing: "In trial",
-    statusPastDue: "Payment pending",
+    statusPastDue: "Payment overdue",
     statusCanceled: "Canceled",
 
     renewsOn: (date: string) => `Renews on ${date}.`,
@@ -273,17 +326,13 @@ const en = {
     renewalNotice: "We email you 48 hours before every charge.",
 
     invoicesTitle: "Receipts",
-    invoicesHelp: "Every charge is emailed to you. You can see them all here.",
     invoicesEmpty: "No receipts yet.",
-    paymentMethodLabel: "Payment method",
-    paymentMethodCard: (brand: string, last4: string) =>
-      `${brand} ending in ${last4}`,
-    updatePaymentMethod: "Change my payment method",
 
-    pastDueTitle: "Your last payment didn't go through",
-    pastDueBody: (days: number, date: string) =>
-      `Your bank declined the charge. You have read-only access for ${days} days, until ${date}. Update your payment method and everything goes back to normal.`,
-    pastDueCta: "Update my payment method",
+    pastDueEyebrow: "Payment overdue",
+    pastDueTitle: "You can read your documents, but not add new ones",
+    pastDueBody: (days: number) =>
+      `You have ${days} days to update the payment. Your documents stay on your phone and nobody deletes them.`,
+    pastDueCta: "Update the payment",
 
     cancel: "Cancel membership",
     cancelConfirmTitle: "Cancel your membership?",
@@ -293,8 +342,6 @@ const en = {
     cancelConfirmCancel: "Keep my membership",
     canceledToast: (date: string) =>
       `Membership canceled. You have access until ${date}.`,
-    canceledBanner: (date: string) =>
-      `You canceled your membership. You have access until ${date}.`,
     cancelFailed:
       "We couldn't register the cancellation: the connection dropped. Tap Cancel membership again; no new charge was made.",
 
@@ -312,16 +359,6 @@ const en = {
     noneTitle: "You don't have an active membership",
     noneBody: "Your profile and your answers are still saved. Activate it whenever you want.",
     noneCta: "See the plans",
-  },
-
-  danger: {
-    logout: "Log out",
-    deleteAccount: "Delete my account",
-    deleteConfirmTitle: "Delete your account?",
-    deleteConfirmBody:
-      "This erases your profile, your documents, and your answers. It can't be undone. If you only want to stop paying, cancel the membership and keep your data.",
-    deleteConfirmAccept: "Yes, delete everything",
-    deleteConfirmCancel: "Never mind",
   },
 } satisfies PerfilDict;
 

@@ -37,6 +37,18 @@ const es = {
     privacyLink: "Política de privacidad",
     marketingOptIn:
       "Quiero recibir avisos de eventos y fechas límite por correo.",
+    /** Meta de la fila de términos: la salida está junto al compromiso. */
+    termsMeta: "Puedes borrar tus datos cuando quieras.",
+    /** Meta de la fila de avisos: qué recibe y con qué frecuencia. */
+    marketingMeta: "Sólo avisos de tus fechas y de talleres. Nada más.",
+    /**
+     * El cierre de la pantalla. La promesa y su límite van en la MISMA
+     * frase: se cifra en el teléfono, y por eso quien pueda desbloquear el
+     * teléfono puede abrir la aplicación. Este público ya oyó «nivel
+     * bancario» de quien lo estafó.
+     */
+    vaultNotice:
+      "Tus documentos se guardan cifrados en tu teléfono, no en nuestros servidores. Protege el teléfono con tu clave o tu huella.",
   },
 
   login: {
@@ -171,6 +183,10 @@ const en = {
     termsMiddle: "and the",
     privacyLink: "Privacy Policy",
     marketingOptIn: "Email me about events and deadlines.",
+    termsMeta: "You can delete your data whenever you want.",
+    marketingMeta: "Only alerts about your dates and workshops. Nothing else.",
+    vaultNotice:
+      "Your documents are stored encrypted on your phone, not on our servers. Protect the phone with your passcode or your fingerprint.",
   },
 
   login: {

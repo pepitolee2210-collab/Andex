@@ -21,6 +21,10 @@ export type VaultListCopy = BovedaDict["list"];
 export type VaultExpiryCopy = BovedaDict["expiry"];
 export type VaultFoldersCopy = BovedaDict["folders"];
 export type VaultTrackerCopy = BovedaDict["tracker"];
+export type VaultDetailCopy = BovedaDict["detail"];
+export type VaultSectionsCopy = BovedaDict["sections"];
+export type VaultOfflineCopy = BovedaDict["offline"];
+export type VaultStorageCopy = BovedaDict["storage"];
 
 /**
  * Textos genéricos que la pantalla necesita y que NO viven en `boveda`
@@ -140,6 +144,77 @@ export function urgencyToneVar(tone: UrgencyTone): string {
   return `var(--urgency-${tone}-fg)`;
 }
 
+// ─── Fechas ──────────────────────────────────────────────
+
+/**
+ * Locale de `Intl` para cada idioma. `es-419` es el español de América
+ * Latina, que es de donde viene este público: da «14 de febrero de 2026»,
+ * no el «14 de febrero de 2026» peninsular con otras abreviaturas de mes.
+ */
+function localeOf(lang: Lang): string {
+  return lang === "en" ? "en-US" : "es-419";
+}
+
+/**
+ * Una fecha ISO (AAAA-MM-DD) escrita entera.
+ *
+ * Es FORMATO, no copy: el nombre del mes lo pone `Intl` en el idioma del
+ * usuario, así que aquí no se escribe ni una palabra.
+ *
+ * `timeZone: "UTC"` no es un detalle: `expiresAt` es un día natural, no un
+ * instante. Sin él, en Utah (UTC−7) el 1 de marzo se imprime como 28 de
+ * febrero, y la fecha que se enseña deja de ser la que vence.
+ */
+export function formatDate(iso: string, lang: Lang): string {
+  const time = Date.parse(`${iso}T00:00:00Z`);
+  if (Number.isNaN(time)) return iso;
+  return new Intl.DateTimeFormat(localeOf(lang), {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(time));
+}
+
+/** La misma fecha en corto —«14 feb 2026»—, para la insignia del detalle. */
+export function formatDateShort(iso: string, lang: Lang): string {
+  const time = Date.parse(`${iso}T00:00:00Z`);
+  if (Number.isNaN(time)) return iso;
+  return new Intl.DateTimeFormat(localeOf(lang), {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(time));
+}
+
+/** Un `createdAt` completo (ISO con hora) reducido a su día. */
+export function formatTimestamp(iso: string, lang: Lang): string {
+  return formatDate(iso.slice(0, 10), lang);
+}
+
+/**
+ * La línea de estado entera: los días que quedan **y** la fecha real.
+ *
+ * «Vence en 40 días» obliga a contar en la cabeza para saber si eso cae
+ * antes o después de la cita en la corte. Con la fecha al lado no hay que
+ * contar nada, y es la fecha lo que se copia en un formulario.
+ *
+ * Cuando falta mucho —estado «ok»— los días sobran y manda la fecha sola:
+ * «Vence el 3 de agosto de 2027» se entiende; «Vigente» no dice cuándo.
+ */
+export function expiryLine(
+  state: ExpiryState,
+  expiresAt: string | null,
+  copy: VaultExpiryCopy,
+  lang: Lang,
+): string {
+  if (state.kind === "none" || !expiresAt) return copy.none;
+  const date = formatDate(expiresAt, lang);
+  if (state.kind === "ok") return fill(copy.okOn, { date });
+  return fill(copy.withDate, { state: expiryText(state, copy), date });
+}
+
 /** El texto exacto del diccionario que le corresponde al estado. */
 export function expiryText(state: ExpiryState, copy: VaultExpiryCopy): string {
   switch (state.kind) {
@@ -196,11 +271,41 @@ export function isLowOnSpace(estimate: StorageEstimate | null): boolean {
 }
 
 /**
+ * Porcentaje libre, redondeado. Es el número que se dice en voz alta —«queda
+ * un 11% libre»— y el que dibuja la barra, así que sale de un solo sitio.
+ */
+export function percentFree(estimate: StorageEstimate): number {
+  if (estimate.quota <= 0) return 0;
+  const free = Math.max(0, estimate.quota - estimate.used);
+  return Math.round((free / estimate.quota) * 100);
+}
+
+/**
+ * Los documentos que más pesan, de mayor a menor.
+ *
+ * Un aviso de espacio que no dice QUÉ borrar deja a la persona buscando a
+ * ciegas entre doce papeles que no puede permitirse perder. Esto le pone
+ * delante los dos o tres que de verdad liberan sitio.
+ */
+export function biggestDocuments(
+  entries: readonly VaultEntry[],
+  limit: number,
+): VaultEntry[] {
+  return [...entries]
+    .sort((a, b) => b.document.sizeBytes - a.document.sizeBytes)
+    .slice(0, limit);
+}
+
+/**
  * Tamaño legible. Es FORMATO, no copy: `Intl` pone la unidad en el idioma
  * del usuario, así que aquí no se escribe ningún texto.
+ *
+ * Baja hasta los kilobytes a propósito. Un permiso de trabajo escaneado
+ * pesa 400 KB, y en megabytes eso se imprimía como «0 MB» — un dato que
+ * parece un fallo de la app y no dice nada de lo que ocupa.
  */
 export function formatBytes(bytes: number, lang: Lang): string {
-  const locale = lang === "en" ? "en-US" : "es-419";
+  const locale = localeOf(lang);
   const gigabytes = bytes / 1_000_000_000;
 
   if (gigabytes >= 1) {
@@ -213,12 +318,21 @@ export function formatBytes(bytes: number, lang: Lang): string {
   }
 
   const megabytes = bytes / 1_000_000;
+  if (megabytes >= 1) {
+    return new Intl.NumberFormat(locale, {
+      style: "unit",
+      unit: "megabyte",
+      unitDisplay: "short",
+      maximumFractionDigits: megabytes < 10 ? 1 : 0,
+    }).format(megabytes);
+  }
+
   return new Intl.NumberFormat(locale, {
     style: "unit",
-    unit: "megabyte",
+    unit: "kilobyte",
     unitDisplay: "short",
-    maximumFractionDigits: megabytes < 10 ? 1 : 0,
-  }).format(megabytes);
+    maximumFractionDigits: 0,
+  }).format(bytes / 1000);
 }
 
 // ─── Carpetas ────────────────────────────────────────────

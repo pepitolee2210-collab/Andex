@@ -17,8 +17,8 @@ import { rankModules } from "@/lib/recommendation-engine";
 import { useSessionUser } from "@/lib/auth/client";
 import { COUNTRY_NOT_LISTED, countryByCode } from "@/lib/catalogs/countries";
 import { cn, isValidEmail } from "@/lib/utils";
-import { RouteBar } from "@/components/route-bar";
-import { ProgressBar } from "@/components/ui/progress-bar";
+import { ChevronLeft } from "lucide-react";
+import { Glyph, KitButton, ProgressDots } from "@/components/ui/kit";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { toast } from "@/components/ui/toaster";
@@ -553,7 +553,7 @@ export function WizardFlow({ lang, geoCountry, suggestedBranch }: WizardFlowProp
 
   if (!ready) {
     return (
-      <main className="flex min-h-dvh items-center justify-center px-4">
+      <main className="flex min-h-dvh items-center justify-center px-5">
         <p aria-live="polite" className="text-body text-muted">
           {dict.common.actions.loading}
         </p>
@@ -562,37 +562,49 @@ export function WizardFlow({ lang, geoCountry, suggestedBranch }: WizardFlowProp
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-4 pb-10 pt-6 sm:px-6">
-      {/* La Ruta: una sola vez por pantalla (§2.8). Es aria-hidden, así que el
-          conteo accesible lo pone la barra de progreso. */}
-      <div className="flex flex-col gap-4">
-        <RouteBar step={step} context={branch ?? undefined} />
-        <ProgressBar
-          value={step}
-          max={TOTAL_STEPS}
-          label={w.progress.label(step, TOTAL_STEPS)}
-          ariaLabel={w.progress.aria(step, TOTAL_STEPS)}
-        />
+    <main className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-6 pt-1">
+      {/* La cabecera del diseño: atrás arriba a la izquierda, la pregunta como
+          titular y —en la misma línea— el conteo con el nombre del paso. El
+          botón de atrás vive aquí y no abajo: está siempre disponible
+          (regla 3) sin competir con la acción de avanzar. */}
+      <div className="navrow">
+        <button
+          type="button"
+          onClick={goBack}
+          disabled={submitting}
+          className="navback"
+        >
+          <Glyph name="chevron-left" icon={ChevronLeft} size={22} strokeWidth={2.1} />
+          {w.nav.back}
+        </button>
       </div>
 
-      <div ref={sectionRef} className="flex flex-1 flex-col pt-7">
+      <div ref={sectionRef} className="flex flex-1 flex-col">
         {submitting ? (
           <div className="flex flex-1 flex-col justify-center gap-2 py-10" aria-live="polite">
-            <h1 className="font-heading text-h2 text-ink">{w.done.title}</h1>
-            <p className="text-body text-muted">{w.done.body}</p>
+            <h1 className="largeTitle">{w.done.title}</h1>
+            <p className="navsub">{w.done.body}</p>
           </div>
         ) : (
           <>
-            <h1
-              ref={headingRef}
-              tabIndex={-1}
-              className="font-heading text-h1 text-ink outline-none"
-            >
+            <h1 ref={headingRef} tabIndex={-1} className="largeTitle outline-none">
               {heading.title}
             </h1>
-            <p className="mt-2 text-body-lg text-muted">{heading.subtitle}</p>
+            <p className="navsub">
+              {`${w.progress.label(step, TOTAL_STEPS)} · ${w.progress.names[step - 1]}`}
+            </p>
 
-            <div className="mt-6 flex-1">
+            {/* El progreso también se pinta: cinco tramos, los recorridos en
+                teal. El conteo accesible lo lleva su `aria-label`. */}
+            <ProgressDots
+              total={TOTAL_STEPS}
+              current={step}
+              label={w.progress.aria(step, TOTAL_STEPS)}
+            />
+
+            <p className="mt-4 text-label text-muted">{heading.subtitle}</p>
+
+            <div className="mt-5 flex-1">
               {step === 1 ? (
                 <StepBasics
                   dict={w}
@@ -648,29 +660,18 @@ export function WizardFlow({ lang, geoCountry, suggestedBranch }: WizardFlowProp
         )}
       </div>
 
-      {/* Navegación: atrás SIEMPRE disponible (regla 3). */}
-      <div className={cn("mt-8 flex flex-col gap-4", submitting && "invisible")}>
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" onClick={goBack} disabled={submitting}>
-            {w.nav.back}
-          </Button>
-          <Button
-            className="flex-1"
-            size="lg"
-            onClick={goNext}
-            loading={submitting}
-            loadingLabel={dict.common.actions.loading}
-          >
-            {step === TOTAL_STEPS ? w.nav.finish : w.nav.next}
-          </Button>
-        </div>
+      {/* Una sola acción abajo, a todo el ancho: avanzar. Atrás vive arriba. */}
+      <div className={cn("mt-8 flex flex-col gap-3", submitting && "invisible")}>
+        <KitButton wide onClick={goNext} disabled={submitting}>
+          {step === TOTAL_STEPS ? w.nav.finish : w.nav.next}
+        </KitButton>
 
         {/* Regla 6: desde el paso 3, nunca en el 2. */}
         {step >= 3 ? (
           <button
             type="button"
             onClick={() => setSkipOpen(true)}
-            className="mx-auto inline-flex min-h-11 items-center rounded-md px-3 text-body text-muted underline underline-offset-4 transition-colors hover:text-ink"
+            className="mx-auto inline-flex min-h-11 items-center rounded-md px-3 text-label text-muted underline underline-offset-4 transition-colors hover:text-ink"
           >
             {w.nav.skip}
           </button>

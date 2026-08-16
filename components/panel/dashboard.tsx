@@ -1,47 +1,167 @@
 "use client";
 
 /**
- * DASHBOARD ADAPTATIVO (§4) — el corazón del MVP.
+ * PANEL — la pantalla de inicio, con la forma del sistema de diseño.
  *
- * Principio §4.1: "El dashboard no le dice al usuario quién es. Le muestra por
- * dónde empezar." La adaptación es JERÁRQUICA, nunca restrictiva (§0.4): los 7
- * módulos siempre están, siempre son accesibles y siempre se ven completos.
- * Lo único que cambia es a qué le da protagonismo la pantalla.
+ * Antes esto era un feed de escritorio: saludo, tarjeta de objetivo, hero
+ * card, tira de "también te puede servir", rejilla de siete tarjetas
+ * iguales y una columna lateral con enlaces oficiales. Seis bloques que
+ * decían lo mismo con seis formas distintas.
  *
- * Los 11 elementos adaptativos de §4.2 y dónde viven:
+ * El diseño lo reordena en BALDOSAS agrupadas por una sola pregunta —¿esto
+ * lo puedo usar hoy?— y en tres bloques:
+ *
+ *   · **Lo que usas** ................ los módulos que ya abren
+ *   · **Se paga aparte** ............. Tienda e Inversiones, con su límite escrito
+ *   · **Se abren durante el piloto** . los que todavía no, apagados pero visibles
+ *
+ * Arriba de todo, una sola tarjeta navy con LA recomendación y su porqué;
+ * abajo, el objetivo de 30 días y el aviso de no-afiliación.
+ *
+ * ── Qué NO cambia ──
+ *
+ * La adaptación sigue siendo jerárquica, nunca restrictiva (§0.4): los 7
+ * módulos siguen estando todos, siempre accesibles. El motor decide el
+ * ORDEN dentro de cada bloque; el bloque sólo dice si el módulo abre hoy.
+ * La telemetría (`hero_card_clicked`, `module_opened`) y el control de
+ * acceso por suscripción se quedan donde estaban.
+ *
+ * Los 11 elementos adaptativos de §4.2 y dónde viven ahora:
  *   1. Modo del dashboard ...... `profile.locationContext` gobierna todo el archivo
- *   2. Saludo .................. <DashboardHeader>
- *   3. Hero card ............... <HeroArea>
- *   4. Orden del grid .......... <ModulesGrid> (scores de `user_module_ranking`)
+ *   2. Saludo .................. <DashboardHeader> (titular)
+ *   3. Hero card ............... <HeroArea> → tarjeta navy
+ *   4. Orden de las baldosas ... <ModuleBlocks> (scores de `user_module_ranking`)
  *   5. Contenido de cada módulo  `score.contentVariant` → títulos §4.2.1
- *   6. Enlaces externos ........ <ContextualSidebar> (scope estado/país)
- *   7. Sidebar contextual ...... <ContextualSidebar topSlugs={#1, #2}>
+ *   6/7. Enlaces y sidebar ..... RETIRADOS de esta pantalla (ver nota abajo)
  *   8. Objetivo de 30 días ..... <GoalCard>
- *   9. Sugerencia secundaria ... <SecondarySuggestion> (módulo #2, tira horizontal)
+ *   9. Sugerencia secundaria ... absorbida por el orden de «Lo que usas»
  *  10. "Para tu familia" ....... <FamilySection> (solo si seekingFor ≠ 'self')
  *  11. Banner "¿Ya llegaste?" .. <ArrivalFlow> (solo en pre_arrival)
+ *
+ * Sobre 6 y 7: `<ContextualSidebar>` está pensado para una columna de
+ * 320px a la derecha, y aquí no hay ninguna — el armazón es una sola
+ * columna de 414px como máximo. Apilado debajo añadía cinco tarjetas que
+ * el diseño del panel no tiene. El componente sigue en el repositorio
+ * para cuando exista la versión de escritorio; lo que sí se conserva aquí
+ * es el aviso de no-afiliación, que cierra la pantalla.
  */
 
 import { useState } from "react";
-import { ArrowRight, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
+import {
+  AppWindow,
+  Briefcase,
+  Building2,
+  ChevronRight,
+  GraduationCap,
+  Info,
+  Landmark,
+  ShieldCheck,
+  TrendingUp,
+  Users,
+  Wallet,
+} from "lucide-react";
 import { ROUTES } from "@/lib/config";
 import { formatReason } from "@/lib/i18n";
-import { moduleById } from "@/lib/catalogs/modules";
+import { MODULES, moduleById } from "@/lib/catalogs/modules";
 import { track } from "@/lib/analytics/track";
-import type { ModuleScore } from "@/lib/types";
-import { Button } from "@/components/ui/button";
+import type { Lang, ModuleId, ModuleScore, ModuleSlug } from "@/lib/types";
 import { toast } from "@/components/ui/toaster";
-import { ModuleCard } from "@/components/module-card";
+import {
+  Glyph,
+  KitBadge,
+  KitButton,
+  KitCard,
+  KitNotice,
+  ListGroup,
+  ListRow,
+  RecommendationCard,
+  ScreenHeader,
+  SectionLabel,
+  StatePanel,
+  Tile,
+  TileGrid,
+  type IconComponent,
+} from "@/components/ui/kit";
 import { ArrivalFlow } from "./arrival-flow";
-import { ContextualSidebar } from "./contextual-sidebar";
 import { GoalCard } from "./goal-card";
 import { usePanel } from "./panel-context";
 import { MODULES_ANCHOR } from "./panel-shell";
 import { fallbackScores, HERO_DISMISS_LIMIT } from "./ranking";
 import { moduleDescription, moduleTitle, scopeName } from "./panel-utils";
 
+/**
+ * El icono de cada módulo en la baldosa, con su nombre de Lucide en
+ * kebab-case: es lo que el CSS mira para darle su gesto (el escudo se
+ * sella, el birrete se lanza, el avión despega). Sin `name` el icono
+ * simplemente no se mueve, y es un fallo que no se ve.
+ *
+ * Son los iconos que el sistema de diseño asigna a cada módulo en esta
+ * pantalla, y coinciden con los de la barra de pestañas. `MODULES` del
+ * catálogo guarda además el `iconName` del seed §7.4, que en algunos
+ * casos no es un nombre de Lucide válido (`graduation`, `building`), así
+ * que no se puede pasar tal cual.
+ */
+const MODULE_GLYPH: Record<ModuleSlug, { name: string; icon: IconComponent }> = {
+  boveda: { name: "shield", icon: ShieldCheck },
+  migracion: { name: "landmark", icon: Landmark },
+  finanzas: { name: "wallet", icon: Wallet },
+  negocio: { name: "building-2", icon: Building2 },
+  comunidad: { name: "users", icon: Users },
+  academia: { name: "graduation-cap", icon: GraduationCap },
+  empleo: { name: "briefcase", icon: Briefcase },
+};
+
+/**
+ * La baldosa apagada lleva el icono DESNUDO, sin la ficha de 36px: es lo
+ * que la distingue de un módulo que sí abre. `Tile` siempre envuelve el
+ * icono en `.rowicon`, así que aquí se le quita el fondo y el tamaño.
+ */
+const ICONO_DESNUDO =
+  "[&_.rowicon]:h-auto [&_.rowicon]:w-auto [&_.rowicon]:bg-transparent [&_.rowicon]:text-disabled";
+
+/** «martes 8 de enero». Es formato, no copy: lo resuelve `Intl`. */
+function todayLabel(lang: Lang, now: Date = new Date()): string {
+  return new Intl.DateTimeFormat(lang === "en" ? "en-US" : "es-419", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  })
+    .format(now)
+    // El sobretítulo del diseño va sin coma: «martes 8 de enero».
+    .replace(/,/g, "");
+}
+
+/**
+ * El titular de la tarjeta navy se pierde sin esto, y cuesta un rato verlo.
+ *
+ * `globals.css` fija `h1,h2,h3,h4 { color: var(--text) }` en la capa base.
+ * `.card-invert` pone el color en el DIV y cuenta con que el `<h2>` lo
+ * herede — pero una regla escrita sobre el propio elemento gana siempre a
+ * la herencia, sin importar la capa. Resultado: titular navy sobre navy,
+ * invisible, y un hueco donde debería estar el texto.
+ *
+ * El arreglo de verdad va en `components/ui/kit.tsx` o en `globals.css`,
+ * y los dos están fuera de mi alcance en esta tanda. Esto lo repara desde
+ * fuera con una utilidad, que gana a la capa base.
+ */
+const TITULAR_SOBRE_NAVY = "[&_h2]:[color:var(--text-on-invert)]";
+
+/** El galón de la derecha de una fila. */
+function Chevron() {
+  return (
+    <Glyph
+      name="chevron-right"
+      icon={ChevronRight}
+      size={18}
+      strokeWidth={2}
+      className="text-disabled"
+    />
+  );
+}
+
 export function Dashboard() {
-  const { loading, profile, scores, heroEntry, heroModuleId } = usePanel();
+  const { loading, profile, scores } = usePanel();
   /** §3.2.3 — la bienvenida tras "Ya llegué" merece su propia pantalla. */
   const [showWelcome, setShowWelcome] = useState(false);
 
@@ -51,60 +171,43 @@ export function Dashboard() {
   const ordered: ModuleScore[] =
     scores.length > 0 ? scores : fallbackScores(profile.locationContext);
 
-  // La sugerencia secundaria es el módulo siguiente al que está en la hero
-  // card, no el #2 fijo: si el usuario descartó el #1, el #2 subió a hero y
-  // repetirlo aquí sería mostrar la misma tarjeta dos veces.
-  const secondary = heroEntry
-    ? (ordered.find((entry) => entry.moduleId !== heroModuleId) ?? null)
-    : null;
-
   if (showWelcome) {
     return <ArrivalWelcome onContinue={() => setShowWelcome(false)} />;
   }
 
-  const topSlugs = [heroEntry ?? ordered[0], secondary ?? ordered[1]]
-    .filter((entry): entry is ModuleScore => Boolean(entry))
-    .map((entry) => moduleById(entry.moduleId).slug);
-
   return (
-    <div className="mx-auto w-full max-w-6xl xl:grid xl:grid-cols-[minmax(0,1fr)_20rem] xl:items-start xl:gap-6">
-      <div className="min-w-0 space-y-6">
-        <DashboardHeader />
+    <div className="min-w-0">
+      <DashboardHeader />
 
-        {/* 8 — objetivo de 30 días, editable. Va pegado al saludo porque §4.2
-            define el saludo como "nombre + referencia al objetivo declarado":
-            se cumple sin duplicar el texto en dos sitios. */}
-        <GoalCard />
+      {/* 11 — solo en modo pre_arrival (§3.2.3). */}
+      <ArrivalFlow onArrived={() => setShowWelcome(true)} />
 
-        {/* 11 — solo en modo pre_arrival (§3.2.3). */}
-        <ArrivalFlow onArrived={() => setShowWelcome(true)} />
+      {/* 3 — la recomendación, o su equivalente para los casos borde de §4.7. */}
+      <HeroArea />
 
-        {/* 3 — hero card, o su equivalente para los casos borde de §4.7. */}
-        <HeroArea />
+      {/* 4 y 5 — los 7 módulos, en tres bloques. */}
+      <ModuleBlocks ordered={ordered} />
 
-        {/* 9 — sugerencia secundaria: módulo #2, en tira horizontal.
-            Con la hero card oculta (§4.7) desaparece también: lo que queda
-            es "el grid plano", sin jerarquía por encima. */}
-        {secondary ? <SecondarySuggestion entry={secondary} /> : null}
+      {/* 10 — "Para tu familia". */}
+      <FamilySection />
 
-        {/* 4 — los 7 módulos, ordenados por score. */}
-        <ModulesGrid ordered={ordered} />
+      {/* 8 — objetivo de 30 días, editable. */}
+      <GoalCard />
 
-        {/* 10 — "Para tu familia". */}
-        <FamilySection />
-      </div>
-
-      {/* 6 y 7 — sidebar contextual: a la derecha en ≥1440, apilado debajo
-          en anchos menores. Una sola instancia, sin DOM duplicado. */}
-      <aside className="mt-6 min-w-0 xl:mt-0 xl:sticky xl:top-20">
-        <ContextualSidebar topSlugs={topSlugs} />
-      </aside>
+      {/* §6 — el aviso de no-afiliación cierra la pantalla que toca trámites. */}
+      <NoAfiliacion />
     </div>
   );
 }
 
 // ── 1 y 2 — Modo y saludo (§4.2.1) ───────────────────────
 
+/**
+ * El sobretítulo dice dónde estás y qué día es; el titular saluda. Es la
+ * inversión del feed viejo, donde el saludo era el renglón pequeño y el
+ * titular repetía el modo del panel: aquí el nombre es lo primero que se
+ * lee, y el contexto queda encima en pequeño.
+ */
 function DashboardHeader() {
   const { dict, lang, profile } = usePanel();
   if (!profile) return null;
@@ -112,34 +215,22 @@ function DashboardHeader() {
   const p = dict.panel;
   const scope = scopeName(profile, lang);
   const name = profile.firstName?.trim();
-
-  // Los dos modos, con su copy exacto de §4.2.1:
-  //   in_us       → "Tu prioridad en Utah este mes"
-  //   pre_arrival → "Tu camino desde Colombia a Estados Unidos"
-  const subtitle =
-    profile.locationContext === "in_us"
-      ? scope
-        ? p.subtitle.inUs(scope)
-        : p.subtitle.inUsNoState
-      : scope
-        ? p.subtitle.preArrival(scope)
-        : p.subtitle.preArrivalNoCountry;
+  const fecha = todayLabel(lang);
 
   return (
-    <header>
-      <p className="text-body-lg text-muted">
-        {name ? p.greeting(name) : p.greetingNoName}
-      </p>
-      <h1 className="mt-1 font-heading text-h1 text-ink">{subtitle}</h1>
-    </header>
+    <ScreenHeader
+      overline={scope ? p.header.overline(scope, fecha) : fecha}
+      title={name ? p.greeting(name) : p.greetingNoName}
+    />
   );
 }
 
-// ── 3 — Hero card (§4.4) y casos borde (§4.7) ────────────
+// ── 3 — La recomendación (§4.4) y casos borde (§4.7) ─────
 
 function HeroArea() {
   const { dict, lang, profile, heroEntry, resumeStep, readOnly, dismissHero } =
     usePanel();
+  const router = useRouter();
   if (!profile) return null;
 
   const hero = dict.panel.hero;
@@ -158,7 +249,7 @@ function HeroArea() {
   }
 
   // §4.7 — usuario que saltó el onboarding: orden por defecto (ya lo produce
-  // el motor con solo el contexto) y hero card GENÉRICA con CTA a completar
+  // el motor con solo el contexto) y tarjeta GENÉRICA con CTA a completar
   // el perfil. Nunca se le bloquea nada (§0.4).
   if (!profile.onboardingCompleted) {
     return (
@@ -171,11 +262,10 @@ function HeroArea() {
     );
   }
 
-  // §4.7 — descartada 3 veces: se oculta 7 días y queda el grid plano.
+  // §4.7 — descartada 3 veces: se oculta 7 días y quedan sólo las baldosas.
   // `heroEntry` ya es null en ese caso, y también salta lo que se descartó hoy.
   const entry = heroEntry;
   if (!entry) return null;
-
 
   const heroId = entry.moduleId;
   const meta = moduleById(heroId);
@@ -189,34 +279,33 @@ function HeroArea() {
   }
 
   return (
-    <ModuleCard
-      slug={meta.slug}
+    <RecommendationCard
+      className={`mt-[22px] ${TITULAR_SOBRE_NAVY}`}
+      eyebrow={hero.eyebrow}
       title={title}
-      variant="hero"
-      state="recommended"
-      accentColor={meta.accentColor}
       // El motor devuelve un ReasonCode; el copy lo resuelve i18n (D3).
       reason={formatReason(entry.reason, lang, { moduleTitle: title })}
-      href={ROUTES.modulo(meta.slug)}
-      // `module_opened` NO se emite aquí: lo emite la pantalla del módulo al
-      // abrirse, para contar igual de bien las entradas desde el sidebar, el
-      // tab bar o un enlace directo (§7.5: su proporción es la precisión real
-      // del motor, así que no puede depender del punto de entrada).
-      onOpen={() => track("hero_card_clicked", { module_id: entry.moduleId })}
+      action={hero.start}
       // "No es lo que busco" es el mecanismo de corrección del usuario y la
       // señal más honesta que recibe el motor (§4.4): nunca se esconde.
       // Solo desaparece en modo de solo lectura, porque es una escritura.
+      dismiss={readOnly ? undefined : hero.dismiss}
+      onAction={() => {
+        // `module_opened` NO se emite aquí: lo emite la pantalla del módulo al
+        // abrirse, para contar igual de bien las entradas desde las baldosas,
+        // la barra de pestañas o un enlace directo (§7.5).
+        track("hero_card_clicked", { module_id: heroId });
+        router.push(ROUTES.modulo(meta.slug));
+      }}
       onDismiss={readOnly ? undefined : handleDismiss}
-      recommendedLabel={dict.common.badges.recommended}
-      openLabel={hero.start}
-      dismissLabel={hero.dismiss}
-      dismissIconLabel={hero.dismissAria}
     />
   );
 }
 
-/** Tarjeta de la hero genérica y de la reanudación (§4.7). Sin badge ámbar:
- *  no es una recomendación del motor y no debe parecerlo. */
+/**
+ * La tarjeta de la hero genérica y de la reanudación (§4.7). Blanca, no
+ * navy: no es una recomendación del motor y no debe parecerlo.
+ */
 function PromptCard({
   title,
   body,
@@ -228,80 +317,127 @@ function PromptCard({
   cta: string;
   href: string;
 }) {
+  const router = useRouter();
   return (
-    <section className="rounded-xl border border-line bg-surface p-6 shadow-sm">
-      <h2 className="font-heading text-h2 text-ink">{title}</h2>
-      <p className="mt-2 text-body text-muted">{body}</p>
-      <Button href={href} className="mt-5">
-        {cta}
-        <ArrowRight aria-hidden="true" className="size-4" />
-      </Button>
-    </section>
+    <KitCard className="mt-[22px]">
+      <StatePanel title={title} body={body}>
+        <KitButton size="sm" className="mt-5" onClick={() => router.push(href)}>
+          {cta}
+        </KitButton>
+      </StatePanel>
+    </KitCard>
   );
 }
 
-// ── 9 — Sugerencia secundaria (módulo #2, tira horizontal) ──
+// ── 4 y 5 — Los 7 módulos, en tres bloques ───────────────
 
-function SecondarySuggestion({ entry }: { entry: ModuleScore }) {
-  const { dict } = usePanel();
-  const meta = moduleById(entry.moduleId);
-
-  return (
-    <section aria-labelledby="sugerencia-secundaria">
-      <h2
-        id="sugerencia-secundaria"
-        className="mb-2 text-caption font-semibold uppercase tracking-wide text-muted"
-      >
-        {dict.panel.grid.secondaryLabel}
-      </h2>
-      <ModuleCard
-        slug={meta.slug}
-        title={moduleTitle(dict, entry.moduleId, entry.contentVariant)}
-        variant="list"
-        state={meta.status === "live" ? "available" : "coming-soon"}
-        accentColor={meta.accentColor}
-        description={moduleDescription(dict, entry.moduleId)}
-        href={ROUTES.modulo(meta.slug)}
-        comingSoonLabel={dict.common.badges.soon}
-      />
-    </section>
-  );
+/**
+ * El orden dentro de cada bloque lo sigue poniendo el motor. Si el ranking
+ * llegara incompleto —un perfil viejo, un cálculo a medias—, los módulos
+ * que falten se añaden al final en el ORDEN CANÓNICO del catálogo: los 7
+ * están siempre, pase lo que pase (§0.4).
+ */
+function orderedModuleIds(ordered: ModuleScore[]): ModuleId[] {
+  const ranked = ordered.map((entry) => entry.moduleId);
+  const missing = MODULES.filter((m) => !ranked.includes(m.id)).map((m) => m.id);
+  return [...ranked, ...missing];
 }
 
-// ── 4 y 5 — Grid de los 7 módulos ────────────────────────
+function ModuleBlocks({ ordered }: { ordered: ModuleScore[] }) {
+  const { dict, profile } = usePanel();
+  if (!profile) return null;
 
-function ModulesGrid({ ordered }: { ordered: ModuleScore[] }) {
-  const { dict } = usePanel();
   const g = dict.panel.grid;
+  const p = dict.panel.paidApart;
+  const ids = orderedModuleIds(ordered);
+  const variantOf = new Map(ordered.map((e) => [e.moduleId, e.contentVariant]));
+  const variant = (id: ModuleId) => variantOf.get(id) ?? profile.locationContext;
+
+  const vivos = ids.filter((id) => moduleById(id).status === "live");
+  const pronto = ids.filter((id) => moduleById(id).status !== "live");
 
   return (
-    <section id={MODULES_ANCHOR} aria-labelledby="titulo-modulos" className="scroll-mt-20">
-      <h2 id="titulo-modulos" className="font-heading text-h2 text-ink">
-        {g.title}
-      </h2>
-      <p className="mt-1 text-body text-muted">{g.subtitle}</p>
+    <>
+      <section
+        id={MODULES_ANCHOR}
+        aria-labelledby="bloque-lo-que-usas"
+        className="scroll-mt-20"
+      >
+        <SectionLabel as="h2" id="bloque-lo-que-usas">
+          {g.usedLabel}
+        </SectionLabel>
+        <TileGrid>
+          {vivos.map((id, i) => {
+            const meta = moduleById(id);
+            const glyph = MODULE_GLYPH[meta.slug];
+            return (
+              <Tile
+                key={id}
+                iconName={glyph.name}
+                icon={glyph.icon}
+                // La ficha se pinta en teal SÓLO una vez en toda la pantalla,
+                // en el módulo mejor puntuado de los que YA abren. Si todas
+                // fueran de color, ninguna destacaría. No se usa el módulo de
+                // la recomendación porque puede ser uno que todavía no abre,
+                // y entonces no habría ninguna baldosa marcada.
+                iconTone={i === 0 ? "accent" : "quiet"}
+                name={moduleTitle(dict, id, variant(id))}
+                meta={moduleDescription(dict, id)}
+                href={ROUTES.modulo(meta.slug)}
+              />
+            );
+          })}
+        </TileGrid>
+      </section>
 
-      {/* §2.4 — 2 columnas por defecto en mobile, 3 en el feed de escritorio.
-          Los 7 siempre presentes: el ranking ordena, no filtra (§0.4). */}
-      <div className="mt-4 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
-        {ordered.map((entry) => {
-          const meta = moduleById(entry.moduleId);
-          return (
-            <ModuleCard
-              key={entry.moduleId}
-              slug={meta.slug}
-              title={moduleTitle(dict, entry.moduleId, entry.contentVariant)}
-              variant="grid"
-              state={meta.status === "live" ? "available" : "coming-soon"}
-              accentColor={meta.accentColor}
-              description={moduleDescription(dict, entry.moduleId)}
-              href={ROUTES.modulo(meta.slug)}
-              comingSoonLabel={dict.common.badges.soon}
-            />
-          );
-        })}
-      </div>
-    </section>
+      <section aria-labelledby="bloque-se-paga-aparte">
+        <SectionLabel as="h2" id="bloque-se-paga-aparte">
+          {p.label}
+        </SectionLabel>
+        <TileGrid>
+          <Tile
+            iconName="app-window"
+            icon={AppWindow}
+            name={p.store}
+            meta={p.storeMeta}
+            href={ROUTES.tienda}
+          />
+          <Tile
+            iconName="trending-up"
+            icon={TrendingUp}
+            name={p.investments}
+            meta={p.investmentsMeta}
+            href={ROUTES.inversiones}
+          />
+        </TileGrid>
+        {/* El límite se dice aquí mismo, no en otra pantalla. */}
+        <p className="mt-3 text-label text-disabled">{p.note}</p>
+      </section>
+
+      <section aria-labelledby="bloque-durante-el-piloto">
+        <SectionLabel as="h2" id="bloque-durante-el-piloto">
+          {g.pilotLabel}
+        </SectionLabel>
+        <TileGrid>
+          {pronto.map((id) => {
+            const meta = moduleById(id);
+            const glyph = MODULE_GLYPH[meta.slug];
+            return (
+              <Tile
+                key={id}
+                quiet
+                className={ICONO_DESNUDO}
+                iconName={glyph.name}
+                icon={glyph.icon}
+                name={moduleTitle(dict, id, variant(id))}
+                foot={<KitBadge tone="building">{g.buildingBadge}</KitBadge>}
+                href={ROUTES.modulo(meta.slug)}
+              />
+            );
+          })}
+        </TileGrid>
+      </section>
+    </>
   );
 }
 
@@ -317,22 +453,32 @@ function FamilySection() {
   const meta = moduleById(2);
 
   return (
-    <section
-      aria-labelledby="para-tu-familia"
-      className="rounded-lg border border-line bg-surface-alt p-4"
-    >
-      <h2
-        id="para-tu-familia"
-        className="flex items-center gap-2 font-heading text-h3 text-ink"
-      >
-        <Users aria-hidden="true" className="size-5 text-muted" />
+    <section aria-labelledby="bloque-para-tu-familia">
+      <SectionLabel as="h2" id="bloque-para-tu-familia">
         {f.title}
-      </h2>
-      <p className="mt-1 text-body text-muted">{f.subtitle}</p>
-      <Button href={ROUTES.modulo(meta.slug)} variant="secondary" className="mt-4">
-        {f.cta}
-      </Button>
+      </SectionLabel>
+      <ListGroup>
+        <ListRow
+          iconName="users"
+          icon={Users}
+          title={f.cta}
+          meta={f.subtitle}
+          trail={<Chevron />}
+          href={ROUTES.modulo(meta.slug)}
+        />
+      </ListGroup>
     </section>
+  );
+}
+
+// ── §6 — El aviso que cierra la pantalla ─────────────────
+
+function NoAfiliacion() {
+  const { dict } = usePanel();
+  return (
+    <KitNotice iconName="info" icon={Info} className="mt-2.5">
+      {dict.common.legal.govDisclaimer}
+    </KitNotice>
   );
 }
 
@@ -340,41 +486,40 @@ function FamilySection() {
 
 function ArrivalWelcome({ onContinue }: { onContinue: () => void }) {
   const { dict, lang, profile, heroEntry } = usePanel();
+  const router = useRouter();
   if (!profile) return null;
 
   const b = dict.panel.arrivalBanner;
   const scope = scopeName(profile, lang);
   const entry = heroEntry;
+  const title = entry
+    ? moduleTitle(dict, entry.moduleId, entry.contentVariant)
+    : "";
 
   return (
-    <div className="mx-auto w-full max-w-2xl">
-      <h1 className="font-heading text-h1 text-ink">
-        {scope ? b.welcomeTitle(scope) : dict.panel.subtitle.inUsNoState}
-      </h1>
-      <p className="mt-2 text-body-lg text-muted">{b.welcomeSubtitle}</p>
+    <div className="min-w-0">
+      <ScreenHeader
+        title={scope ? b.welcomeTitle(scope) : dict.panel.subtitle.inUsNoState}
+        sub={b.welcomeSubtitle}
+      />
 
       {entry ? (
-        <div className="mt-6">
-          <ModuleCard
-            slug={moduleById(entry.moduleId).slug}
-            title={moduleTitle(dict, entry.moduleId, entry.contentVariant)}
-            variant="hero"
-            state="recommended"
-            accentColor={moduleById(entry.moduleId).accentColor}
-            reason={formatReason(entry.reason, lang, {
-              moduleTitle: moduleTitle(dict, entry.moduleId, entry.contentVariant),
-            })}
-            href={ROUTES.modulo(moduleById(entry.moduleId).slug)}
-            onOpen={() => track("hero_card_clicked", { module_id: entry.moduleId })}
-            recommendedLabel={dict.common.badges.recommended}
-            openLabel={dict.panel.hero.start}
-          />
-        </div>
+        <RecommendationCard
+          className={`mt-[22px] ${TITULAR_SOBRE_NAVY}`}
+          eyebrow={dict.panel.hero.eyebrow}
+          title={title}
+          reason={formatReason(entry.reason, lang, { moduleTitle: title })}
+          action={dict.panel.hero.start}
+          onAction={() => {
+            track("hero_card_clicked", { module_id: entry.moduleId });
+            router.push(ROUTES.modulo(moduleById(entry.moduleId).slug));
+          }}
+        />
       ) : null}
 
-      <Button variant="ghost" onClick={onContinue} className="mt-6">
+      <KitButton kind="ghost" size="sm" className="mt-6" onClick={onContinue}>
         {b.welcomeCta}
-      </Button>
+      </KitButton>
     </div>
   );
 }

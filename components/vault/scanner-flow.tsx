@@ -131,6 +131,11 @@ export type ScannerDoneCopy = {
 };
 
 export type ScannerFlowCopy = {
+  /**
+   * «Paso {n} de {total}». La cámara ocupa la pantalla entera: sin esto no
+   * hay forma de saber cuánto falta ni que se puede salir.
+   */
+  stepLabel: string;
   start: ScannerStartCopy;
   camera: ScannerCameraCopy;
   adjuster: CornerAdjusterCopy;
@@ -166,6 +171,20 @@ export type ScannerFlowProps = {
 };
 
 type Stage = "idle" | "capturing" | "adjusting" | "previewing" | "review" | "done";
+
+/**
+ * Los seis pasos, en orden. Es la lista real del flujo, no un número
+ * decorativo: si mañana se quita una pantalla, el contador baja solo.
+ */
+const STEP_ORDER: readonly Stage[] = [
+  "idle",
+  "capturing",
+  "adjusting",
+  "previewing",
+  "review",
+  "done",
+];
+
 type Busy = "preparing" | "savingPage" | "buildingPdf";
 type ErrorKind = "image" | "page" | "pdf";
 
@@ -428,6 +447,11 @@ export function ScannerFlow({
       ? fillTemplate(copy.progress.queueRemaining, { n: queueCount })
       : undefined;
 
+  const stepLabel = fillTemplate(copy.stepLabel, {
+    n: STEP_ORDER.indexOf(stage) + 1,
+    total: STEP_ORDER.length,
+  });
+
   const errorMessage =
     errorKind === "image"
       ? copy.errors.imageFailed
@@ -525,6 +549,8 @@ export function ScannerFlow({
           copy={copy.adjuster}
           initialQuad={quad ?? undefined}
           notice={notice}
+          stepLabel={stepLabel}
+          onCancel={requestCancel}
           onConfirm={(next) => {
             setQuad(next);
             setStage("previewing");

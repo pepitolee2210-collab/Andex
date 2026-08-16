@@ -3,23 +3,37 @@
 import { useMemo, useState } from "react";
 import type { Lang, OnboardingDraft } from "@/lib/types";
 import type { WizardDict } from "@/lib/i18n";
-import { countriesGrouped, countryByCode, dialCodeOptions } from "@/lib/catalogs/countries";
-import { Combobox, type ComboboxItem } from "@/components/ui/combobox";
-import { Input } from "@/components/ui/input";
+import { countryByCode, dialCodeOptions } from "@/lib/catalogs/countries";
+import { KitField, KIT_INPUT_CLASS } from "@/components/auth/kit-field";
+import { cn } from "@/lib/utils";
 
 /**
  * PASO 1 — Datos básicos (§3.2).
+ *
+ * Forma del sistema de diseño: los datos van en UNA lista agrupada, un dato
+ * por fila, y la nota de para qué sirve cada uno va pegada a su fila. Es lo
+ * que manda en esta pantalla: el aviso al lado del dato, no al final.
  *
  * Nombre y correo son obligatorios; apellido y teléfono no (§3.2 regla 5).
  * El código de país del teléfono se **preselecciona por IP y queda siempre
  * editable** (regla 7: se sugiere, el usuario confirma) — nunca se autoenvía
  * ni se bloquea.
  *
- * Se persiste el código telefónico (`+52`), que es lo que espera la columna
- * `users.phone_country_code VARCHAR(5)`. El país concreto solo se usa para
- * pintar la etiqueta: varios países comparten prefijo (+1, +7…), así que el
- * combobox se indexa por ISO para no repetir valores.
+ * El selector de código pasó de combobox a `<select>` nativo: dentro de una
+ * fila de campo el combobox dibujaba su propia caja con borde y rompía la
+ * lista, y en un teléfono el desplegable del sistema se maneja mejor. El
+ * dato que se guarda es el mismo (`+52`), que es lo que espera la columna
+ * `users.phone_country_code VARCHAR(5)`; el país concreto sólo pinta la
+ * etiqueta, porque varios comparten prefijo (+1, +7…).
  */
+
+const FIELD_IDS = {
+  firstName: "entrevista-nombre",
+  lastName: "entrevista-apellido",
+  email: "entrevista-correo",
+  phone: "entrevista-telefono",
+  phoneCode: "entrevista-codigo-pais",
+} as const;
 
 export type StepBasicsProps = {
   dict: WizardDict;
@@ -41,24 +55,24 @@ export function StepBasics({
 }: StepBasicsProps) {
   const t = dict.step1;
 
-  const dialItems = useMemo<ComboboxItem[]>(() => {
-    const quick = new Set(countriesGrouped().quickAccess.map((c) => c.code));
-    return dialCodeOptions().map((c) => ({
-      value: c.code,
-      label: `${lang === "es" ? c.nameEs : c.nameEn} ${c.dialCode}`,
-      group: quick.has(c.code) ? "latam" : "rest",
-    }));
-  }, [lang]);
+  const dialOptions = useMemo(
+    () =>
+      dialCodeOptions().map((c) => ({
+        code: c.code,
+        label: `${lang === "es" ? c.nameEs : c.nameEn} ${c.dialCode}`,
+      })),
+    [lang],
+  );
 
   const geoDial = countryByCode(geoCountry)?.dialCode ?? null;
 
   // País mostrado en el selector: el detectado por IP si su prefijo coincide
   // con lo guardado; si no, el primero del catálogo con ese prefijo.
-  const [phoneIso, setPhoneIso] = useState<string | null>(() => {
+  const [phoneIso, setPhoneIso] = useState<string>(() => {
     const saved = draft.phoneCountryCode;
-    if (!saved) return countryByCode(geoCountry)?.code ?? null;
-    if (geoDial === saved) return countryByCode(geoCountry)?.code ?? null;
-    return dialCodeOptions().find((c) => c.dialCode === saved)?.code ?? null;
+    if (!saved) return countryByCode(geoCountry)?.code ?? "";
+    if (geoDial === saved) return countryByCode(geoCountry)?.code ?? "";
+    return dialCodeOptions().find((c) => c.dialCode === saved)?.code ?? "";
   });
   const [phoneTouched, setPhoneTouched] = useState(false);
 
@@ -66,68 +80,116 @@ export function StepBasics({
     !phoneTouched && geoDial !== null && draft.phoneCountryCode === geoDial;
 
   return (
-    <div className="flex flex-col gap-5">
-      <Input
+    <div className="ax-group">
+      <KitField
+        id={FIELD_IDS.firstName}
         label={t.firstName.label}
-        placeholder={t.firstName.placeholder}
-        value={draft.firstName ?? ""}
-        onChange={(e) => onPatch({ firstName: e.target.value })}
         error={errors.firstName}
-        autoComplete="given-name"
-        required
-      />
+      >
+        <input
+          id={FIELD_IDS.firstName}
+          type="text"
+          className={cn(KIT_INPUT_CLASS, "w-full")}
+          placeholder={t.firstName.placeholder}
+          value={draft.firstName ?? ""}
+          onChange={(e) => onPatch({ firstName: e.target.value })}
+          autoComplete="given-name"
+          autoCapitalize="words"
+          maxLength={100}
+          aria-required="true"
+          aria-invalid={errors.firstName ? true : undefined}
+          aria-describedby={
+            errors.firstName ? `${FIELD_IDS.firstName}-hint` : undefined
+          }
+        />
+      </KitField>
 
-      <Input
+      <KitField
+        id={FIELD_IDS.lastName}
         label={`${t.lastName.label} · ${t.lastName.optional}`}
-        placeholder={t.lastName.placeholder}
-        value={draft.lastName ?? ""}
-        onChange={(e) => onPatch({ lastName: e.target.value })}
-        autoComplete="family-name"
-      />
+      >
+        <input
+          id={FIELD_IDS.lastName}
+          type="text"
+          className={cn(KIT_INPUT_CLASS, "w-full")}
+          placeholder={t.lastName.placeholder}
+          value={draft.lastName ?? ""}
+          onChange={(e) => onPatch({ lastName: e.target.value })}
+          autoComplete="family-name"
+          autoCapitalize="words"
+          maxLength={100}
+        />
+      </KitField>
 
-      <Input
-        type="email"
+      <KitField
+        id={FIELD_IDS.email}
         label={t.email.label}
-        placeholder={t.email.placeholder}
-        help={t.email.help}
-        value={draft.email ?? ""}
-        onChange={(e) => onPatch({ email: e.target.value })}
+        hint={t.email.help}
         error={errors.email}
-        autoComplete="email"
-        inputMode="email"
-        required
-      />
-
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-        <Combobox
-          className="sm:w-64 sm:shrink-0"
-          label={t.phone.countryCodeLabel}
-          placeholder={t.phone.countryCodeLabel}
-          items={dialItems}
-          value={phoneIso}
-          groupLabels={dict.step2.preArrival.countryGroups}
-          emptyText={dict.step2.preArrival.countryEmpty}
-          help={showPrefillHint ? t.phone.prefilledHint : undefined}
-          onChange={(iso) => {
-            setPhoneTouched(true);
-            setPhoneIso(iso);
-            onPatch({ phoneCountryCode: countryByCode(iso)?.dialCode ?? null });
-          }}
+      >
+        <input
+          id={FIELD_IDS.email}
+          type="email"
+          inputMode="email"
+          className={cn(KIT_INPUT_CLASS, "w-full")}
+          placeholder={t.email.placeholder}
+          value={draft.email ?? ""}
+          onChange={(e) => onPatch({ email: e.target.value })}
+          autoComplete="email"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          maxLength={254}
+          aria-required="true"
+          aria-invalid={errors.email ? true : undefined}
+          aria-describedby={`${FIELD_IDS.email}-hint`}
         />
+      </KitField>
 
-        <Input
-          type="tel"
-          className="sm:min-w-0 sm:flex-1"
-          label={`${t.phone.label} · ${t.phone.optional}`}
-          placeholder={t.phone.placeholder}
-          help={t.phone.help}
-          value={draft.phone ?? ""}
-          onChange={(e) => onPatch({ phone: e.target.value })}
-          autoComplete="tel-national"
-          inputMode="tel"
-          maxLength={20}
-        />
-      </div>
+      <KitField
+        id={FIELD_IDS.phone}
+        label={`${t.phone.label} · ${t.phone.optional}`}
+        hint={showPrefillHint ? t.phone.prefilledHint : t.phone.help}
+      >
+        <div className="flex items-center gap-3">
+          <select
+            id={FIELD_IDS.phoneCode}
+            aria-label={t.phone.countryCodeLabel}
+            className={cn(KIT_INPUT_CLASS, "w-[7.5rem] shrink-0 truncate")}
+            value={phoneIso}
+            onChange={(e) => {
+              const iso = e.target.value;
+              setPhoneTouched(true);
+              setPhoneIso(iso);
+              onPatch({ phoneCountryCode: countryByCode(iso)?.dialCode ?? null });
+            }}
+          >
+            {/* Sin señal de IP no se elige país por nadie: la primera opción
+                dice qué es y no vale como respuesta. */}
+            {phoneIso === "" ? (
+              <option value="">{t.phone.countryCodeLabel}</option>
+            ) : null}
+            {dialOptions.map((option) => (
+              <option key={option.code} value={option.code}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+
+          <input
+            id={FIELD_IDS.phone}
+            type="tel"
+            inputMode="tel"
+            className={cn(KIT_INPUT_CLASS, "min-w-0 flex-1")}
+            placeholder={t.phone.placeholder}
+            value={draft.phone ?? ""}
+            onChange={(e) => onPatch({ phone: e.target.value })}
+            autoComplete="tel-national"
+            maxLength={20}
+            aria-describedby={`${FIELD_IDS.phone}-hint`}
+          />
+        </div>
+      </KitField>
     </div>
   );
 }

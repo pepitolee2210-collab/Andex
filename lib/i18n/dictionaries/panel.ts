@@ -12,9 +12,23 @@ const es = {
   /** CLAVE NUEVA (agente Dashboard) — <title> del documento. */
   pageTitle: "Tu panel",
 
-  /** Saludo §4.2.1 — emoji 👋 exacto del PRD, solo aquí. */
-  greeting: (name: string) => `Hola, ${name} 👋`,
-  greetingNoName: "Hola 👋",
+  /**
+   * Saludo §4.2.1. El PRD escribía el emoji 👋; el sistema de diseño lo
+   * prohíbe («cero emoji») y el saludo es ahora el TITULAR de la pantalla,
+   * donde una carita al final del nombre resta seriedad justo donde el
+   * producto se juega parecer creíble.
+   */
+  greeting: (name: string) => `Hola, ${name}`,
+  greetingNoName: "Hola",
+
+  /**
+   * Sobretítulo del panel: dónde estás y qué día es. Sustituye al chip de
+   * ubicación del armazón viejo — el dato significa algo aquí, no en el
+   * cromo. La fecha la formatea `Intl`; esto sólo la junta con el ámbito.
+   */
+  header: {
+    overline: (scope: string, date: string) => `${scope} · ${date}`,
+  },
 
   /** Subtítulo por modo (§4.2.1). */
   subtitle: {
@@ -78,6 +92,8 @@ const es = {
   /** Hero card §4.4 */
   hero: {
     badge: "⭐ RECOMENDADO PARA TI",
+    /** Sobretítulo de la tarjeta navy. Sustituye al badge con estrella. */
+    eyebrow: "Te recomendamos",
     /** primary (teal-deep) */
     start: "Empezar aquí",
     /** ghost — mecanismo de corrección del usuario, nunca escondido */
@@ -99,7 +115,11 @@ const es = {
     resumeCta: "Retomar la entrevista",
   },
 
-  /** Grid de módulos (§4.3: el botón siempre está, para todos). */
+  /**
+   * Baldosas de módulo, en los TRES bloques del diseño. Los 7 siguen
+   * estando siempre (§0.4, §4.3): el bloque dice si el módulo abre hoy,
+   * si se paga aparte o si llega durante el piloto — no filtra ninguno.
+   */
   grid: {
     title: "Explora todos los módulos",
     subtitle: "Los 7 están abiertos siempre. Arriba, los que más te sirven hoy.",
@@ -107,6 +127,24 @@ const es = {
     secondaryLabel: "También te puede servir",
     open: "Abrir",
     ariaCard: (moduleTitle: string) => `Abrir el módulo ${moduleTitle}`,
+    /** Rótulos de los tres bloques. El CSS los pasa a versalitas. */
+    usedLabel: "Lo que usas",
+    pilotLabel: "Se abren durante el piloto",
+    /** Insignia de la baldosa apagada: dice el estado, no una fecha. */
+    buildingBadge: "En construcción",
+  },
+
+  /**
+   * Lo que NO entra en la suscripción. Va en su propio bloque y con su
+   * límite escrito debajo: prometer y acotar en la misma vista (§ voz).
+   */
+  paidApart: {
+    label: "Se paga aparte",
+    store: "Tienda de miniaplicaciones",
+    storeMeta: "Herramientas que viven fuera de ANDEX",
+    investments: "Inversiones",
+    investmentsMeta: "Desde $100",
+    note: "Esto no entra en tu suscripción. Si no compras nada, no pagas nada más.",
   },
 
   /** Objetivo de 30 días — texto del paso 5, editable (§4.2). */
@@ -114,6 +152,8 @@ const es = {
     label: "Tu objetivo de estos 30 días",
     empty: "Todavía no elegiste un objetivo para este mes.",
     emptyCta: "Elegir mi objetivo",
+    /** Debajo del objetivo: se puede cambiar, y se dice ahí mismo. */
+    hint: "Puedes cambiarlo cuando quieras",
     edit: "Cambiar objetivo",
     editTitle: "¿Qué quieres resolver primero?",
     save: "Guardar objetivo",
@@ -222,8 +262,12 @@ export type PanelDict = typeof es;
 const en = {
   pageTitle: "Your dashboard",
 
-  greeting: (name: string) => `Hi, ${name} 👋`,
-  greetingNoName: "Hi 👋",
+  greeting: (name: string) => `Hi, ${name}`,
+  greetingNoName: "Hi",
+
+  header: {
+    overline: (scope: string, date: string) => `${scope} · ${date}`,
+  },
 
   subtitle: {
     inUs: (state: string) => `Your priority in ${state} this month`,
@@ -273,6 +317,7 @@ const en = {
 
   hero: {
     badge: "⭐ RECOMMENDED FOR YOU",
+    eyebrow: "We recommend",
     start: "Start here",
     dismiss: "This isn't what I need",
     dismissAria: "Dismiss this recommendation and recalculate",
@@ -295,12 +340,25 @@ const en = {
     secondaryLabel: "This could help too",
     open: "Open",
     ariaCard: (moduleTitle: string) => `Open the ${moduleTitle} module`,
+    usedLabel: "What you use",
+    pilotLabel: "Opening during the pilot",
+    buildingBadge: "Being built",
+  },
+
+  paidApart: {
+    label: "Paid separately",
+    store: "Mini-app store",
+    storeMeta: "Tools that live outside ANDEX",
+    investments: "Investments",
+    investmentsMeta: "From $100",
+    note: "This is not part of your subscription. If you buy nothing, you pay nothing more.",
   },
 
   goal: {
     label: "Your goal for these 30 days",
     empty: "You haven't picked a goal for this month yet.",
     emptyCta: "Choose my goal",
+    hint: "You can change it whenever you want",
     edit: "Change goal",
     editTitle: "What do you want to solve first?",
     save: "Save goal",

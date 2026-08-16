@@ -27,6 +27,12 @@ const es = {
     label: (current: number, total: number) => `Paso ${current} de ${total}`,
     aria: (current: number, total: number) =>
       `Entrevista ANDEX, paso ${current} de ${total}`,
+    /**
+     * El nombre corto del paso. Acompaña al conteo en la misma línea —«Paso
+     * 1 de 5 · Lo básico»— para que el progreso diga además de qué va este
+     * paso, no sólo cuántos quedan.
+     */
+    names: ["Lo básico", "Tu ubicación", "Tu camino", "Tus temas", "Prioridad"],
   },
 
   nav: {
@@ -89,18 +95,27 @@ const es = {
     /** Exacto §3.2 PASO 2 */
     subtitle: "Esto nos ayuda a mostrarte lo que de verdad te sirve.",
 
+    /**
+     * Sin emoji: el sistema de diseño no los admite como icono, y una
+     * bandera además dice cosas que aquí no queremos decir. El icono es de
+     * Lucide y lo pone la pantalla.
+     */
     cards: {
       in_us: {
-        emoji: "🇺🇸",
         title: "Ya estoy en Estados Unidos",
         description: "Vivo o estoy actualmente en EE. UU.",
       },
       pre_arrival: {
-        emoji: "✈️",
         title: "Estoy fuera de Estados Unidos",
         description: "Me estoy preparando para viajar o quiero informarme",
       },
     },
+
+    /** Distintivo de la fila elegida. */
+    selectedBadge: "Elegido",
+    /** Por qué esta pregunta pesa más que las otras, y que se puede cambiar. */
+    branchNotice:
+      "Esta respuesta cambia lo que ves en toda la aplicación. Puedes cambiarla después desde tu perfil.",
 
     /** Ramificación A — se despliega en la misma pantalla. */
     inUs: {
@@ -284,6 +299,7 @@ const en = {
     label: (current: number, total: number) => `Step ${current} of ${total}`,
     aria: (current: number, total: number) =>
       `ANDEX interview, step ${current} of ${total}`,
+    names: ["The basics", "Your location", "Your journey", "Your topics", "Priority"],
   },
 
   nav: {
@@ -341,16 +357,18 @@ const en = {
 
     cards: {
       in_us: {
-        emoji: "🇺🇸",
         title: "I'm already in the United States",
         description: "I live in or am currently in the U.S.",
       },
       pre_arrival: {
-        emoji: "✈️",
         title: "I'm outside the United States",
         description: "I'm getting ready to travel or want to learn more",
       },
     },
+
+    selectedBadge: "Chosen",
+    branchNotice:
+      "This answer changes what you see across the whole app. You can change it later from your profile.",
 
     inUs: {
       stateLabel: "Which state do you live in?",

@@ -3,24 +3,36 @@
 /**
  * BÓVEDA DIGITAL — la pantalla del módulo 1 (§5-M1).
  *
- * ── Qué cambió en el rediseño, y por qué ──
+ * ── Qué se ve al entrar ──
  *
- * Antes lo primero que se veía era un icono grande, un título, un botón y
- * una tarjeta de privacidad; los papeles empezaban por debajo del pliegue.
- * Y había DOS controles para la misma pregunta: una tira de chips
- * («Todos · Vence pronto · Sin fecha») y una rejilla de cinco carpetas.
+ * Tres cuentas —vencen pronto · sin fecha · en regla— que dicen el estado
+ * entero de la bóveda en una línea y **además son el filtro**. No es una
+ * lista de doce papeles sin orden: lo primero que se quiere saber al abrir
+ * la bóveda con prisa no es «en qué carpeta lo metí» sino «¿tengo algo
+ * encima?».
  *
- * Ninguno de los dos contestaba lo primero que se quiere saber al abrir la
- * bóveda con prisa, que no es «en qué carpeta lo metí» sino **«¿tengo algo
- * encima?»**.
+ * Debajo, los documentos de la cuenta elegida; después el botón de escanear
+ * y las carpetas, para cuando la pregunta sí es dónde está algo. De las
+ * cinco carpetas se enseñan tres y un enlace abre el resto: cinco filas
+ * empujaban la consulta de trámites fuera de la pantalla.
  *
- * Ahora lo primero son tres cuentas —vencen pronto · sin fecha · en regla—
- * que dicen el estado entero de la bóveda en una línea y **además son el
- * filtro**. Las carpetas siguen abajo, para cuando la pregunta sí es dónde
- * está algo.
+ * ── Las cuatro pantallas que viven aquí dentro ──
  *
- * Y no hay estado «todos»: una lista de doce documentos sin orden de
- * urgencia no es una respuesta a ninguna pregunta.
+ * Esta pantalla es también la de sus estados, porque son la experiencia
+ * habitual y no el caso raro: la app se usa con datos contados y en un
+ * teléfono lleno.
+ *
+ *  · **Descifrando** — esqueletos con el tinte de la superficie y ni una
+ *    barra de progreso: no sabemos cuánto falta, y una barra inventada es
+ *    el registro visual de quien les mintió.
+ *  · **Bóveda vacía** — una sola acción y la nota de cifrado, que es la
+ *    pregunta real de ese momento.
+ *  · **Sin conexión** — el reparto entre lo que sigue funcionando (todo lo
+ *    que vive en el teléfono) y lo que necesita red.
+ *  · **Sin espacio** — cuánto queda, qué pasa cuando se acabe y QUÉ borrar.
+ *
+ * Y dos que se van a su propio archivo: la carpeta abierta y el detalle de
+ * un documento.
  *
  * ── Lo que NO cambió ──
  *
@@ -28,10 +40,10 @@
  * cifrado (`lib/vault/storage`) ya en el navegador. Por eso todo esto es
  * cliente y el servidor sólo resuelve el idioma y el texto.
  *
- * La tarjeta de privacidad se queda aunque el diseño no la dibuje. No es
- * decoración: es el argumento que hace que alguien se atreva a fotografiar
- * su pasaporte, y dice su límite real en la misma frase. Este público ya
- * oyó «nivel bancario» de quien lo estafó.
+ * La tarjeta de privacidad se queda aunque el diseño no la dibuje en la
+ * pantalla llena. No es decoración: es el argumento que hace que alguien se
+ * atreva a fotografiar su pasaporte, y dice su límite real en la misma
+ * frase. Este público ya oyó «nivel bancario» de quien lo estafó.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -41,14 +53,15 @@ import {
   Car,
   CheckCircle2,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
   FileText,
-  FolderLock,
+  FolderOpen,
   HardDrive,
   House,
   IdCard,
+  Landmark,
   Lock,
-  Plane,
   Receipt,
   ScanLine,
   Search,
@@ -69,9 +82,8 @@ import {
 } from "@/lib/vault/types";
 import { usePanel } from "@/components/panel/panel-context";
 import { Badge } from "@/components/ui/badge";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
+  FolderGrid,
   Glyph,
   HeaderAction,
   KitBadge,
@@ -81,12 +93,16 @@ import {
   ListRow,
   ScreenHeader,
   SectionLabel,
+  StatePanel,
   Tally,
   type TallyItem,
 } from "@/components/ui/kit";
+import { DocumentDetail } from "./document-detail";
 import { DocumentList } from "./document-list";
+import { OfflineScreen } from "./offline-screen";
 import { TrackerSection } from "./tracker/tracker-section";
 import {
+  biggestDocuments,
   compareUrgency,
   documentCountText,
   expiryText,
@@ -97,6 +113,7 @@ import {
   isLowOnSpace,
   isUrgent,
   matchesFilter,
+  percentFree,
   searchDocuments,
   urgencyTone,
   urgencyToneVar,
@@ -114,7 +131,7 @@ const BOVEDA_ID: ModuleId = moduleBySlug("boveda")?.id ?? 1;
 
 const FOLDER_ICONS: Record<VaultFolderId, LucideIcon> = {
   identity: IdCard,
-  immigration: Plane,
+  immigration: Landmark,
   driving: Car,
   taxes: Receipt,
   housing: House,
@@ -123,11 +140,22 @@ const FOLDER_ICONS: Record<VaultFolderId, LucideIcon> = {
 /** El nombre Lucide de cada carpeta: es lo que activa su gesto en el CSS. */
 const FOLDER_ICON_NAMES: Record<VaultFolderId, string> = {
   identity: "id-card",
-  immigration: "plane",
+  immigration: "landmark",
   driving: "car",
   taxes: "receipt",
   housing: "house",
 };
+
+/**
+ * Cuántas carpetas se enseñan antes del enlace «Ver las 5».
+ *
+ * Con las cinco, la consulta de trámites oficiales —que es la sección que
+ * más gente busca— se iba entera por debajo del pliegue.
+ */
+const FOLDERS_PREVIEW = 3;
+
+/** Cuántos documentos pesados se enseñan cuando el teléfono se llena. */
+const BIGGEST_SHOWN = 3;
 
 /**
  * Los tres estados del resumen, en orden de urgencia. «Vencen pronto»
@@ -209,6 +237,32 @@ export function VaultScreen({
     openModule(BOVEDA_ID);
   }, [openModule]);
 
+  // ── Sin conexión ────────────────────────────────────────
+  // `navigator.onLine` no se puede leer en el render: en el servidor no
+  // existe, y el HTML saldría distinto al del cliente. Se resuelve al
+  // montar y se sigue con los dos eventos del navegador.
+  const [online, setOnline] = useState(true);
+  /** Quien ya vio el reparto y quiere sus papeles, pasa. */
+  const [offlineSeen, setOfflineSeen] = useState(false);
+
+  useEffect(() => {
+    function update() {
+      setOnline(navigator.onLine);
+    }
+    update();
+    window.addEventListener("online", update);
+    window.addEventListener("offline", update);
+    return () => {
+      window.removeEventListener("online", update);
+      window.removeEventListener("offline", update);
+    };
+  }, []);
+
+  // Al volver la señal el aviso se rearma: la próxima caída se vuelve a ver.
+  useEffect(() => {
+    if (online) setOfflineSeen(false);
+  }, [online]);
+
   // ── Derivados ───────────────────────────────────────────
 
   const entries = useMemo<VaultEntry[]>(
@@ -224,6 +278,16 @@ export function VaultScreen({
     const map = new Map<VaultFolderId, number>();
     for (const folder of VAULT_FOLDERS) map.set(folder, 0);
     for (const entry of entries) {
+      map.set(entry.document.folder, (map.get(entry.document.folder) ?? 0) + 1);
+    }
+    return map;
+  }, [entries]);
+
+  /** Cuántos hay venciéndose en cada carpeta. Es lo que pinta su insignia. */
+  const folderUrgent = useMemo(() => {
+    const map = new Map<VaultFolderId, number>();
+    for (const entry of entries) {
+      if (!isUrgent(entry.state)) continue;
       map.set(entry.document.folder, (map.get(entry.document.folder) ?? 0) + 1);
     }
     return map;
@@ -289,6 +353,12 @@ export function VaultScreen({
         : fill(copy.summary.folderCount, { n: usedFolders }),
   });
 
+  // ── El documento abierto ──
+  // Se guarda el id, no el documento: tras renombrarlo o moverlo, la lista
+  // se recarga y el objeto viejo quedaría congelado con el nombre anterior.
+  const [openId, setOpenId] = useState<string | null>(null);
+  const openEntry = entries.find((entry) => entry.document.id === openId) ?? null;
+
   // ── Buscar ──
   // Buscar y navegar son dos modos, no uno con adornos: mientras hay texto
   // escrito o un filtro puesto, el resumen se aparta y se enseña una lista
@@ -303,6 +373,9 @@ export function VaultScreen({
   const [filter, setFilter] = useState<VaultFilter>("all");
   const searching = query.trim().length > 0 || filter !== "all";
   const searchRef = useRef<HTMLInputElement>(null);
+
+  /** Las cinco carpetas o sólo las tres primeras. */
+  const [allFolders, setAllFolders] = useState(false);
 
   const results = useMemo(
     () => (searching ? searchDocuments(entries, query, filter) : []),
@@ -334,15 +407,6 @@ export function VaultScreen({
     });
   }
 
-  /** Salta del aviso de vencimiento a la tarjeta real, en su carpeta. */
-  const listRef = useRef<HTMLElement>(null);
-  function irADocumento(folder: VaultFolderId) {
-    setChosen({ mode: "folder", folder });
-    requestAnimationFrame(() => {
-      listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-  }
-
   const tallyItems: readonly TallyItem[] = TALLY_STATES.map((state) => ({
     key: state,
     count: stateCounts[state],
@@ -350,30 +414,135 @@ export function VaultScreen({
     tone: TALLY_TONE[state],
   }));
 
-  /** El rótulo y la nota de lo que se está mirando ahora mismo. */
-  const listTitle =
-    view.mode === "folder"
-      ? copy.folders[view.folder].name
-      : copy.states[view.state].title;
+  /** El galón de la derecha, el mismo en todas las filas que llevan dentro. */
+  const trail = <ChevronRight aria-hidden="true" className="size-5 shrink-0 text-disabled" />;
 
+  /** Las cinco carpetas para la rejilla de la pantalla de carpeta. */
+  const folderCards = VAULT_FOLDERS.map((folder) => ({
+    id: folder,
+    name: copy.folders[folder].name,
+    count: documentCountText(folderCounts.get(folder) ?? 0, copy.list),
+    iconName: FOLDER_ICON_NAMES[folder],
+    icon: FOLDER_ICONS[folder],
+  }));
+
+  const scanButton = onScan ? (
+    <KitButton iconName="scan-line" icon={ScanLine} onClick={onScan} wide>
+      {copy.empty.cta}
+    </KitButton>
+  ) : null;
+
+  const privacyCard = (
+    <PrivacyCard copy={copy.privacy} open={isEmpty} className={isEmpty ? "mt-4" : "mt-8"} />
+  );
+
+  // ═══════════════════════════════════════════════════════
+  // DETALLE DEL DOCUMENTO
+  // ═══════════════════════════════════════════════════════
+  if (openEntry) {
+    return (
+      <DocumentDetail
+        doc={openEntry.document}
+        state={openEntry.state}
+        copy={documentCopy}
+        detail={copy.detail}
+        sections={copy.sections}
+        alertPromise={copy.expiry.alertPromise}
+        backLabel={common.back}
+        lang={lang}
+        onBack={() => setOpenId(null)}
+        onChanged={refresh}
+      />
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // SIN CONEXIÓN
+  // ═══════════════════════════════════════════════════════
+  if (!online && !offlineSeen) {
+    return (
+      <OfflineScreen
+        copy={copy.offline}
+        overline={copy.summary.overline}
+        title={copy.summary.title}
+        sections={copy.sections}
+        documentCount={entries.length}
+        onScan={onScan}
+        onOpenVault={() => setOfflineSeen(true)}
+      />
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // CARPETA — una de las cinco, abierta
+  // ═══════════════════════════════════════════════════════
+  if (view.mode === "folder") {
+    const folder = view.folder;
+    return (
+      <article className="mx-auto w-full max-w-4xl">
+        <div className="navrow">
+          <button type="button" onClick={() => setChosen(null)} className="navback">
+            <ChevronLeft aria-hidden="true" className="size-6 shrink-0" />
+            {common.back}
+          </button>
+        </div>
+
+        <ScreenHeader
+          overline={copy.sections.folderOverline}
+          title={copy.folders[folder].name}
+          sub={documentCountText(folderCounts.get(folder) ?? 0, copy.list)}
+        />
+
+        {/* Qué va en esta carpeta, en concreto. Es lo que evita que el
+            permiso de trabajo acabe en «Identificación». */}
+        <p className="mt-3 text-body text-muted">{copy.folders[folder].hint}</p>
+
+        {scanButton ? <div className="mt-5">{scanButton}</div> : null}
+
+        <div className="mt-5">
+          {visible.length > 0 ? (
+            <DocumentList
+              entries={visible}
+              copy={documentCopy}
+              lang={lang}
+              onOpenDetail={(doc) => setOpenId(doc.id)}
+              onChanged={refresh}
+            />
+          ) : (
+            <p className="rounded-lg border border-dashed border-line p-6 text-center text-body text-muted">
+              {copy.empty.body}
+            </p>
+          )}
+        </div>
+
+        {/* Las otras cuatro, para saltar sin volver atrás. */}
+        <section aria-labelledby="boveda-carpetas">
+          <SectionLabel as="h2" id="boveda-carpetas">
+            {copy.sections.folders}
+          </SectionLabel>
+          <FolderGrid
+            folders={folderCards}
+            onOpen={(id) => setChosen({ mode: "folder", folder: id as VaultFolderId })}
+          />
+        </section>
+
+        {privacyCard}
+      </article>
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // LA BÓVEDA
+  // ═══════════════════════════════════════════════════════
+  const listTitle = copy.states[view.state].title;
   const listNote =
-    view.mode === "folder"
-      ? copy.folders[view.folder].hint
-      : view.state === "soon"
-        ? copy.expiry.alertPromise
-        : copy.states[view.state].note;
-
+    view.state === "soon" ? copy.expiry.alertPromise : copy.states[view.state].note;
   const listNoteIcon =
-    view.mode === "folder" ? null : view.state === "soon" ? Bell : view.state === "none" ? CalendarOff : CheckCircle2;
-
+    view.state === "soon" ? Bell : view.state === "none" ? CalendarOff : CheckCircle2;
   const listNoteIconName =
-    view.mode === "folder"
-      ? null
-      : view.state === "soon"
-        ? "bell"
-        : view.state === "none"
-          ? "calendar-off"
-          : "check-circle-2";
+    view.state === "soon" ? "bell" : view.state === "none" ? "calendar-off" : "check-circle-2";
+
+  const shownFolders = allFolders ? VAULT_FOLDERS : VAULT_FOLDERS.slice(0, FOLDERS_PREVIEW);
 
   return (
     <article className="mx-auto w-full max-w-4xl">
@@ -397,10 +566,14 @@ export function VaultScreen({
         </HeaderAction>
       ) : null}
 
+      {/* Mientras se descifra no hay cuenta que dar: «0 documentos en 0
+          carpetas» sería mentira, y justo la que más asusta. */}
       <ScreenHeader
         overline={copy.summary.overline}
         title={copy.summary.title}
-        sub={isEmpty ? undefined : summarySub}
+        sub={
+          documents === null ? undefined : isEmpty ? copy.subtitle : summarySub
+        }
       />
 
       {/* ── Buscar ── */}
@@ -457,10 +630,42 @@ export function VaultScreen({
       ) : null}
 
       {documents === null ? (
-        <div aria-busy="true" className="mt-6 space-y-3">
-          <Skeleton variant="card" />
-          <Skeleton variant="card" />
-        </div>
+        /* ── DESCIFRANDO ──
+           Se dice qué está pasando y cuánto tarda. Los esqueletos llevan el
+           tinte de la superficie, no un gris ajeno, y no hay barra de
+           progreso: no sabemos cuánto falta. */
+        <>
+          {onScan ? (
+            <div className="mt-5">
+              <KitButton iconName="scan-line" icon={ScanLine} disabled wide>
+                {copy.empty.cta}
+              </KitButton>
+            </div>
+          ) : null}
+          <KitNotice iconName="lock" icon={Lock} className="mt-4">
+            {copy.loading.decrypting}
+          </KitNotice>
+          <div aria-busy="true" className="mt-6 space-y-3">
+            {[82, 62, 74].map((width, index) => (
+              <div key={width} className="ax-card flex gap-3.5">
+                <span aria-hidden="true" className="ax-skeleton size-9 shrink-0" />
+                <span className="flex min-w-0 flex-1 flex-col gap-2.5">
+                  <span
+                    aria-hidden="true"
+                    className="ax-skeleton block h-4"
+                    style={{ width: `${width}%` }}
+                  />
+                  <span aria-hidden="true" className="ax-skeleton block h-4 w-1/3" />
+                  <span
+                    aria-hidden="true"
+                    className="ax-skeleton block h-4"
+                    style={{ width: index === 1 ? "62%" : "50%" }}
+                  />
+                </span>
+              </div>
+            ))}
+          </div>
+        </>
       ) : searching ? (
         /* ── Resultados ──
            Mientras se busca, el resumen se aparta: sobra el mapa cuando ya
@@ -484,7 +689,8 @@ export function VaultScreen({
             <DocumentList
               entries={results}
               copy={documentCopy}
-              showFolder
+              lang={lang}
+              onOpenDetail={(doc) => setOpenId(doc.id)}
               onChanged={refresh}
               className="mt-3"
             />
@@ -496,23 +702,21 @@ export function VaultScreen({
           )}
         </section>
       ) : isEmpty ? (
-        /* ── Estado vacío ──
-           Sin documentos no hay resumen que enseñar, ni carpetas: serían
-           cinco controles que no llevan a ningún sitio. */
+        /* ── BÓVEDA VACÍA ──
+           Una sola acción, y encima de todo. Después la nota de cifrado
+           abierta: en el primer uso la pregunta real no es qué hacer, es a
+           dónde va la foto del pasaporte. */
         <>
-          <EmptyState
-            icon={<FolderLock />}
+          {scanButton ? <div className="mt-5">{scanButton}</div> : null}
+          {privacyCard}
+          <StatePanel
+            iconName="folder-open"
+            icon={FolderOpen}
+            tone="quiet"
             title={copy.empty.title}
-            description={copy.empty.body}
-            className="mt-6 rounded-xl border border-dashed border-line bg-surface"
+            body={copy.empty.body}
+            className="mt-10"
           />
-          {onScan ? (
-            <div className="mt-4">
-              <KitButton iconName="scan-line" icon={ScanLine} onClick={onScan} wide>
-                {copy.empty.cta}
-              </KitButton>
-            </div>
-          ) : null}
         </>
       ) : (
         <>
@@ -522,13 +726,13 @@ export function VaultScreen({
           <Tally
             className="mt-4"
             items={tallyItems}
-            selected={view.mode === "state" ? view.state : ""}
+            selected={view.state}
             onSelect={(key) => setChosen({ mode: "state", state: key as TallyState })}
             groupLabel={copy.summary.groupLabel}
           />
 
           {/* ── Lo que se está mirando ── */}
-          <section ref={listRef} aria-labelledby="boveda-lista" className="scroll-mt-4">
+          <section aria-labelledby="boveda-lista" className="scroll-mt-4">
             <SectionLabel as="h2" id="boveda-lista">
               {listTitle}
             </SectionLabel>
@@ -537,44 +741,33 @@ export function VaultScreen({
               <DocumentList
                 entries={visible}
                 copy={documentCopy}
-                showFolder={view.mode === "state"}
+                lang={lang}
+                onOpenDetail={(doc) => setOpenId(doc.id)}
                 onChanged={refresh}
               />
             ) : (
               <p className="rounded-lg border border-dashed border-line p-6 text-center text-body text-muted">
-                {view.mode === "folder"
-                  ? copy.empty.body
-                  : copy.states[view.state].empty}
+                {copy.states[view.state].empty}
               </p>
             )}
 
             {/* La nota va DESPUÉS de la lista, no antes: primero los papeles,
                 luego la explicación de qué pasa con ellos. */}
             {listNote ? (
-              <KitNotice
-                className="mt-4"
-                iconName={listNoteIconName ?? undefined}
-                icon={listNoteIcon ?? undefined}
-              >
+              <KitNotice className="mt-4" iconName={listNoteIconName} icon={listNoteIcon}>
                 {listNote}
               </KitNotice>
             ) : null}
           </section>
 
-          {onScan ? (
-            <div className="mt-5">
-              <KitButton iconName="scan-line" icon={ScanLine} onClick={onScan} wide>
-                {copy.empty.cta}
-              </KitButton>
-            </div>
-          ) : null}
+          {scanButton ? <div className="mt-5">{scanButton}</div> : null}
 
           {/* ── Lo que se te vence, si es que hay algo ──
               Un aviso, no una segunda copia del archivo: una línea por
               documento con lo único que importa aquí —cuánto le queda— y un
-              toque que baja a su tarjeta. Sólo cuando no se está mirando ya
+              toque que lleva a su detalle. Sólo cuando no se está mirando ya
               esa misma cuenta. */}
-          {urgent.length > 0 && !(view.mode === "state" && view.state === "soon") ? (
+          {urgent.length > 0 && view.state !== "soon" ? (
             <section aria-labelledby="boveda-vencimientos">
               <SectionLabel as="h2" id="boveda-vencimientos">
                 {copy.sections.dueSoon}
@@ -601,13 +794,8 @@ export function VaultScreen({
                           {copy.folders[document.folder].name}
                         </KitBadge>
                       }
-                      trail={
-                        <ChevronRight
-                          aria-hidden="true"
-                          className="size-5 shrink-0 text-disabled"
-                        />
-                      }
-                      onClick={() => irADocumento(document.folder)}
+                      trail={trail}
+                      onClick={() => setOpenId(document.id)}
                     />
                   </li>
                 ))}
@@ -615,19 +803,33 @@ export function VaultScreen({
             </section>
           ) : null}
 
-          {/* ── Las cinco carpetas ──
-              Bajadas del encabezado a su sitio: aquí la pregunta ya no es
-              «¿tengo algo encima?» sino «¿dónde metí aquello?». Una lista,
-              no una rejilla de fichas: los nombres en español son largos
-              («Estatus migratorio», «Vivienda y estudios») y en una ficha
-              de media columna se parten en tres líneas. */}
+          {/* ── Las carpetas ──
+              Tres, y el enlace abre las cinco. Una lista y no una rejilla de
+              fichas: los nombres en español son largos («Estatus
+              migratorio», «Vivienda y estudios») y en una ficha de media
+              columna se parten en tres líneas.
+
+              La insignia dice cuántos papeles de esa carpeta se están
+              venciendo — el número solo sería color sin significado, así que
+              lleva su texto para quien no ve la pantalla. */}
           <section aria-labelledby="boveda-carpetas">
-            <SectionLabel as="h2" id="boveda-carpetas">
+            <SectionLabel
+              as="h2"
+              id="boveda-carpetas"
+              action={
+                allFolders ? undefined : (
+                  <button type="button" onClick={() => setAllFolders(true)}>
+                    {fill(copy.sections.seeAll, { n: VAULT_FOLDERS.length })}
+                  </button>
+                )
+              }
+            >
               {copy.sections.folders}
             </SectionLabel>
             <ListGroup as="ul">
-              {VAULT_FOLDERS.map((folder) => {
+              {shownFolders.map((folder) => {
                 const count = folderCounts.get(folder) ?? 0;
+                const due = folderUrgent.get(folder) ?? 0;
                 return (
                   <li key={folder}>
                     <ListRow
@@ -635,13 +837,16 @@ export function VaultScreen({
                       iconName={FOLDER_ICON_NAMES[folder]}
                       title={copy.folders[folder].name}
                       meta={documentCountText(count, copy.list)}
-                      trail={
-                        <ChevronRight
-                          aria-hidden="true"
-                          className="size-5 shrink-0 text-disabled"
-                        />
+                      badge={
+                        due > 0 ? (
+                          <KitBadge tone="soon">
+                            {due}
+                            <span className="sr-only"> {copy.states.soon.tally}</span>
+                          </KitBadge>
+                        ) : undefined
                       }
-                      onClick={() => irADocumento(folder)}
+                      trail={trail}
+                      onClick={() => setChosen({ mode: "folder", folder })}
                     />
                   </li>
                 );
@@ -649,77 +854,133 @@ export function VaultScreen({
             </ListGroup>
           </section>
 
-          {/* ── Espacio en el teléfono: sólo cuando aprieta ── */}
+          {/* ── SIN ESPACIO ──
+              Sólo cuando aprieta, y entonces dice las tres cosas que hacen
+              falta: cuánto queda, qué deja de funcionar y QUÉ borrar. Sin
+              esa última lista, el aviso deja a la persona buscando a ciegas
+              entre papeles que no se puede permitir perder. */}
           {lowOnSpace && storage ? (
-            <section aria-labelledby="boveda-espacio" className="mt-6">
-              <div className="ax-card card-highlight">
+            <section aria-labelledby="boveda-espacio">
+              <div className="ax-card card-highlight mt-8">
                 <h2
                   id="boveda-espacio"
-                  className="flex items-center gap-2 font-heading text-h3 text-ink"
+                  className="flex items-center gap-2.5 text-label"
+                  style={{ color: "var(--amber-700)" }}
                 >
-                  <Glyph name="hard-drive" icon={HardDrive} className="shrink-0" />
+                  <Glyph
+                    name="hard-drive"
+                    icon={HardDrive}
+                    size={18}
+                    strokeWidth={2}
+                    className="shrink-0"
+                  />
                   {copy.storage.title}
                 </h2>
-                <p className="mt-1.5 text-body text-ink">
+                <p className="mt-3 text-body" style={{ color: "var(--amber-700)" }}>
+                  {fill(copy.storage.free, { n: percentFree(storage) })}
+                </p>
+                {/* Decorativa: la frase de arriba ya dice el número. */}
+                <div
+                  aria-hidden="true"
+                  className="mt-4 h-2 overflow-hidden rounded-full"
+                  style={{ background: "var(--amber-200)" }}
+                >
+                  <div
+                    className="h-full"
+                    style={{
+                      width: `${100 - percentFree(storage)}%`,
+                      background: "var(--amber-600)",
+                    }}
+                  />
+                </div>
+                <p className="mt-3 text-caption" style={{ color: "var(--amber-700)" }}>
                   {fill(copy.storage.used, {
                     used: formatBytes(storage.used, lang),
                     total: formatBytes(storage.quota, lang),
                   })}
                 </p>
-                <p className="mt-1 text-body text-ink">{copy.storage.warning}</p>
               </div>
+
+              <SectionLabel as="h3">{copy.sections.biggest}</SectionLabel>
+              <DocumentList
+                entries={biggestDocuments(entries, BIGGEST_SHOWN)}
+                copy={documentCopy}
+                lang={lang}
+                onOpenDetail={(doc) => setOpenId(doc.id)}
+                onChanged={refresh}
+              />
             </section>
           ) : null}
+
+          {privacyCard}
         </>
       )}
 
-      {/* ── Privacidad: el argumento, no el descargo ──
-          Abierta cuando la bóveda está vacía —es entonces cuando la persona
-          decide si se fía— y plegada en cuanto hay documentos, para que no
-          se interponga entre ella y sus papeles cada vez que entra.
-          `<details>` lo resuelve sin estado y funciona aunque el JavaScript
-          no cargue. */}
-      <details
-        open={isEmpty}
-        className="group ax-card card-accent mt-8 overflow-hidden !p-0"
-      >
-        <summary
-          className={cn(
-            "flex min-h-12 cursor-pointer list-none items-center gap-2 p-4 text-left",
-            "[&::-webkit-details-marker]:hidden",
-            "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-teal-deep",
-          )}
-        >
-          <Lock aria-hidden="true" className="size-4 shrink-0 text-teal-deep" />
-          <span className="min-w-0 flex-1 text-body font-semibold text-ink">
-            {copy.privacy.headline}
-          </span>
-          <ChevronDown
-            aria-hidden="true"
-            className="size-5 shrink-0 text-teal-deep transition-transform duration-200 group-open:rotate-180"
-          />
-        </summary>
-        <div className="px-4 pb-4">
-          <Badge variant="teal">
-            <Lock aria-hidden="true" className="size-3.5" />
-            {copy.privacy.badge}
-          </Badge>
-          <p className="mt-3 text-body text-ink">{copy.privacy.body}</p>
-          {/* El límite real, con el mismo peso que la promesa. */}
-          <p className="mt-3 flex items-start gap-2.5 border-t border-line pt-3 text-body text-ink">
-            <ShieldCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-teal-deep" />
-            <span className="min-w-0">{copy.privacy.caveat}</span>
-          </p>
-        </div>
-      </details>
-
-      {/* ── Consulta guiada de trámites oficiales ── */}
-      <TrackerSection
-        copy={copy.tracker}
-        common={common}
-        headingId="boveda-tramites"
-        className="mt-8"
-      />
+      {/* ── Consulta guiada de trámites oficiales ──
+          No en el primer uso: un estado vacío ofrece UNA acción, y cuatro
+          trámites del gobierno debajo la convierten en cinco. */}
+      {isEmpty ? null : (
+        <TrackerSection
+          copy={copy.tracker}
+          common={common}
+          headingId="boveda-tramites"
+          className="mt-8"
+        />
+      )}
     </article>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
+   La tarjeta de privacidad
+
+   Abierta cuando la bóveda está vacía —es entonces cuando la persona decide
+   si se fía— y plegada en cuanto hay documentos, para que no se interponga
+   entre ella y sus papeles cada vez que entra. `<details>` lo resuelve sin
+   estado y funciona aunque el JavaScript no cargue.
+   ───────────────────────────────────────────────────────── */
+
+function PrivacyCard({
+  copy,
+  open,
+  className,
+}: {
+  copy: BovedaDict["privacy"];
+  open: boolean;
+  className?: string;
+}) {
+  return (
+    <details open={open} className={cn("group ax-card card-accent overflow-hidden !p-0", className)}>
+      <summary
+        className={cn(
+          "flex min-h-12 cursor-pointer list-none items-center gap-2 p-4 text-left",
+          "[&::-webkit-details-marker]:hidden",
+          "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-teal-deep",
+        )}
+      >
+        <span className="rowicon tone-accent">
+          <Glyph name="lock" icon={Lock} size={19} />
+        </span>
+        <span className="min-w-0 flex-1 text-body font-semibold text-ink">
+          {copy.headline}
+        </span>
+        <ChevronDown
+          aria-hidden="true"
+          className="size-5 shrink-0 text-teal-deep transition-transform duration-200 group-open:rotate-180"
+        />
+      </summary>
+      <div className="px-4 pb-4">
+        <Badge variant="teal">
+          <Lock aria-hidden="true" className="size-3.5" />
+          {copy.badge}
+        </Badge>
+        <p className="mt-3 text-body text-ink">{copy.body}</p>
+        {/* El límite real, con el mismo peso que la promesa. */}
+        <p className="mt-3 flex items-start gap-2.5 border-t border-line pt-3 text-body text-ink">
+          <ShieldCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-teal-deep" />
+          <span className="min-w-0">{copy.caveat}</span>
+        </p>
+      </div>
+    </details>
   );
 }

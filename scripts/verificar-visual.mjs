@@ -272,6 +272,7 @@ for (const [ruta, nombre] of [
   ["/modulo/boveda", "boveda"],
   ["/modulo/academia", "academia"],
   ["/modulo/comunidad", "comunidad"],
+  ["/tienda", "tienda"],
   ["/inversiones", "inversiones"],
   ["/perfil", "perfil"],
   ["/modulo/migracion", "modulo-en-construccion"],

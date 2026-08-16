@@ -51,6 +51,28 @@ const es = {
     closeMenu: "Cerrar menú",
   },
 
+  /**
+   * ── S2 · PORTADA ──────────────────────────────────────
+   *
+   * La primera pantalla, tal como la fija el sistema de diseño: fondo navy
+   * a sangre —la única del producto que lo usa así—, la promesa de marca
+   * como titular, y el precio de entrada dicho con su límite en la misma
+   * vista: cinco preguntas, dos minutos, y no se pide tarjeta.
+   *
+   * El aviso de no-afiliación cierra la pantalla porque es donde surge la
+   * pregunta, no en una nota al pie tres secciones más abajo.
+   */
+  portada: {
+    /** El titular, en las dos líneas exactas del diseño. */
+    titleLines: ["Tu progreso", "cruza fronteras"],
+    /** El mismo titular en un solo nodo, para lectores de pantalla. */
+    title: "Tu progreso cruza fronteras",
+    /** Dos líneas: la promesa y su límite, juntas. */
+    promiseLines: ["Cinco preguntas. Dos minutos.", "No pedimos tarjeta."],
+    scanCta: "Escanear un documento gratis",
+    accountCta: "Crear mi cuenta",
+  },
+
   // ── S2 · Hero ───────────────────────────────────────────
   hero: {
     badge: "El sistema operativo para la comunidad hispana en EE. UU.",
@@ -434,6 +456,14 @@ const en = {
     cta: "Get started",
     openMenu: "Open menu",
     closeMenu: "Close menu",
+  },
+
+  portada: {
+    titleLines: ["Your progress", "crosses borders"],
+    title: "Your progress crosses borders",
+    promiseLines: ["Five questions. Two minutes.", "We don't ask for a card."],
+    scanCta: "Scan a document, free",
+    accountCta: "Create my account",
   },
 
   hero: {

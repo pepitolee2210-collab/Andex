@@ -16,7 +16,7 @@
  */
 
 import { useRef, useState } from "react";
-import { ChevronRight, Landmark } from "lucide-react";
+import { ArrowUpRight, Landmark } from "lucide-react";
 import { ListGroup, ListRow, SectionLabel } from "@/components/ui/kit";
 import type { VaultCommonCopy, VaultTrackerCopy } from "../vault-format";
 import {
@@ -89,8 +89,13 @@ export function TrackerSection({
                     buttonRef={(node) => {
                       triggers.current[id] = node;
                     }}
+                    /* La flecha diagonal, no el galón: en el sistema de
+                       diseño significa siempre «esto sale de la aplicación»,
+                       y estas cuatro consultas terminan en el portal del
+                       gobierno. El galón habría prometido que se resuelve
+                       aquí dentro. */
                     trail={
-                      <ChevronRight
+                      <ArrowUpRight
                         aria-hidden="true"
                         className="size-5 shrink-0 text-disabled"
                       />

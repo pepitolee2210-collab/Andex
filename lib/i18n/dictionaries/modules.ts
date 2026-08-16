@@ -20,27 +20,34 @@ type ModuleCopy = {
 type ModuleCopyByContext = Record<LocationContext, ModuleCopy>;
 
 const es = {
-  /** Cabecera y captura de interés — iguales en los 7 módulos (§4.6). */
+  /**
+   * Cabecera y captura de interés — iguales en los 7 módulos (§4.6).
+   *
+   * El copy es el del sistema de diseño (`ComingSoonModule`), y su regla
+   * está escrita al lado del componente: **nunca se promete una fecha**.
+   * «Falta poco» es lo más fuerte que esta pantalla puede decir.
+   */
   placeholder: {
     badge: "En construcción",
     statusLine: "Este módulo todavía no está abierto. Falta poco.",
     featuresTitle: "Lo que vas a poder hacer aquí",
     /** Exacto §4.6, punto 4 */
     captureQuestion: "¿Qué es lo primero que necesitas de este módulo?",
-    captureHelp:
-      "Escríbelo con tus palabras. Leemos todas las respuestas y con ellas decidimos qué construir primero.",
-    capturePlaceholder: "Ej.: subir mi I-94 y que me avise antes de que venza",
-    captureCounter: (used: number, max: number) => `${used} de ${max} caracteres`,
+    capturePlaceholder: "Escríbelo con tus palabras.",
+    captureCounter: (used: number, max: number) => `${used} / ${max}`,
     /** Exacto §4.6, punto 4 */
     submit: "Avísame cuando esté listo",
     submitting: "Enviando…",
-    submittedTitle: "Anotado.",
-    submittedBody:
-      "Te escribimos al correo en cuanto este módulo abra. Si se te ocurre algo más, vuelve y cuéntanos.",
+    /**
+     * La confirmación va en el propio botón, así que tiene que decir qué
+     * pasa después — no «Listo». Es el mismo patrón que «Apuntarme» →
+     * «Te avisamos 30 min antes» en Comunidad.
+     */
+    submitted: "Te avisamos por correo",
     submitFailed:
       "No pudimos enviar tu respuesta: se perdió la conexión. Tu texto sigue aquí; toca Enviar otra vez.",
-    /** §4.6, punto 5 */
-    backToPanel: "Volver a mi panel",
+    /** §4.6, punto 5 — la vuelta, en la esquina, como en el diseño. */
+    back: "Atrás",
   },
 
   byModule: {
@@ -222,18 +229,14 @@ const en = {
     statusLine: "This module isn't open yet. It's close.",
     featuresTitle: "What you'll be able to do here",
     captureQuestion: "What's the first thing you need from this module?",
-    captureHelp:
-      "Write it in your own words. We read every answer and use them to decide what to build first.",
-    capturePlaceholder: "e.g., upload my I-94 and get a heads-up before it expires",
-    captureCounter: (used: number, max: number) => `${used} of ${max} characters`,
+    capturePlaceholder: "Write it in your own words.",
+    captureCounter: (used: number, max: number) => `${used} / ${max}`,
     submit: "Let me know when it's ready",
     submitting: "Sending…",
-    submittedTitle: "Noted.",
-    submittedBody:
-      "We'll email you as soon as this module opens. If anything else comes to mind, come back and tell us.",
+    submitted: "We'll email you",
     submitFailed:
       "We couldn't send your answer: the connection dropped. Your text is still here; tap Send again.",
-    backToPanel: "Back to my dashboard",
+    back: "Back",
   },
 
   byModule: {

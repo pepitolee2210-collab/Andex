@@ -34,6 +34,16 @@ const es = {
     allDocuments: "Tus documentos",
     folders: "Carpetas",
     seeAll: "Ver las {n}",
+    /** Sobretítulo de la pantalla de una carpeta abierta. */
+    folderOverline: "Carpeta",
+    /** Detalle del documento: el archivo y lo que se puede cambiar. */
+    file: "El archivo",
+    change: "Cambiar",
+    /** Sin espacio: los documentos más pesados, que son lo que se borra. */
+    biggest: "Lo que más ocupa",
+    /** Sin conexión: el reparto entre lo que sigue y lo que no. */
+    worksOffline: "Funciona sin datos",
+    needsData: "Necesita datos",
   },
 
   /**
@@ -132,9 +142,40 @@ const es = {
   },
 
   empty: {
-    title: "Tu bóveda está vacía",
-    body: "Escanea tu primer documento con la cámara. Toma menos de un minuto.",
+    title: "Todavía no hay documentos",
+    body: "Escanea el primero con la cámara. Toma menos de un minuto y no necesitas salir de la app.",
     cta: "Escanear un documento",
+  },
+
+  /**
+   * DESCIFRANDO — el primer arranque en un teléfono lento.
+   *
+   * Se dice qué está pasando y cuánto dura, y no hay barra de progreso: no
+   * sabemos cuánto falta, y una barra inventada es exactamente el registro
+   * de quien les mintió.
+   */
+  loading: {
+    decrypting:
+      "Descifrando tus documentos en este teléfono. Tarda unos segundos la primera vez.",
+  },
+
+  /**
+   * SIN CONEXIÓN — con datos contados esto es lo normal, no el caso raro.
+   *
+   * Lo importante es el reparto: la bóveda entera sigue funcionando porque
+   * vive en el teléfono, y lo único que se cae es lo que necesita la red.
+   */
+  offline: {
+    title: "Estás sin conexión",
+    body: "Tus documentos y el escáner siguen funcionando: están en el teléfono. Los talleres y las consultas oficiales necesitan datos.",
+    scan: "Escanear un documento",
+    scanMeta: "Todo el proceso es local",
+    documents: "Ver tus {n} documentos",
+    documentsOne: "Ver tu documento",
+    documentsNone: "Ver tu bóveda",
+    workshops: "Talleres en vivo",
+    tracker: "Consultar mi caso oficial",
+    waitForSignal: "Vuelve cuando tengas señal",
   },
 
   list: {
@@ -169,15 +210,52 @@ const es = {
   expiry: {
     label: "Fecha de vencimiento",
     optional: "Si no vence, déjalo en blanco",
-    none: "No vence",
+    none: "Sin fecha de vencimiento",
     expired: "Venció hace {n} días",
     expiredToday: "Venció hoy",
     soon: "Vence en {n} días",
     soonOne: "Vence mañana",
     ok: "Vigente",
+    /**
+     * La línea entera de la tarjeta: los días que quedan Y la fecha real.
+     * «Vence en 40 días» obliga a contar en la cabeza para saber si es antes
+     * o después de la cita; con la fecha delante, no hay que contar nada.
+     */
+    withDate: "{state} · {date}",
+    /** Cuando falta mucho, los días no dicen nada: manda la fecha. */
+    okOn: "Vence el {date}",
     // El valor real del módulo, dicho sin rodeos.
     alertPromise:
       "Te avisamos 90, 60, 30 y 7 días antes. Ninguna fecha se te va a pasar.",
+  },
+
+  /**
+   * DETALLE DEL DOCUMENTO — la pantalla de un solo papel.
+   *
+   * Cuatro acciones, la fecha con su aviso, y el recordatorio de que no hay
+   * copia en ningún servidor. Ese recordatorio va aquí, y no en un aviso
+   * legal aparte, porque es aquí donde alguien decide si borra la app.
+   */
+  detail: {
+    /** «Estatus migratorio · escaneado el 3 de diciembre de 2025». */
+    subtitle: "{folder} · escaneado el {date}",
+    /** «2 páginas · 480 KB · cifrado en este teléfono». */
+    fileMeta: "{pages} · {size} · cifrado en este teléfono",
+    open: "Abrir el PDF",
+    download: "Descargar el PDF",
+    share: "Compartir",
+    shareMeta: "Sale por WhatsApp o correo",
+    shareFailed: "Tu navegador no dejó abrir el menú de compartir. Usa Descargar el PDF.",
+    rename: "Nombre y fecha de vencimiento",
+    move: "Mover de carpeta",
+    delete: "Borrar este documento",
+    deleteMeta: "No se puede deshacer",
+    /** Sin fecha no hay aviso posible: se dice, y se dice dónde ponerla. */
+    noExpiry:
+      "Sin fecha no te podemos avisar. Pónsela abajo, en «Nombre y fecha de vencimiento».",
+    // La promesa y su límite en la misma frase, como manda el brief.
+    encrypted:
+      "Está cifrado en este teléfono y no hay copia en otro sitio. Si borras la app o pierdes el teléfono, se pierde.",
   },
 
   scanner: {
@@ -248,9 +326,12 @@ const es = {
   },
 
   storage: {
-    title: "Espacio en tu teléfono",
+    title: "Al teléfono le queda poco espacio",
     used: "{used} de {total} usados",
     warning: "Te queda poco espacio. Descarga y borra lo que ya no necesites.",
+    /** Cuánto queda y qué pasa cuando se acabe, sin adornos. */
+    free: "Queda un {n}% libre. Cuando se llene, el escáner no podrá guardar documentos nuevos y no podemos evitarlo desde la app.",
+    barLabel: "Espacio ocupado en el teléfono",
   },
 
   /**
@@ -259,6 +340,13 @@ const es = {
    * plantillas que rellena el componente.
    */
   scan: {
+    /**
+     * Dónde está la persona dentro del escaneo. No es adorno: la cámara
+     * ocupa la pantalla entera y sin esto no hay forma de saber cuánto
+     * falta ni que se puede salir.
+     */
+    stepLabel: "Paso {n} de {total}",
+
     start: {
       title: "Escanear un documento",
       intro:
@@ -285,12 +373,15 @@ const es = {
       // Versiones cortas: a 320 px estos botones caben en ~90 px.
       galleryShortLabel: "Galería",
       cancelShortLabel: "Salir",
-      deniedTitle: "Tu navegador bloqueó la cámara",
-      deniedBody: "Puedes darle permiso o elegir una foto que ya tengas.",
+      deniedTitle: "La cámara está bloqueada",
+      deniedBody:
+        "Para escanear un documento hace falta la cámara. Se activa en los ajustes del navegador, en Permisos del sitio.",
       // Instrucción concreta: decir sólo que está bloqueada deja al usuario
       // sin salida, y esta pantalla es donde más gente abandona.
       deniedHowTo:
         "Toca el candado que está junto a la dirección de la página, entra en Cámara y elige Permitir. Después vuelve aquí.",
+      /** La salida que SÍ funciona sin permiso: una foto del carrete. */
+      uploadLabel: "Subir una foto que ya tengas",
       unavailableTitle: "No encontramos una cámara",
       unavailableBody: "Elige una foto de tu galería y sigue igual.",
       failedTitle: "No pudimos abrir la cámara",
@@ -301,8 +392,9 @@ const es = {
     },
 
     adjuster: {
-      title: "Ajusta las esquinas",
-      hint: "Arrastra los puntos hasta que encajen con las orillas del papel.",
+      /** Lo que está haciendo el escáner ahora mismo, en dos palabras. */
+      title: "Detectar esquinas",
+      hint: "Encontramos las cuatro esquinas. Si alguna quedó mal, arrástrala con el dedo.",
       keyboardHint: "Con el teclado: Tab para elegir una esquina y las flechas para moverla.",
       detecting: "Buscando las orillas…",
       corners: {
@@ -311,10 +403,20 @@ const es = {
         bottomRight: "Esquina de abajo a la derecha",
         bottomLeft: "Esquina de abajo a la izquierda",
       },
-      unusableWarning: "El recorte quedó muy pequeño o torcido. Mueve las esquinas.",
-      resetLabel: "Empezar de nuevo",
-      backLabel: "Repetir la foto",
+      /**
+       * RECORTE FALLIDO. Se repite sin culpar a nadie: el sujeto de la frase
+       * es el recorte, nunca la persona, y la salida se dice en concreto
+       * («sobre una mesa»), no en abstracto.
+       */
+      unusableTitle: "El recorte quedó muy pequeño o torcido",
+      unusableBody:
+        "Mueve las esquinas con el dedo hasta que cubran todo el documento, o toma la foto otra vez sobre una mesa.",
+      adjustLabel: "Ajustar las esquinas",
+      backLabel: "Tomar la foto otra vez",
+      cancelLabel: "Cancelar",
       continueLabel: "Continuar",
+      /** La promesa que sostiene todo el módulo, donde se está tomando la foto. */
+      privacyNote: "Todo el proceso ocurre en tu teléfono. La foto no se sube a ningún servidor.",
       imageAlt: "Foto del documento con las esquinas marcadas",
     },
 
@@ -506,6 +608,12 @@ const en = {
     allDocuments: "Your documents",
     folders: "Folders",
     seeAll: "See all {n}",
+    folderOverline: "Folder",
+    file: "The file",
+    change: "Change",
+    biggest: "What takes up the most",
+    worksOffline: "Works without data",
+    needsData: "Needs data",
   },
 
   summary: {
@@ -566,9 +674,27 @@ const en = {
   },
 
   empty: {
-    title: "Your vault is empty",
-    body: "Scan your first document with the camera. It takes less than a minute.",
+    title: "No documents yet",
+    body: "Scan the first one with the camera. It takes less than a minute and you don't have to leave the app.",
     cta: "Scan a document",
+  },
+
+  loading: {
+    decrypting:
+      "Decrypting your documents on this phone. It takes a few seconds the first time.",
+  },
+
+  offline: {
+    title: "You're offline",
+    body: "Your documents and the scanner keep working: they live on the phone. Workshops and official lookups need data.",
+    scan: "Scan a document",
+    scanMeta: "The whole process is local",
+    documents: "See your {n} documents",
+    documentsOne: "See your document",
+    documentsNone: "See your vault",
+    workshops: "Live workshops",
+    tracker: "Check my official case",
+    waitForSignal: "Come back when you have signal",
   },
 
   list: {
@@ -594,14 +720,34 @@ const en = {
   expiry: {
     label: "Expiration date",
     optional: "Leave blank if it doesn't expire",
-    none: "Doesn't expire",
+    none: "No expiration date",
     expired: "Expired {n} days ago",
     expiredToday: "Expired today",
     soon: "Expires in {n} days",
     soonOne: "Expires tomorrow",
     ok: "Valid",
+    withDate: "{state} · {date}",
+    okOn: "Expires on {date}",
     alertPromise:
       "We remind you 90, 60, 30 and 7 days ahead. No date will slip past you.",
+  },
+
+  detail: {
+    subtitle: "{folder} · scanned on {date}",
+    fileMeta: "{pages} · {size} · encrypted on this phone",
+    open: "Open the PDF",
+    download: "Download the PDF",
+    share: "Share",
+    shareMeta: "Goes out over WhatsApp or email",
+    shareFailed: "Your browser wouldn't open the share menu. Use Download the PDF.",
+    rename: "Name and expiration date",
+    move: "Move to another folder",
+    delete: "Delete this document",
+    deleteMeta: "This can't be undone",
+    noExpiry:
+      "Without a date we can't warn you. Add one below, under «Name and expiration date».",
+    encrypted:
+      "It's encrypted on this phone and there's no copy anywhere else. If you delete the app or lose the phone, it's gone.",
   },
 
   scanner: {
@@ -666,12 +812,16 @@ const en = {
   },
 
   storage: {
-    title: "Space on your phone",
+    title: "Your phone is running out of space",
     used: "{used} of {total} used",
     warning: "You're low on space. Download and delete what you no longer need.",
+    free: "{n}% is still free. Once it fills up, the scanner won't be able to save new documents and we can't prevent it from the app.",
+    barLabel: "Space used on the phone",
   },
 
   scan: {
+    stepLabel: "Step {n} of {total}",
+
     start: {
       title: "Scan a document",
       intro:
@@ -694,10 +844,12 @@ const en = {
       cancelLabel: "Cancel",
       galleryShortLabel: "Gallery",
       cancelShortLabel: "Exit",
-      deniedTitle: "Your browser blocked the camera",
-      deniedBody: "You can allow it, or pick a photo you already have.",
+      deniedTitle: "The camera is blocked",
+      deniedBody:
+        "Scanning a document needs the camera. You turn it on in your browser settings, under Site permissions.",
       deniedHowTo:
         "Tap the lock icon next to the page address, open Camera and choose Allow. Then come back here.",
+      uploadLabel: "Upload a photo you already have",
       unavailableTitle: "We couldn't find a camera",
       unavailableBody: "Pick a photo from your gallery and carry on.",
       failedTitle: "We couldn't open the camera",
@@ -708,8 +860,8 @@ const en = {
     },
 
     adjuster: {
-      title: "Adjust the corners",
-      hint: "Drag the dots until they match the edges of the paper.",
+      title: "Detect corners",
+      hint: "We found the four corners. If one is off, drag it with your finger.",
       keyboardHint: "With a keyboard: Tab to pick a corner, arrows to move it.",
       detecting: "Looking for the edges…",
       corners: {
@@ -718,10 +870,14 @@ const en = {
         bottomRight: "Bottom right corner",
         bottomLeft: "Bottom left corner",
       },
-      unusableWarning: "The crop is too small or too skewed. Move the corners.",
-      resetLabel: "Start over",
-      backLabel: "Retake photo",
+      unusableTitle: "The crop came out too small or too skewed",
+      unusableBody:
+        "Move the corners with your finger until they cover the whole document, or take the photo again on a table.",
+      adjustLabel: "Adjust the corners",
+      backLabel: "Take the photo again",
+      cancelLabel: "Cancel",
       continueLabel: "Continue",
+      privacyNote: "Everything happens on your phone. The photo is not uploaded to any server.",
       imageAlt: "Photo of the document with its corners marked",
     },
 

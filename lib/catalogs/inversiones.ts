@@ -18,7 +18,14 @@ export type Opportunity = {
   kind: OpportunityKind;
   /** Nombre de la variable CSS del acento, sin `var()`. */
   accent: string;
-  /** Icono de lucide-react, por nombre. */
+  /**
+   * Icono de lucide-react, por nombre.
+   *
+   * Tiene que ser un nombre que el sistema de movimiento reconozca
+   * (`app/kit.css`, por `data-icon` en kebab-case): el bote rocía, los
+   * cubiertos sirven, el camión avanza, el martillo golpea. Un icono con
+   * nombre distinto se queda quieto, y es un fallo que no avisa.
+   */
   icon: string;
   /** Rendimiento mensual, como rango. `null` si no aplica. */
   monthlyReturn: { min: number; max: number } | null;
@@ -32,7 +39,7 @@ export const OPORTUNIDADES: readonly Opportunity[] = [
     id: "limpieza",
     kind: "negocio",
     accent: "--teal-deep",
-    icon: "Sparkles",
+    icon: "SprayCan",
     monthlyReturn: null,
     fromUsd: 300,
   },
@@ -40,7 +47,7 @@ export const OPORTUNIDADES: readonly Opportunity[] = [
     id: "comida",
     kind: "negocio",
     accent: "--amber-deep",
-    icon: "UtensilsCrossed",
+    icon: "Utensils",
     monthlyReturn: null,
     fromUsd: 500,
   },

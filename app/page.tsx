@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 
-import { COOKIES, PILOT_FAMILIES, PRICES, ROUTES } from "@/lib/config";
+import { COOKIES, PRICES, ROUTES } from "@/lib/config";
 import { MODULES } from "@/lib/catalogs/modules";
 import { getGeoHint, suggestedContext } from "@/lib/geo";
 import { getDictionary } from "@/lib/i18n";
@@ -93,8 +93,6 @@ export default async function LandingPage({
   const initialTheme =
     themeCookie === "dark" || themeCookie === "light" ? themeCookie : "system";
 
-  const numberFormat = new Intl.NumberFormat(lang === "es" ? "es-MX" : "en-US");
-
   // La rueda usa nombres cortos —gira, no se lee despacio— y cada uno lleva
   // al registro: los módulos viven tras el embudo, no son rutas públicas.
   const wheelItems = t.wheel.items.map((label) => ({
@@ -169,25 +167,33 @@ export default async function LandingPage({
       />
 
       <main id="contenido">
+        {/* La PORTADA del sistema de diseño: fondo navy a sangre, la promesa
+            y su límite juntos, y el escáner gratis como primera acción. El
+            subtítulo es la frase que ya decía qué es ANDEX (`hero.title`) y
+            el aviso de no-afiliación es el mismo de la cinta de confianza:
+            uno solo, escrito una vez. */}
         <SectionHero
           copy={{
-            badge: t.hero.badge,
-            titleLines: t.hero.titleLines,
-            subtitle: t.hero.subtitle,
-            cta: t.hero.cta,
-            ctaHint: t.hero.ctaHint,
-            socialProof: t.hero.socialProof(
-              numberFormat.format(PILOT_FAMILIES),
-              "Utah",
-            ),
-            scrollHint: t.hero.scrollHint,
+            brand: dict.common.brand.name,
+            titleLines: t.portada.titleLines,
+            title: t.portada.title,
+            subtitle: t.hero.title,
+            promiseLines: t.portada.promiseLines,
+            scanCta: t.portada.scanCta,
+            accountCta: t.portada.accountCta,
+            disclaimer: t.trust.disclaimer,
             tour: dict.tour,
           }}
-          plainTitle={t.hero.title}
-          ctaHref={ROUTES.registro}
+          scanHref="#probar"
+          accountHref={ROUTES.registro}
         />
 
-        <SectionSeam to="surface" />
+        {/* La costura pinta el color de la sección de abajo sobre el de la de
+            arriba, así que necesita el navy detrás: la portada ya no está
+            sobre el fondo de página. */}
+        <div className="bg-navy">
+          <SectionSeam to="surface" />
+        </div>
         <SectionTrust copy={t.trust} />
 
         {/* `solucion` es el ancla del nav; la sección explica por qué existe

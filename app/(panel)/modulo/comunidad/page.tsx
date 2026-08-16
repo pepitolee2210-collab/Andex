@@ -18,7 +18,11 @@ import { CommunityScreen } from "@/components/community/community-screen";
 
 export async function generateMetadata(): Promise<Metadata> {
   const dict = getDictionary(await getLang());
-  return { title: dict.comunidad.title };
+  /* El sobretítulo, no el titular: la pestaña del navegador tiene que
+     decir en qué módulo estás («Comunidad y Vida Local»), no cómo se llama
+     lo que se ve dentro («Talleres en vivo»). Con diez pestañas abiertas
+     eso es la única forma de encontrarla. */
+  return { title: dict.comunidad.overline };
 }
 
 export default async function ComunidadPage() {

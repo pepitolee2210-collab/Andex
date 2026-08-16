@@ -23,6 +23,35 @@ const es = {
   /** Exacto §3.4.2 */
   subtitle: "Esto es lo que armamos con tus respuestas.",
 
+  /**
+   * Lo que incluye la membresía, dicho aquí y no después. Las cuatro filas
+   * fijas cierran con los módulos que TODAVÍA no están abiertos: si eso se
+   * cuenta después del cobro, es una sorpresa; contado antes, es un plazo.
+   */
+  includes: {
+    label: "Incluye",
+    vault: {
+      title: "Bóveda con avisos de vencimiento",
+      meta: "Cifrada en tu teléfono, sin copia en servidor",
+    },
+    academy: {
+      title: "Academia: inglés para el trabajo",
+      meta: "Nueve temarios, con manual en PDF",
+    },
+    workshops: {
+      title: "Talleres en vivo",
+      meta: "De martes a viernes",
+    },
+    pending: {
+      title: "Los cuatro módulos que faltan",
+      meta: "Se abren durante el piloto",
+    },
+  },
+
+  /** El aviso que acompaña al botón: quién cobra y qué no tocamos. */
+  gatewayNotice:
+    "El pago se hace en una pasarela externa. La aplicación nunca toca un número de tarjeta.",
+
   /** Tarjeta de resumen — eco del ranking (§3.4.3, personalización obligatoria). */
   summary: {
     ariaLabel: "Resumen de tu plan",
@@ -131,6 +160,29 @@ const en = {
   title: (name: string) => `Your plan is ready, ${name}.`,
   titleNoName: "Your plan is ready.",
   subtitle: "This is what we built from your answers.",
+
+  includes: {
+    label: "Included",
+    vault: {
+      title: "Vault with expiry alerts",
+      meta: "Encrypted on your phone, no copy on a server",
+    },
+    academy: {
+      title: "Academy: English for work",
+      meta: "Nine courses, each with a PDF manual",
+    },
+    workshops: {
+      title: "Live workshops",
+      meta: "Tuesday through Friday",
+    },
+    pending: {
+      title: "The four modules still missing",
+      meta: "They open during the pilot",
+    },
+  },
+
+  gatewayNotice:
+    "Payment happens on an external gateway. The app never touches a card number.",
 
   summary: {
     ariaLabel: "Summary of your plan",

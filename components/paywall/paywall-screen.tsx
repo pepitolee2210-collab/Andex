@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { RouteBar } from "@/components/route-bar";
+import { ChevronLeft, ExternalLink } from "lucide-react";
+import { Glyph, KitButton, KitNotice } from "@/components/ui/kit";
 import { Button } from "@/components/ui/button";
 import { PAYWALL_MODE, ROUTES, TRIAL_DAYS } from "@/lib/config";
 import { hasDashboardAccess } from "@/lib/auth/routing";
@@ -223,40 +224,40 @@ export function PaywallScreen({ lang }: PaywallScreenProps) {
   return (
     <main
       id="contenido"
-      className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-4 pb-12 pt-6 sm:px-6"
+      className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-6 pt-1"
     >
-      {/*
-        LA RUTA — §2.8: una sola vez por pantalla. En el paywall el nodo 6 es
-        el sello: "meta alcanzada". El gráfico es aria-hidden, así que el
-        texto accesible va aparte.
-      */}
-      <RouteBar step={6} context={p.locationContext} />
-      <p className="sr-only">{dict.common.aria.routeBar(6)}</p>
+      {/* La salida sin castigo (§3.4.2) vive arriba a la izquierda, como en
+          toda pantalla de detalle del sistema, y dice a dónde lleva: volver
+          no borra nada. Una sola salida, no dos. */}
+      <div className="navrow">
+        <Link href={ROUTES.entrevista} className="navback">
+          <Glyph name="chevron-left" icon={ChevronLeft} size={22} strokeWidth={2.1} />
+          {t.back}
+        </Link>
+      </div>
+
+      {/* Sobretítulo + titular con el NOMBRE REAL (§3.4.2, §3.4.3). */}
+      <header>
+        <p className="navover">{t.eyebrow}</p>
+        <h1 className="largeTitle">
+          {p.firstName ? t.title(p.firstName) : t.titleNoName}
+        </h1>
+        <p className="navsub">{t.subtitle}</p>
+      </header>
 
       {returning ? (
-        <p className="mt-6 rounded-md border border-line bg-surface-alt p-3 text-body text-muted">
-          {t.returning.banner}
-        </p>
+        <KitNotice className="mt-5">{t.returning.banner}</KitNotice>
       ) : null}
 
-      {/* Eyebrow + titular con el NOMBRE REAL (§3.4.2, §3.4.3). */}
-      <p className="mt-7 text-label font-semibold uppercase tracking-widest text-teal-deep">
-        {t.eyebrow}
-      </p>
-      <h1 className="mt-2 font-heading text-h1 text-ink">
-        {p.firstName ? t.title(p.firstName) : t.titleNoName}
-      </h1>
-      <p className="mt-2 text-body-lg text-muted">{t.subtitle}</p>
-
-      {/* Tarjeta de resumen: el eco del ranking real (§3.4.3). */}
-      <div className="mt-6">
-        <PlanSummary personalization={p} dict={dict} lang={lang} />
-      </div>
-
-      {/* Las dos tarjetas de plan (§3.4.4). El sello vive dentro de la anual. */}
-      <div className="mt-8">
+      {/* Los dos planes: el importe primero, porque es lo que se vino a ver
+          (§3.4.4). El sello vive dentro de la anual. */}
+      <div className="mt-5">
         <PlanCards selected={plan} onSelect={selectPlan} dict={dict} />
       </div>
+
+      {/* Qué incluye —y qué todavía no—, con las dos primeras filas salidas
+          del ranking real (§3.4.3). */}
+      <PlanSummary personalization={p} dict={dict} lang={lang} />
 
       {/* CTA. En freemium la entrada gratis es la acción principal y el plan
           de pago queda a un clic, visible, sin esconderse (§3.4.8 B). */}
@@ -277,14 +278,20 @@ export function PaywallScreen({ lang }: PaywallScreenProps) {
           </>
         ) : (
           <>
-            <Button size="lg" fullWidth onClick={goToCheckout}>
+            <KitButton wide onClick={goToCheckout}>
               {ctaLabel}
-            </Button>
+            </KitButton>
             {ctaNote ? (
               <p className="text-center text-caption text-muted">{ctaNote}</p>
             ) : null}
           </>
         )}
+
+        {/* Quién cobra, y qué no tocamos nunca. Va pegado al botón porque es
+            ahí donde surge la pregunta. */}
+        <KitNotice iconName="external-link" icon={ExternalLink}>
+          {t.gatewayNotice}
+        </KitNotice>
       </div>
 
       {/* Fila de confianza (§3.4.2). Los tres son hechos verificables, no
@@ -310,16 +317,6 @@ export function PaywallScreen({ lang }: PaywallScreenProps) {
           {t.legal.privacyLink}
         </Link>
       </p>
-
-      {/* Salida sin castigo (§3.4.2): volver no borra nada. */}
-      <div className="mt-8 flex justify-center">
-        <Link
-          href={ROUTES.entrevista}
-          className="inline-flex min-h-11 items-center px-3 text-body text-muted underline hover:text-ink"
-        >
-          {t.back}
-        </Link>
-      </div>
     </main>
   );
 }

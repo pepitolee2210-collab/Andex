@@ -1,95 +1,151 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarClock, Briefcase, MapPin, GraduationCap } from "lucide-react";
+import {
+  Briefcase,
+  CalendarClock,
+  ChevronRight,
+  GraduationCap,
+  MapPin,
+  type LucideIcon,
+} from "lucide-react";
 
 export const metadata: Metadata = { title: "Administración · ANDEX" };
 
 /**
- * Índice del panel.
+ * Índice del panel interno.
  *
- * Las tarjetas sin enlace son las tablas que ya existen en la base
- * (`0008_empleo.sql`, `0009_lugares_y_ingles.sql`) pero cuya pantalla todavía
- * no está escrita. Se enseñan apagadas en vez de esconderse: así se ve de un
- * vistazo qué falta, en lugar de descubrirlo buscando un enlace que no está.
+ * Tiene la forma de una lista agrupada del sistema de diseño, la misma que
+ * usa el producto: lo que se puede tocar arriba, con su galón; lo que
+ * todavía no existe abajo, sin galón — algo que aún no abre no se pinta
+ * como algo que sí.
+ *
+ * Las secciones sin pantalla son las tablas que ya existen en la base
+ * (`0008_empleo.sql`, `0009_lugares_y_ingles.sql`). Se enseñan en vez de
+ * esconderse: así se ve de un vistazo qué falta, en lugar de descubrirlo
+ * buscando un enlace que no está.
+ *
+ * ── Por qué aquí se escriben las clases y no se usan las primitivas ──
+ *
+ * `components/ui/kit.tsx` importa `useState` y `useEffect` (los necesita
+ * `HeaderAction`) sin declarar `"use client"`, así que sólo se puede
+ * importar desde un componente de cliente. Esta página es de servidor
+ * porque exporta `metadata`, y convertirla en cliente perdería el título de
+ * la pestaña. Lo que se escribe abajo son EXACTAMENTE las clases que
+ * escriben `ScreenHeader`, `SectionLabel`, `ListGroup` y `ListRow`, que
+ * viven en `app/kit.css`: el sistema de diseño está entero, sólo que sin el
+ * envoltorio de React. El día que el kit lleve `"use client"`, esto son
+ * cuatro sustituciones.
  */
 
-const SECCIONES = [
+type Seccion = {
+  href?: string;
+  icon: LucideIcon;
+  /** El nombre Lucide: es lo que el CSS mira para darle su gesto al icono. */
+  iconName: string;
+  title: string;
+  meta: string;
+};
+
+const LISTAS: readonly Seccion[] = [
   {
     href: "/admin/talleres",
     icon: CalendarClock,
+    iconName: "calendar-clock",
     title: "Talleres",
-    body: "Genera las sesiones de las próximas semanas y pégale a cada una su enlace de Zoom.",
-    listo: true,
+    meta: "Genera las sesiones de las próximas semanas y pégale a cada una su enlace de Zoom.",
   },
+];
+
+const PENDIENTES: readonly Seccion[] = [
   {
-    href: "/admin/empleos",
     icon: Briefcase,
+    iconName: "briefcase",
     title: "Empleos y empleadores",
-    body: "Vacantes verificadas y la sincronización con el National Labor Exchange.",
-    listo: false,
+    meta: "Vacantes verificadas y la sincronización con el National Labor Exchange.",
   },
   {
-    href: "/admin/lugares",
     icon: MapPin,
+    iconName: "map-pin",
     title: "Lugares de apoyo",
-    body: "Clínicas, ayuda legal, bancos de comida y consulados, por estado.",
-    listo: false,
+    meta: "Clínicas, ayuda legal, bancos de comida y consulados, por estado.",
   },
   {
-    href: "/admin/ingles",
     icon: GraduationCap,
+    iconName: "graduation-cap",
     title: "Inglés por oficio",
-    body: "Las frases de cada trabajo, con su pronunciación escrita.",
-    listo: false,
+    meta: "Las frases de cada trabajo, con su pronunciación escrita.",
   },
-] as const;
+];
+
+function Fila({ s }: { s: Seccion }) {
+  const dentro = (
+    <>
+      <span className="rowicon tone-quiet">
+        <s.icon
+          aria-hidden="true"
+          data-icon={s.iconName}
+          width={20}
+          height={20}
+          strokeWidth={1.75}
+        />
+      </span>
+      <span className="rowmain">
+        <span className="rowtitle">{s.title}</span>
+        <span className="rowmeta">{s.meta}</span>
+      </span>
+      {s.href ? (
+        <span className="rowtrail">
+          <ChevronRight aria-hidden="true" className="size-5 shrink-0 text-disabled" />
+        </span>
+      ) : null}
+    </>
+  );
+
+  // Sin destino no hay galón y no hay pulsación: la fila informa y ya.
+  return s.href ? (
+    <Link href={s.href} className="row tappable">
+      {dentro}
+    </Link>
+  ) : (
+    <div className="row">{dentro}</div>
+  );
+}
 
 export default function AdminHome() {
   return (
-    <>
-      <h1 className="font-heading text-h1 text-ink">Panel de administración</h1>
-      <p className="mt-1 text-body-lg text-muted">
-        Todo lo que la comunidad ve, se carga desde aquí.
-      </p>
+    <div className="mx-auto w-full max-w-[26.5rem]">
+      <header>
+        <p className="navover">Panel interno</p>
+        <h1 className="largeTitle">Lo que carga el equipo</h1>
+        <p className="navsub">
+          Todo lo que la comunidad ve en la app sale de estas pantallas.
+        </p>
+      </header>
 
-      <ul className="mt-8 grid gap-4 sm:grid-cols-2">
-        {SECCIONES.map((s) => {
-          const Icon = s.icon;
-          const contenido = (
-            <>
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-teal-soft text-teal-deep">
-                <Icon aria-hidden="true" className="size-5" />
-              </span>
-              <span className="min-w-0">
-                <span className="block font-heading text-h3 text-ink">{s.title}</span>
-                <span className="mt-1 block text-body text-muted">{s.body}</span>
-                {!s.listo ? (
-                  <span className="mt-2 inline-block text-caption font-semibold text-muted">
-                    Pantalla pendiente · la tabla ya existe en la base
-                  </span>
-                ) : null}
-              </span>
-            </>
-          );
+      <h2 className="seclbl">
+        <span>Se puede cargar ya</span>
+      </h2>
+      <div className="ax-group">
+        {LISTAS.map((s) => (
+          <Fila key={s.title} s={s} />
+        ))}
+      </div>
 
-          return (
-            <li key={s.title}>
-              {s.listo ? (
-                <Link
-                  href={s.href}
-                  className="flex h-full gap-4 rounded-xl border border-line bg-surface p-5 shadow-sm transition-colors hover:border-teal-deep hover:bg-surface-alt"
-                >
-                  {contenido}
-                </Link>
-              ) : (
-                <div className="flex h-full gap-4 rounded-xl border border-dashed border-line bg-surface/50 p-5 opacity-70">
-                  {contenido}
-                </div>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-    </>
+      <h2 className="seclbl">
+        <span>Todavía sin pantalla</span>
+      </h2>
+      <div className="ax-group">
+        {PENDIENTES.map((s) => (
+          <Fila key={s.title} s={s} />
+        ))}
+      </div>
+
+      <div className="ax-notice mt-3">
+        <span className="min-w-0">
+          La tabla de las tres ya existe en la base. Lo que falta es la pantalla para
+          llenarlas, así que de momento se cargan por SQL.
+        </span>
+      </div>
+    </div>
   );
 }

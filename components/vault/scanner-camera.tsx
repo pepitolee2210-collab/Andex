@@ -30,9 +30,9 @@ import {
   useState,
   type ChangeEvent,
 } from "react";
-import { Camera, CameraOff, Images, Lock, ShieldCheck, X } from "lucide-react";
+import { Camera, CameraOff, ChevronLeft, Images, Lock, ShieldCheck, X } from "lucide-react";
 import { useReducedMotion } from "motion/react";
-import { Button } from "@/components/ui/button";
+import { KitButton, KitNotice, StatePanel } from "@/components/ui/kit";
 import { cn } from "@/lib/utils";
 
 // ─── Copy ────────────────────────────────────────────────
@@ -60,6 +60,8 @@ export type ScannerCameraCopy = {
   deniedBody: string;
   /** Cómo volver a activarlo, en una línea. */
   deniedHowTo: string;
+  /** La salida que SÍ funciona sin permiso: una foto del carrete. */
+  uploadLabel: string;
   /** No hay cámara, o el navegador no la ofrece. */
   unavailableTitle: string;
   unavailableBody: string;
@@ -237,7 +239,11 @@ export function ScannerCamera({
   return (
     <div
       className={cn(
-        "relative flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-navy",
+        "relative flex min-h-0 w-full flex-1 flex-col overflow-hidden",
+        // Oscuro sólo mientras se ve el visor, y por necesidad de la cámara:
+        // sobre crema el ojo se calibra con la pantalla y no se nota si la
+        // foto sale oscura. Sin visor, la pantalla vuelve a ser la de siempre.
+        live || starting ? "bg-navy" : "bg-page",
         className,
       )}
     >
@@ -315,66 +321,82 @@ export function ScannerCamera({
         </div>
       )}
 
-      {/* ── Sin cámara: el camino de la galería pasa a primer plano ── */}
-      {!live && !starting && (
-        <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 bg-page px-5 py-8 text-center">
-          <span
-            aria-hidden="true"
-            className="flex size-14 items-center justify-center rounded-full bg-surface-alt text-muted"
-          >
-            {status === "denied" ? (
-              <Lock className="size-7" />
-            ) : (
-              <CameraOff className="size-7" />
-            )}
-          </span>
-          <h2 className="font-heading text-h3 text-ink">
-            {status === "denied"
-              ? copy.deniedTitle
-              : status === "unavailable"
-                ? copy.unavailableTitle
-                : copy.failedTitle}
-          </h2>
-          <p className="max-w-sm text-body text-muted">
-            {status === "denied"
-              ? copy.deniedBody
-              : status === "unavailable"
-                ? copy.unavailableBody
-                : copy.failedBody}
-          </p>
-          {status === "denied" ? (
-            <p className="max-w-sm rounded-sm bg-surface-alt px-4 py-3 text-body text-ink">
-              {copy.deniedHowTo}
-            </p>
-          ) : null}
+      {/* ── SIN CÁMARA ──
+          El permiso está denegado, no hay cámara, o falló. En los tres casos
+          la pantalla dice lo mismo en estructura: qué pasa, cómo se arregla
+          y —lo importante— la salida que funciona AHORA sin arreglar nada,
+          que es elegir una foto del carrete.
 
-          <div className="mt-2 flex w-full max-w-sm flex-col gap-3">
-            <Button
-              size="lg"
-              fullWidth
-              onClick={() => galleryRef.current?.click()}
-            >
-              <Images aria-hidden="true" className="size-5" />
-              {copy.galleryLabel}
-            </Button>
-            <Button
-              variant="secondary"
-              fullWidth
-              onClick={() => systemCameraRef.current?.click()}
-            >
-              <Camera aria-hidden="true" className="size-5" />
-              {copy.systemCameraLabel}
-            </Button>
-            <Button
-              variant="ghost"
-              fullWidth
-              onClick={() => setAttempt((n) => n + 1)}
-            >
-              {copy.retryLabel}
-            </Button>
-            <Button variant="ghost" fullWidth onClick={onCancel}>
+          El diseño pone aquí un botón «Abrir los ajustes». Una página web no
+          puede abrir los ajustes del navegador, así que en su sitio va la
+          instrucción concreta: prometer un botón que no hace nada, en la
+          pantalla donde más gente abandona, es lo peor que se puede hacer. */}
+      {!live && !starting && (
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 pb-8 pt-2">
+          <div className="navrow">
+            <button type="button" onClick={onCancel} className="navback">
+              <ChevronLeft aria-hidden="true" className="size-6 shrink-0" />
               {copy.cancelLabel}
-            </Button>
+            </button>
+          </div>
+
+          <div className="m-auto w-full max-w-sm py-8">
+            {/* Siempre `camera-off`: es el glifo que el sistema de diseño
+                le da a esta pantalla, y el único de los dos que tiene gesto
+                dentro de una ficha de estado. */}
+            <StatePanel
+              iconName="camera-off"
+              icon={CameraOff}
+              tone="warn"
+              title={
+                status === "denied"
+                  ? copy.deniedTitle
+                  : status === "unavailable"
+                    ? copy.unavailableTitle
+                    : copy.failedTitle
+              }
+              body={
+                status === "denied"
+                  ? copy.deniedBody
+                  : status === "unavailable"
+                    ? copy.unavailableBody
+                    : copy.failedBody
+              }
+            >
+              <div className="mt-7 w-full space-y-3">
+                <KitButton
+                  iconName="image"
+                  icon={Images}
+                  wide
+                  onClick={() => galleryRef.current?.click()}
+                >
+                  {copy.uploadLabel}
+                </KitButton>
+                <KitButton
+                  kind="ghost"
+                  iconName="camera"
+                  icon={Camera}
+                  wide
+                  onClick={() => systemCameraRef.current?.click()}
+                >
+                  {copy.systemCameraLabel}
+                </KitButton>
+              </div>
+
+              {status === "denied" ? (
+                <KitNotice iconName="lock" icon={Lock} className="mt-4 w-full">
+                  {copy.deniedHowTo}
+                </KitNotice>
+              ) : null}
+
+              <button
+                type="button"
+                onClick={() => setAttempt((n) => n + 1)}
+                className="mt-3 min-h-11 w-full text-caption font-semibold text-teal-deep underline underline-offset-4"
+              >
+                {copy.retryLabel}
+              </button>
+            </StatePanel>
           </div>
         </div>
       )}

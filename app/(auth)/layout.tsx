@@ -75,13 +75,18 @@ export default async function AuthLayout({
         </div>
       </header>
 
+      {/* Sin tarjeta.
+          Aquí había un contenedor con filete, sombra y su propio relleno.
+          En una pantalla de móvil de 390px eso es una tarjeta que ocupa casi
+          todo el ancho: no separa nada de nada, sólo mete un marco y roba
+          16px por lado. El sistema de diseño monta el registro directamente
+          sobre el fondo de la aplicación, con las filas agrupadas haciendo
+          el trabajo de separar. */}
       <main
         id="contenido"
-        className="flex w-full flex-1 justify-center px-4 py-6 sm:items-center sm:py-10"
+        className="flex w-full flex-1 justify-center px-5 pb-6 sm:items-center"
       >
-        <div className="w-full max-w-md rounded-xl border border-line bg-surface p-5 shadow-md sm:p-8">
-          {children}
-        </div>
+        <div className="w-full max-w-md">{children}</div>
       </main>
 
       <footer className="mx-auto w-full max-w-md px-4 pb-6 text-center">

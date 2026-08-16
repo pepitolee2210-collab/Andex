@@ -759,16 +759,25 @@ export function PhoneTour({ copy, className }: PhoneTourProps) {
             exit={reduced ? undefined : { opacity: 0, y: -8 }}
             transition={{ duration: 0.35, ease: EASE }}
           >
-            <p className="text-caption font-bold uppercase tracking-widest text-teal-deep">
+            {/* La narración va SOBRE NAVY: el recorrido sólo se monta en la
+                portada, que es la única pantalla a sangre del producto. Con
+                los colores de superficie clara —`text-ink` es navy— el texto
+                quedaba navy sobre navy, invisible. */}
+            <p className="text-caption font-bold uppercase tracking-widest text-[color:var(--text-on-invert-accent)]">
               {current.eyebrow}
             </p>
-            <p className="mt-1.5 text-body text-ink">{current.caption}</p>
+            <p className="mt-1.5 text-body text-[color:var(--text-on-invert)]">
+              {current.caption}
+            </p>
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* Puntos de paso: informan y además permiten saltar */}
-      <div className="mt-4 flex items-center gap-2">
+      {/* Puntos de paso: informan y además permiten saltar.
+          El área táctil son 44×44 completos aunque la marca visible sea una
+          rayita: el dedo no apunta a un píxel de alto. Antes el botón medía
+          lo que medía la rayita —32×44 y 16×44— y el verificador lo cazaba. */}
+      <div className="-mx-2 mt-2 flex items-center">
         {captions.map((_, i) => (
           <button
             key={i}
@@ -778,14 +787,14 @@ export function PhoneTour({ copy, className }: PhoneTourProps) {
               .replace("{n}", String(i + 1))
               .replace("{total}", String(total))}
             aria-current={i === index ? "true" : undefined}
-            className="group flex h-11 items-center"
+            className="group flex size-11 items-center justify-center"
           >
             <span
               className={cn(
                 "block h-1 rounded-full transition-all duration-300",
                 i === index
-                  ? "w-8 bg-teal-deep"
-                  : "w-4 bg-line group-hover:bg-muted",
+                  ? "w-8 bg-[color:var(--accent)]"
+                  : "w-4 bg-[color:var(--hairline-on-invert)]",
               )}
             />
           </button>
