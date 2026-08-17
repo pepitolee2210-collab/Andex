@@ -3,7 +3,6 @@
 import { useId } from "react";
 import { Check } from "lucide-react";
 import { KitBadge, KitCard } from "@/components/ui/kit";
-import { Seal } from "@/components/seal";
 import { PRICES } from "@/lib/config";
 import type { Dictionary } from "@/lib/i18n";
 import type { PlanType } from "@/lib/types";
@@ -44,11 +43,22 @@ import { cn, formatUsd } from "@/lib/utils";
  * de la landing sale vacía, y desde 2024 la FTC la sanciona. "Recomendado"
  * dice lo mismo en primera persona y es verdad: lo recomendamos nosotros.
  *
- * ── EL SELLO (§2.9) ────────────────────────────────────────────────────
+ * ── SIN SELLO (§2.9) ───────────────────────────────────────────────────
  *
- * Sigue siendo su única aparición en todo el producto, dentro de la tarjeta
- * anual. Lo que cambia es que ya no ocupa media tarjeta él solo: va en fila
- * con la promesa que certifica, que es lo que hay que leer.
+ * §2.9 reserva el sello de tarifa congelada para esta tarjeta y sólo para
+ * ella. Ya no está: se quitó por decisión del producto —se veía mal—, y con
+ * él se fue la frase que certificaba, porque eran un solo bloque.
+ *
+ * La regla de §2.9 no se incumple: dice que el sello no aparezca en ningún
+ * otro sitio, no que tenga que aparecer aquí. `tests/reglas-duras.test.ts`
+ * lo verifica como "como máximo una vez", así que cero también pasa. El
+ * componente sigue existiendo, sin usar en producto, por si vuelve.
+ *
+ * Efecto secundario que conviene saber: la promesa de tarifa congelada era
+ * un compromiso comercial VINCULANTE (§3.4.4, pendiente de asesoría legal
+ * antes de publicarse). Al quitarla, esa exposición desaparece del muro. La
+ * landing todavía la cuenta, con un tratamiento propio sin círculo ni
+ * punteado.
  *
  * ── Accesibilidad ──────────────────────────────────────────────────────
  *
@@ -225,7 +235,6 @@ function PlanOption({
 
 export function PlanCards({ selected, onSelect, dict }: PlanCardsProps) {
   const t = dict.paywall.plans;
-  const seal = dict.paywall.seal;
   const groupName = useId();
 
   const monthlyPrice = formatUsd(PRICES.monthly.usd);
@@ -259,7 +268,7 @@ export function PlanCards({ selected, onSelect, dict }: PlanCardsProps) {
           selectedAria={t.selectedAria}
         />
 
-        {/* ── Anual — recomendado y preseleccionado. Aquí vive EL SELLO ── */}
+        {/* ── Anual — recomendado y preseleccionado ── */}
         <PlanOption
           id={`${groupName}-annual`}
           group={groupName}
@@ -292,29 +301,6 @@ export function PlanCards({ selected, onSelect, dict }: PlanCardsProps) {
             </span>
           </p>
 
-          {/*
-            EL SELLO — §2.9: única aparición decorativa de todo el producto.
-            En fila con su promesa, no encima: lo que obliga es la frase, el
-            sello sólo dice de qué registro es. El texto que lo acompaña es la
-            promesa vinculante de §3.4.4: si se publica, hay que cumplirla
-            (riesgo R2, `stripe_price_id` fijado por suscripción y nunca
-            migrado).
-          */}
-          <div
-            role="group"
-            aria-label={seal.ariaLabel}
-            className="relative mt-5 flex items-center gap-4"
-          >
-            <Seal title={seal.title} compact className="shrink-0" />
-            <p
-              className={cn(
-                "min-w-0 text-body",
-                isAnnual ? "text-[color:var(--text-on-invert-quiet)]" : "text-muted",
-              )}
-            >
-              {seal.body(annualPrice)}
-            </p>
-          </div>
         </PlanOption>
       </div>
     </fieldset>

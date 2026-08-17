@@ -50,7 +50,7 @@ rompe el build.
 | **Ningún texto visible se escribe en el JSX** | Todo sale de `lib/i18n/`. Una cadena a mano se queda en español para siempre y el conmutador EN deja de decir la verdad |
 | **ANDEX nunca toca datos de tarjeta** | Todo pasa por Stripe Elements. Un `<input>` propio metería el producto en el alcance de PCI DSS |
 | **Ningún dato del usuario viaja en una URL** | Historial, portapapeles y registros de proxy. Con este público, es un riesgo real |
-| El sello se usa **una sola vez**, en el plan anual del paywall | Si aparece en todas partes, deja de significar algo |
+| El sello **no se usa en producto**. Si vuelve, una sola vez | Se retiró del muro de pago por diseño; la prueba exige «como máximo una vez», así que cero pasa. Si aparece en todas partes, deja de significar algo |
 
 Y una que no es automática pero pesa igual: **nunca se promete de más en
 seguridad.** El copy dice que los documentos se cifran en el teléfono *y*
