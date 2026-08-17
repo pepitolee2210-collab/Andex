@@ -16,20 +16,37 @@ import { SectionViewTracker } from "@/components/landing/section-view-tracker";
 import { TopBanner } from "@/components/landing/top-banner";
 import { SiteNav } from "@/components/landing/site-nav";
 import { SectionHero } from "@/components/landing/section-hero";
-import { SectionTrust } from "@/components/landing/section-trust";
-import { SectionCompare } from "@/components/landing/section-compare";
-import { ModuleWheel } from "@/components/landing/module-wheel";
+import { SectionVision } from "@/components/landing/section-vision";
+import { SectionNeeds } from "@/components/landing/section-needs";
 import { SectionScanner } from "@/components/landing/section-scanner";
-import { SectionModules } from "@/components/landing/section-modules";
-import { SectionServices } from "@/components/landing/section-services";
-import { SectionPurpose } from "@/components/landing/section-purpose";
+import { SectionShowcase } from "@/components/landing/section-showcase";
+import { SectionReviews } from "@/components/landing/section-reviews";
 import { SectionPricing } from "@/components/landing/section-pricing";
 import { SectionFaq } from "@/components/landing/section-faq";
 import { SectionClosing } from "@/components/landing/section-closing";
 import { SiteFooter } from "@/components/landing/site-footer";
 
 /**
- * LANDING PAGE — diez secciones.
+ * LANDING PAGE — la estructura de las maquetas.
+ *
+ *   1. Hero .............. la promesa y «Comenzar viaje»
+ *   2. Qué es ANDEX ...... con cuatro cifras COMPROBABLES
+ *   3. Lo que no funciona  cuatro situaciones, dos por dos
+ *   4. El escáner ........ gratis y sin registro
+ *   5. Los siete módulos . maestro-detalle en escritorio, lista en móvil
+ *   6. El precio ......... antes de pedir un dato de pago
+ *   7. Reseñas ........... vacía hoy, y dice por qué
+ *   8. Preguntas ......... a dos columnas
+ *   9. El cierre
+ *
+ * Se retiraron de la página —los archivos siguen en el repositorio—
+ * `SectionTrust`, `SectionCompare`, `ModuleWheel`, `SectionModules`,
+ * `SectionServices` y `SectionPurpose`: las cuatro primeras las sustituyen
+ * las secciones nuevas, y las dos últimas (misión, visión, Starbiz) son
+ * contenido real que la maqueta no contempla y que hay que decidir dónde
+ * va — no se borran a la ligera.
+ *
+ * NOTA HISTÓRICA — diez secciones.
  *
  * La decisión de fondo: el hero DEMUESTRA en vez de describir. A la
  * izquierda la promesa y la acción; a la derecha el producto recorriendo sus
@@ -93,19 +110,16 @@ export default async function LandingPage({
   const initialTheme =
     themeCookie === "dark" || themeCookie === "light" ? themeCookie : "system";
 
-  // La rueda usa nombres cortos —gira, no se lee despacio— y cada uno lleva
-  // al registro: los módulos viven tras el embudo, no son rutas públicas.
-  const wheelItems = t.wheel.items.map((label) => ({
-    label,
-    href: ROUTES.registro,
-  }));
-
   const modules = MODULES.map((m) => ({
     id: m.id,
     slug: m.slug,
     titleInUs: dict.common.modules.titles[m.id].in_us,
     titlePreArrival: dict.common.modules.titles[m.id].pre_arrival,
     body: t.modules.items[m.id].body,
+    /* Las cuatro cosas concretas que se pueden hacer en cada módulo. Se
+       toma la variante `in_us` porque la landing es pública y todavía no
+       se sabe si quien mira ya llegó o está por venir. */
+    features: dict.modules.byModule[m.id].in_us.features,
   }));
 
   // Los importes se resuelven aquí, no en el diccionario: el precio es
@@ -194,65 +208,55 @@ export default async function LandingPage({
         <div className="bg-navy">
           <SectionSeam to="surface" />
         </div>
-        <SectionTrust copy={t.trust} />
+        {/* ── Qué es ANDEX, con cifras que se pueden comprobar ── */}
+        <SectionVision copy={t.vision} />
 
-        {/* `solucion` es el ancla del nav; la sección explica por qué existe
-            ANDEX antes de enseñar el producto. */}
-        <SectionSeam to="page" />
-        <SectionCompare copy={t.compare} />
-
-        {/* El visitante acaba de reconocer su propio problema en la sección
-            anterior. Aquí se le resuelve uno, gratis y sin pedirle nada: es
-            la demostración de valor más fuerte de la página, y el sitio
-            donde el argumento de la bóveda deja de ser una promesa. */}
+        {/* ── Lo que hoy no funciona ──
+            Va después del qué y antes del cómo: primero que alguien se
+            reconozca en el problema, luego enseñarle la herramienta. */}
         <SectionSeam to="surface" />
+        <SectionNeeds copy={t.needs} />
+
+        {/* ── El escáner, gratis y sin registro ──
+            No está en las maquetas y se queda a propósito: es la única
+            parte de la página donde el producto DEMUESTRA en vez de
+            contar, y ocurre sin pedir un solo dato. Quitarlo sería
+            cambiar la prueba por una promesa. */}
+        <SectionSeam to="page" />
         <SectionScanner
           copy={t.liveScanner}
           scanCopy={dict.boveda.scan}
           ctaHref={ROUTES.registro}
         />
 
-        {/* Redoble entre el porqué y el detalle: la rueda nombra los siete
-            frentes, y justo debajo la parrilla los explica. Cada palabra es
-            un enlace real, así que además hace de acceso rápido. */}
-        <SectionSeam to="navy" shape="wedge" />
-        <ModuleWheel
-          eyebrow={t.wheel.eyebrow}
-          title={t.wheel.title}
-          listLabel={t.wheel.listLabel}
-          items={wheelItems}
+        {/* ── Los siete módulos, uno a uno ── */}
+        <SectionSeam to="surface" />
+        <SectionShowcase
+          copy={t.showcase}
+          modules={modules.map((m) => ({
+            id: m.id,
+            slug: m.slug,
+            name: m.titleInUs,
+            body: m.body,
+            features: m.features,
+          }))}
         />
 
-        <SectionSeam to="surface-alt" shape="wedge" />
-        <SectionModules
-          modules={modules}
-          defaultVariant="in_us"
-          copy={{
-            eyebrow: t.modules.eyebrow,
-            title: t.modules.title,
-            subtitle: t.modules.subtitle,
-            reorderedNote: t.modules.reorderedNote,
-            ctaLabel: t.modules.cta,
-          }}
-          ctaHref={ROUTES.registro}
-        />
-
-        {/* La entrada al bloque navy es la más marcada de la página:
-            aquí cambia el tono del discurso, de producto a gestoría. */}
-        <SectionSeam to="navy" shape="wedge" />
-        <SectionServices copy={t.services} ctaHref={ROUTES.registro} />
-
-        {/* El nav enlaza esta sección como "Comunidad": es donde viven
-            CEO Junior y Padres 3.0. */}
-        <SectionSeam to="page" shape="wedge" />
-        <SectionPurpose copy={t.purpose} id="comunidad" />
-
+        {/* ── El precio, antes de pedir un dato de pago ──
+            Tampoco está en las maquetas, y también se queda: es un producto
+            de suscripción y esconder el precio hasta el registro es
+            exactamente lo que hace desconfiar a quien ya fue estafado. */}
         <SectionSeam to="teal-soft" />
         <SectionPricing
           copy={pricing}
           monthlyHref={ROUTES.registro}
           annualHref={ROUTES.registro}
         />
+
+        {/* ── Reseñas ──
+            Hoy sale vacía a propósito: no hay ninguna real todavía. */}
+        <SectionSeam to="page" />
+        <SectionReviews copy={t.reviews} />
 
         <SectionSeam to="page" />
         <SectionFaq

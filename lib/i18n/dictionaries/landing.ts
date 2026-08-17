@@ -322,6 +322,81 @@ const es = {
     ],
   },
 
+
+  // ── Qué es ANDEX, y qué se puede contar de verdad ───────
+  vision: {
+    eyebrow: "Qué es ANDEX",
+    title: "Un solo sitio para todo lo que un trámite te pide",
+    body: "No es una app de consejos. Es donde guardas tus documentos, sabes qué se te vence, aprendes el inglés que te piden en el trabajo y encuentras a quien ya pasó por lo mismo. Piloto en Utah.",
+    /**
+     * LAS CIFRAS SON VERIFICABLES, UNA POR UNA.
+     *
+     * El sketch pedía «+1K inmigrantes» y «+4 estrellas». No existen: el
+     * producto todavía no ha salido. Con este público —que ya fue estafado
+     * por gente que inflaba números— una cifra inventada no es marketing
+     * flojo, es el mismo patrón. Y desde 2024 las reseñas y métricas falsas
+     * son sancionables por la FTC.
+     *
+     * Estas cuatro se pueden contar abriendo la app. Cuando haya usuarios
+     * de verdad, se añaden aquí y no antes.
+     */
+    stats: [
+      { value: "7", label: "módulos", detail: "Tres abiertos; cuatro durante el piloto" },
+      { value: "9", label: "temarios de inglés", detail: "Con su manual en PDF para leer sin datos" },
+      { value: "0", label: "documentos en nuestros servidores", detail: "Se cifran en tu teléfono y no salen de él" },
+      { value: "$0", label: "para escanear", detail: "El escáner funciona sin registrarte" },
+    ],
+  },
+
+  // ── Lo que hoy no funciona ──────────────────────────────
+  needs: {
+    eyebrow: "Por qué existe",
+    title: "Lo que pasa cuando todo vive en una carpeta de plástico",
+    items: [
+      {
+        title: "Los papeles no aparecen cuando los piden",
+        body: "El permiso de trabajo, el I-94, el acta de nacimiento de cada hijo. Repartidos entre una carpeta, el correo y las fotos del teléfono.",
+      },
+      {
+        title: "Una fecha se pasa y nadie avisó",
+        body: "Renovar tarde un permiso de trabajo puede costar el empleo. La fecha estaba escrita en un papel que se quedó en un cajón.",
+      },
+      {
+        title: "El inglés del trabajo no es el del curso",
+        body: "Nadie necesita conjugar verbos: necesita entender lo que dice el supervisor en la obra y saber contestar.",
+      },
+      {
+        title: "Se paga por lo que era gratis",
+        body: "Cientos de dólares por trámites que los portales oficiales hacen sin cobrar. Casi siempre a alguien que dijo ser de confianza.",
+      },
+    ],
+  },
+
+  // ── Los módulos, uno a uno ──────────────────────────────
+  showcase: {
+    eyebrow: "Lo que incluye",
+    title: "Siete módulos, uno por cada cosa que hay que resolver",
+    /** Nombre accesible de la lista: sin él son siete botones sueltos. */
+    pickerLabel: "Elige un módulo para ver qué hace",
+    explore: "Explorar ANDEX",
+    building: "Se abre durante el piloto",
+  },
+
+  // ── Reseñas ─────────────────────────────────────────────
+  reviews: {
+    eyebrow: "Lo que dicen",
+    title: "Todavía no hay reseñas, y no vamos a inventarlas",
+    /**
+     * ESTA SECCIÓN NO SE PINTA MIENTRAS `RESENAS` ESTÉ VACÍO.
+     *
+     * El componente está hecho y espera datos reales. Poner testimonios de
+     * relleno en un producto cuyo argumento entero es la confianza sería
+     * exactamente lo que hace dudar — y es lo que hizo quien les cobró de
+     * más.
+     */
+    empty: "ANDEX está en piloto en Utah. Cuando las primeras familias lo usen y quieran contarlo, sus palabras van aquí — con su nombre y sin retocar.",
+  },
+
   // ── S8 · Precios ────────────────────────────────────────
   pricing: {
     eyebrow: "Membresía",
@@ -690,6 +765,55 @@ const en = {
         body: "To truly walk your children's academic path in a system you didn't grow up in.",
       },
     ],
+  },
+
+vision: {
+    eyebrow: "What ANDEX is",
+    title: "One place for everything a process asks you for",
+    body: "It isn't an advice app. It's where you keep your documents, know what's about to expire, learn the English they ask for at work, and find people who have been through the same. Pilot in Utah.",
+    stats: [
+      { value: "7", label: "modules", detail: "Three open; four during the pilot" },
+      { value: "9", label: "English tracks", detail: "Each with a PDF manual to read without data" },
+      { value: "0", label: "documents on our servers", detail: "Encrypted on your phone; they never leave it" },
+      { value: "$0", label: "to scan", detail: "The scanner works without signing up" },
+    ],
+  },
+
+  needs: {
+    eyebrow: "Why it exists",
+    title: "What happens when everything lives in a plastic folder",
+    items: [
+      {
+        title: "The papers aren't there when they're asked for",
+        body: "The work permit, the I-94, each child's birth certificate. Split between a folder, your email and your phone's photos.",
+      },
+      {
+        title: "A date passes and nobody warned you",
+        body: "Renewing a work permit late can cost you the job. The date was written on a paper left in a drawer.",
+      },
+      {
+        title: "Work English isn't classroom English",
+        body: "Nobody needs to conjugate verbs: they need to understand the supervisor on site and know how to answer.",
+      },
+      {
+        title: "People pay for what was free",
+        body: "Hundreds of dollars for procedures the official portals do at no charge. Almost always to someone who claimed to be trustworthy.",
+      },
+    ],
+  },
+
+  showcase: {
+    eyebrow: "What's included",
+    title: "Seven modules, one for each thing you have to solve",
+    pickerLabel: "Pick a module to see what it does",
+    explore: "Explore ANDEX",
+    building: "Opening during the pilot",
+  },
+
+  reviews: {
+    eyebrow: "What people say",
+    title: "There are no reviews yet, and we won't invent them",
+    empty: "ANDEX is piloting in Utah. When the first families use it and want to say so, their words go here — with their name and unedited.",
   },
 
   pricing: {
