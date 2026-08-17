@@ -22,6 +22,7 @@
  */
 
 import { Quote, Star } from "lucide-react";
+import { Reveal } from "@/components/motion/reveal";
 import type { LandingDict } from "@/lib/i18n/dictionaries/landing";
 
 export type Resena = {
@@ -47,9 +48,9 @@ export function SectionReviews({ copy }: SectionReviewsProps) {
   return (
     <section
       aria-labelledby="reviews-titulo"
-      className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 sm:py-24"
+      className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-6 sm:py-24"
     >
-      <div className="mx-auto max-w-2xl text-center">
+      <Reveal className="mx-auto max-w-2xl text-center">
         <span
           aria-hidden="true"
           className="mx-auto flex size-11 items-center justify-center rounded-full bg-teal-soft text-teal-deep"
@@ -62,10 +63,10 @@ export function SectionReviews({ copy }: SectionReviewsProps) {
         <h2 id="reviews-titulo" className="mt-3 font-heading text-h1 text-ink">
           {copy.title}
         </h2>
-      </div>
+      </Reveal>
 
       {RESENAS.length === 0 ? (
-        <p className="mx-auto mt-6 max-w-2xl text-center text-body-lg text-muted">
+        <p className="mx-auto mt-5 max-w-2xl text-center text-body text-muted sm:mt-6 sm:text-body-lg">
           {copy.empty}
         </p>
       ) : (

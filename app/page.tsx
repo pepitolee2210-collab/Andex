@@ -72,15 +72,16 @@ function parseContext(raw: string | string[] | undefined): LocationContext | nul
  * es a la vez el `id` en el DOM y la propiedad `section` del evento: una
  * sola cadena por sección, imposible de desincronizar.
  */
+/*
+ * Solo los `id` que existen de verdad en la pagina. Los de la version
+ * anterior —confianza, comparativa, frentes, servicios, comunidad— apuntaban
+ * a secciones que el rediseno sustituyo: el observador no los encontraba y
+ * esas metricas llevaban tiempo sin registrar nada, sin que nada fallara.
+ */
 const TRACKED_SECTIONS = [
-  "hero",
-  "confianza",
-  "comparativa",
+  "solucion",
   "probar",
-  "frentes",
   "modulos",
-  "servicios",
-  "comunidad",
   "precios",
   "faq",
   "cierre",
@@ -189,16 +190,17 @@ export default async function LandingPage({
         <SectionHero
           copy={{
             brand: dict.common.brand.name,
-            titleLines: t.portada.titleLines,
-            title: t.portada.title,
-            subtitle: t.hero.title,
-            promiseLines: t.portada.promiseLines,
-            scanCta: t.portada.scanCta,
-            accountCta: t.portada.accountCta,
+            badge: t.hero.badge,
+            titleLines: t.hero.titleLines,
+            title: t.hero.title,
+            titleAccent: t.hero.titleAccent,
+            trustPoints: t.hero.trustPoints,
+            accountCta: t.hero.cta,
+            ctaHint: t.hero.ctaHint,
+            tourLabel: t.hero.tourLabel,
             disclaimer: t.trust.disclaimer,
             tour: dict.tour,
           }}
-          scanHref="#probar"
           accountHref={ROUTES.registro}
         />
 

@@ -36,9 +36,7 @@ import { cn } from "@/lib/utils";
 
 const ANCHORS = {
   modulos: "#modulos",
-  servicios: "#servicios",
   precios: "#precios",
-  comunidad: "#comunidad",
 } as const;
 
 export type SiteFooterLinks = {
@@ -85,16 +83,12 @@ export function SiteFooter({
         title: columns.product,
         items: [
           { label: links.modulos, href: ANCHORS.modulos },
-          { label: links.servicios, href: ANCHORS.servicios },
           { label: links.precios, href: ANCHORS.precios },
         ],
       },
       {
         title: columns.company,
-        items: [
-          { label: links.comunidad, href: ANCHORS.comunidad },
-          { label: links.contacto, href: ROUTES.contacto },
-        ],
+        items: [{ label: links.contacto, href: ROUTES.contacto }],
       },
       {
         title: columns.legal,
@@ -107,10 +101,10 @@ export function SiteFooter({
 
   return (
     <footer
-      className={cn("border-t border-line bg-surface px-4 py-12 sm:py-16", className)}
+      className={cn("border-t border-line bg-surface px-5 py-12 sm:py-16", className)}
     >
       <div className="mx-auto max-w-6xl">
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 sm:gap-8 lg:grid-cols-4">
           {/* Marca. A 320px va sola arriba; desde 1024 ocupa su columna. */}
           <div className="lg:pr-8">
             <span className="block font-heading text-h3 font-bold tracking-tight text-ink">

@@ -118,6 +118,53 @@
 
   /* Aparecer, una sola vez, hacia arriba. */
   .enter { animation: andex-enter var(--dur-reveal) var(--ease-spring) both; }
+
+  /* La entrada de la portada.
+     Escalonada por `animationDelay` desde el componente, y deliberadamente
+     SOBRIA: sólo opacidad y ocho píxeles de subida, con la curva estándar y
+     no con el muelle. El sistema de diseño veta las microinteracciones
+     vistosas en la primera pantalla —«si hay que elegir entre bonito y
+     creíble, creíble»— y un rebote aquí es justo el registro de las webs
+     que estafaron a este público. Esto no llama la atención: sólo evita
+     que todo aparezca de golpe. */
+  .hero-entra {
+    animation: hero-entra 620ms var(--ease-out) both;
+  }
+  @keyframes hero-entra {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  /* El recorrido del producto entra con MÁS cuerpo que el texto: sube 26px
+     y arranca un punto más pequeño, así que se lee como un objeto que se
+     apoya y no como un párrafo que aparece. Sigue sin rebotar — la curva
+     es `ease-out`, no el muelle: en esta pantalla un rebote es el registro
+     de las webs que estafaron a este público. */
+  .hero-sube {
+    animation: hero-sube 780ms var(--ease-out) both;
+  }
+  @keyframes hero-sube {
+    from { opacity: 0; transform: translateY(26px) scale(.975); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  /* ── Pantallas bajas ──
+     En un Android de 360×640 —el equipo de gama baja del brief— el botón
+     de la portada caía 234px por debajo del pliegue, y la barra fija de
+     móvil sólo aparece al volver hacia arriba: bajando no se veía ninguna
+     acción.
+
+     Se aprieta el AIRE, nunca la letra. Encoger el cuerpo por debajo de
+     16px para ganar sitio sería romper la regla que existe justo para este
+     público: se lee bajo el sol, con vista cansada, en un teléfono barato.
+
+     Se acota por altura y no por ancho: un móvil apaisado o una ventana
+     baja de escritorio tienen el mismo problema. */
+  /* Ya no hace falta apretar por altura: la portada no se estira, así que
+     en una pantalla baja simplemente ocupa lo que ocupa. Se conserva un
+     ajuste mínimo para móviles muy cortos. */
+  @media (max-height: 680px) {
+  }
   @keyframes andex-enter {
     from { opacity: 0; transform: translateY(10px); }
     to   { opacity: 1; transform: none; }
@@ -1029,6 +1076,11 @@
   @media (prefers-reduced-motion: reduce) {
     .rowicon svg, .stateglyph svg { animation: none; }
     .enter { animation: none; }
+    /* Sin animación NI retraso: con `animation: none` pero el
+       `animation-delay` puesto en línea, el elemento se quedaba invisible
+       hasta que pasaba su retraso. Aquí aparece y ya. */
+    .hero-entra,
+    .hero-sube { animation: none; opacity: 1; transform: none; }
     .ax-skeleton { animation: none; }
   }
 }

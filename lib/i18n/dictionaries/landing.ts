@@ -75,22 +75,102 @@ const es = {
 
   // ── S2 · Hero ───────────────────────────────────────────
   hero: {
-    badge: "El sistema operativo para la comunidad hispana en EE. UU.",
-    title: "Un solo lugar para tus trámites, tu empleo y el futuro de tu familia.",
-    // El titular se parte en piezas para animarlo palabra a palabra.
-    titleLines: [
-      "Un solo lugar",
-      "para tus trámites,",
-      "tu empleo y el futuro",
-      "de tu familia.",
+    badge: "Piloto en Utah",
+    /**
+     * EL ESLOGAN.
+     *
+     * Tiene que decir quiénes somos y qué buscamos, y resumir los siete
+     * módulos en algo que cualquiera reconozca. Los siete son papeles,
+     * trámites, dinero, negocio, comunidad, inglés y trabajo — y eso cabe
+     * en cuatro palabras que nadie tiene que descifrar:
+     *
+     *   tus papeles  →  Bóveda + Trámites y Estatus Migratorio
+     *   tu inglés    →  Academia de Certificaciones
+     *   tu trabajo   →  Conexión Laboral + Finanzas + Desarrollo Empresarial
+     *   tu gente     →  Comunidad y Vida Local
+     *
+     * La segunda línea dice qué buscamos: avanzar, no sobrevivir. Es la
+     * misión del producto en cinco palabras.
+     *
+     * Se descartaron las de registro comercial —«transforma tu experiencia»,
+     * «el sistema operativo del inmigrante»— porque este público ya oyó ese
+     * tono de quien le cobró por trámites gratis.
+     */
+    /**
+     * EL TITULAR, EN DOS TIEMPOS.
+     *
+     *   «Todo lo tuyo, en su sitio.»  →  los SIETE módulos sin nombrar uno
+     *   «Ordenado para tu caso.»      →  lo que hace la tecnología
+     *
+     * El primero alude a los siete de golpe: papeles, trámites, dinero,
+     * negocio, comunidad, inglés y empleo son «lo tuyo». Nombrarlos
+     * obligaba a enumerar y a alargar.
+     *
+     * El segundo dice qué hace ANDEX por dentro, y no es un adorno: el
+     * motor de recomendación reordena los módulos según lo que la persona
+     * contestó en la entrevista, y cita el porqué en la propia tarjeta. Es
+     * una función construida y con 31 pruebas detrás, así que se puede
+     * decir sin faltar a la verdad.
+     *
+     * EL CAMBIO DE VIDA, SIN EXAGERAR. «En su sitio» es todo lo que se
+     * promete, y es todo lo que hace falta: quien vive esto sabe lo que
+     * cuesta que nada esté en su sitio. Se descartaron «transforma tu
+     * vida», «tu nueva vida empieza aquí» y parecidas — este público ya
+     * oyó ese tono de quien le cobró por trámites gratis, y la promesa
+     * grande es justo lo que le hace desconfiar.
+     */
+    title: "Todo lo tuyo, en su sitio. Ordenado para tu caso.",
+    titleLines: ["Todo lo tuyo,", "en su sitio."],
+    /** El segundo tiempo, en teal: lo que hace la tecnología. */
+    titleAccent: "Ordenado para tu caso.",
+    /**
+     * El subtítulo se fue entero.
+     *
+     * Decía en treinta palabras lo mismo que el titular en nueve, y debajo
+     * los tres hechos volvían a decirlo por tercera vez. En la única
+     * pantalla donde alguien decide si sigue leyendo, repetir es lo que
+     * hace que no lea nada.
+     *
+     * El titular dice QUÉ; los tres hechos dicen POR QUÉ CREERLO. No hace
+     * falta una capa en medio.
+     */
+    /**
+     * LA CONFIANZA SE DEMUESTRA, NO SE DECLARA.
+     *
+     * Tres hechos comprobables en lugar de tres adjetivos. El segundo dice
+     * su límite en la misma línea: prometer de más en seguridad es peor que
+     * no prometer nada.
+     */
+    /**
+     * Tres hechos, y ninguno pasa de siete palabras.
+     *
+     * Se recortaron sin perder lo que importa: el segundo sigue diciendo
+     * que los documentos NO SALEN del teléfono —la promesa entera está en
+     * el verbo— y el tercero sigue diciendo lo que ANDEX no es, que con
+     * este público pesa más que cualquier superlativo.
+     */
+    trustPoints: [
+      "Talleres en vivo, de martes a viernes",
+      "Tus documentos no salen de tu teléfono",
+      "Sin afiliación con ninguna agencia del gobierno",
     ],
-    subtitle:
-      "Se acabó el caos de mil aplicaciones y la desinformación. ANDEX te acompaña desde antes de llegar a Estados Unidos hasta que construyes tu patrimonio aquí.",
-    cta: "Empezar mi perfil gratis",
-    ctaHint: "Cinco preguntas. Dos minutos. No pedimos tarjeta para armar tu plan.",
-    socialProof: (count: string, place: string) =>
-      `${count} familias acompañadas en el piloto de ${place}`,
+    cta: "Comenzar viaje",
+    /**
+     * Antes decía «no pedimos tarjeta», y era falso: después del registro y
+     * de la entrevista viene el plan y su pago. Decirlo aquí y cobrar tres
+     * pantallas después es exactamente lo que hace desconfiar a alguien que
+     * ya fue engañado. Ahora dice el recorrido entero.
+     */
+    ctaHint: "Cinco preguntas. Ves el precio antes de pagar.",
     scrollHint: "Baja para conocer ANDEX",
+    /**
+     * El rótulo que anuncia el recorrido del producto.
+     *
+     * Sin él, el teléfono aparecía debajo del botón sin que nada dijera
+     * qué es: se leía como una imagen decorativa. Con la frase delante, lo
+     * que viene después es una demostración.
+     */
+    tourLabel: "Así funciona ANDEX",
     /**
      * El mockup reproduce el PANEL REAL, no pantallas inventadas: mismo
      * saludo, misma tarjeta recomendada con su porqué, mismos módulos.
@@ -474,7 +554,12 @@ const es = {
     title: "Tu progreso cruza fronteras.",
     subtitle: "Empieza a construir tu futuro hoy.",
     cta: "Completar mi registro",
-    hint: "Cinco preguntas y verás tu plan. No pedimos tarjeta para armarlo.",
+    /*
+     * Mismo arreglo que en `hero.ctaHint`: la version anterior prometia
+     * «no pedimos tarjeta» y el pago llega tres pantallas despues. Aqui, en
+     * la ultima frase de la pagina, la mentira pesa todavia mas.
+     */
+    hint: "Cinco preguntas y verás tu plan. Ves el precio antes de pagar.",
   },
   footer: {
     tagline: "El ecosistema para la comunidad hispana en Estados Unidos.",
@@ -542,21 +627,19 @@ const en = {
   },
 
   hero: {
-    badge: "The operating system for the Hispanic community in the U.S.",
-    title: "One place for your paperwork, your job and your family's future.",
-    titleLines: [
-      "One place",
-      "for your paperwork,",
-      "your job and your",
-      "family's future.",
+    badge: "Pilot in Utah",
+    title: "Everything of yours, in its place. Ordered around your case.",
+    titleLines: ["Everything of yours,", "in its place."],
+    titleAccent: "Ordered around your case.",
+    trustPoints: [
+      "Live workshops, Tuesday to Friday",
+      "Your documents never leave your phone",
+      "Not affiliated with any government agency",
     ],
-    subtitle:
-      "No more chaos across a dozen apps and bad information. ANDEX walks with you from before you arrive in the United States to building what's yours here.",
-    cta: "Start my free profile",
-    ctaHint: "Five questions. Two minutes. No card needed to build your plan.",
-    socialProof: (count: string, place: string) =>
-      `${count} families supported in the ${place} pilot`,
-    scrollHint: "Scroll to meet ANDEX",
+    cta: "Start the journey",
+    ctaHint: "Five questions. You see the price before you pay.",
+    scrollHint: "Scroll to learn about ANDEX",
+    tourLabel: "How ANDEX works",
     mockup: {
       ariaLabel: "Preview of the ANDEX dashboard",
       chip: "Utah",
@@ -889,7 +972,7 @@ vision: {
     title: "Your progress crosses borders.",
     subtitle: "Start building your future today.",
     cta: "Complete my signup",
-    hint: "Five questions and you'll see your plan. No card needed to build it.",
+    hint: "Five questions and you'll see your plan. You see the price before you pay.",
   },
   footer: {
     tagline: "The ecosystem for the Hispanic community in the United States.",

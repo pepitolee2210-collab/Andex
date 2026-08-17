@@ -38,6 +38,7 @@ import type { ScannedPage } from "@/lib/scanner";
 import type { ScannerFlowCopy } from "@/components/vault/scanner-flow";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Reveal } from "@/components/motion/reveal";
 import { CtaLink } from "./cta-link";
 import { trackLazy } from "./track-lazy";
 
@@ -136,22 +137,24 @@ export function SectionScanner({
     <section
       id={id}
       aria-labelledby={`${id}-titulo`}
-      className={cn("bg-surface px-4 py-16 sm:py-20", className)}
+      className={cn("bg-surface px-5 py-16 sm:py-24", className)}
     >
-      <div className="mx-auto max-w-3xl text-center">
+      <Reveal className="mx-auto max-w-3xl text-center">
         <p className="text-caption font-bold uppercase tracking-widest text-teal-deep">
           {copy.eyebrow}
         </p>
         <h2
           id={`${id}-titulo`}
-          className="mt-2 font-heading text-h1 text-ink lg:text-display"
+          className="mt-3 font-heading text-h1 text-ink lg:text-display"
         >
           {copy.title}
         </h2>
-        <p className="mx-auto mt-4 max-w-2xl text-body-lg text-muted">{copy.body}</p>
+        <p className="mx-auto mt-4 max-w-2xl text-body text-muted sm:text-body-lg">
+          {copy.body}
+        </p>
 
         {/* Las tres objeciones, respondidas antes de que se formulen. */}
-        <ul className="mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2">
+        <ul className="mx-auto mt-6 flex w-fit flex-col items-start gap-2 sm:mt-7 sm:w-auto sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-5">
           {copy.assurances.map((item) => (
             <li key={item} className="flex items-center gap-1.5 text-body text-ink">
               <Check aria-hidden="true" className="size-4 shrink-0 text-teal-deep" />
@@ -176,7 +179,7 @@ export function SectionScanner({
 
             {/* El argumento de venta. No retiene nada: explica lo que le
                 falta al archivo que la persona ya tiene en la mano. */}
-            <div className="mt-6 rounded-xl border-2 border-teal-deep bg-teal-soft p-6 sm:p-8">
+            <div className="mt-6 rounded-xl border-2 border-teal-deep bg-teal-soft p-5 sm:p-8">
               <h3 className="font-heading text-h2 text-ink">{copy.pitchTitle}</h3>
               <p className="mt-3 text-body text-ink">{copy.pitchBody}</p>
 
@@ -192,15 +195,20 @@ export function SectionScanner({
                 ))}
               </ul>
 
-              <div className="mt-7 flex flex-col gap-2 sm:flex-row sm:items-center">
-                <CtaLink position="scanner" href={ctaHref} size="lg" className="group">
+              <div className="mt-7 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:gap-2">
+                <CtaLink
+                  position="scanner"
+                  href={ctaHref}
+                  size="lg"
+                  className="group max-sm:w-full max-sm:justify-center"
+                >
                   {copy.pitchCta}
                   <ArrowRight
                     aria-hidden="true"
                     className="ml-2 inline size-5 transition-transform duration-200 group-hover:translate-x-1"
                   />
                 </CtaLink>
-                <Button variant="ghost" onClick={start}>
+                <Button variant="ghost" onClick={start} className="max-sm:w-full">
                   {copy.scanAgain}
                 </Button>
               </div>
@@ -217,7 +225,7 @@ export function SectionScanner({
             </Button>
           </div>
         )}
-      </div>
+      </Reveal>
 
       {scanning ? (
         <ScannerFlow

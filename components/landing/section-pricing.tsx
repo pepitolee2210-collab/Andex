@@ -130,7 +130,7 @@ export function SectionPricing({
     <section
       id={id}
       aria-labelledby={titleId}
-      className="bg-teal-soft px-4 py-16 sm:py-24"
+      className="bg-teal-soft px-5 py-16 sm:py-24"
     >
       <div className="mx-auto max-w-5xl">
         <Reveal
@@ -146,13 +146,13 @@ export function SectionPricing({
           </h2>
         </Reveal>
 
-        <Reveal as="p" delay={0.12} className="mt-3 max-w-2xl text-body-lg text-muted">
+        <Reveal as="p" delay={0.12} className="mt-3 max-w-2xl text-body text-muted sm:text-body-lg">
           {copy.subtitle}
         </Reveal>
 
         <RevealGroup
           stagger={0.1}
-          className="mt-10 grid items-stretch gap-4 sm:grid-cols-2 sm:gap-5"
+          className="mt-9 grid grid-cols-1 items-stretch gap-4 sm:mt-12 sm:grid-cols-2 sm:gap-5"
         >
           {/* ── MENSUAL — primero en DOM, tabulación y lectura ────── */}
           <RevealItem className="h-full">
@@ -225,7 +225,7 @@ export function SectionPricing({
 
         {/* Las tres líneas de confianza + la nota legal de renovación. */}
         <Reveal delay={0.08} className="mt-10">
-          <ul className="grid gap-3 sm:grid-cols-3">
+          <ul className="grid grid-cols-1 gap-2.5 sm:grid-cols-3 sm:gap-3">
             {copy.trust.map((line) => (
               <li key={line} className="flex items-start gap-2.5 text-body text-ink">
                 <Check

@@ -19,6 +19,7 @@
  * la parte que aún no está.
  */
 
+import { Reveal, RevealGroup, RevealItem } from "@/components/motion/reveal";
 import type { LandingDict } from "@/lib/i18n/dictionaries/landing";
 
 export type SectionVisionProps = { copy: LandingDict["vision"] };
@@ -26,10 +27,11 @@ export type SectionVisionProps = { copy: LandingDict["vision"] };
 export function SectionVision({ copy }: SectionVisionProps) {
   return (
     <section
+      id="solucion"
       aria-labelledby="vision-titulo"
-      className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 sm:py-24"
+      className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-6 sm:py-24"
     >
-      <div className="mx-auto max-w-3xl text-center">
+      <Reveal className="mx-auto max-w-3xl text-center">
         <p className="text-caption font-bold uppercase tracking-widest text-teal-deep">
           {copy.eyebrow}
         </p>
@@ -39,23 +41,33 @@ export function SectionVision({ copy }: SectionVisionProps) {
         >
           {copy.title}
         </h2>
-        <p className="mt-4 text-body-lg text-muted">{copy.body}</p>
-      </div>
+        <p className="mt-4 text-body text-muted sm:text-body-lg">{copy.body}</p>
+      </Reveal>
 
       {/* Las cifras. Sin tarjeta ni sombra: son un dato, no un producto. */}
-      <dl className="mt-12 grid grid-cols-2 gap-x-6 gap-y-10 sm:mt-16 lg:grid-cols-4">
+      {/* Escalonadas: entran una detrás de otra, no las cuatro de golpe.
+          En móvil van a dos columnas con más aire vertical que horizontal,
+          porque el matiz de debajo necesita dos líneas. */}
+      <RevealGroup
+        as="div"
+        className="mt-11 grid grid-cols-2 gap-x-5 gap-y-9 sm:mt-16 sm:gap-x-6 lg:grid-cols-4"
+      >
         {copy.stats.map((stat) => (
-          <div key={stat.label} className="border-t border-line pt-5">
-            <dd className="font-heading text-display text-ink sm:text-display-lg">
+          <RevealItem key={stat.label} className="border-t border-line pt-4 sm:pt-5">
+            {/* `p` y no `dd`/`dt`: al escalonar las cifras desapareció el
+                `<dl>` que las envolvía, y una definición suelta fuera de su
+                lista es HTML inválido. La relación cifra–etiqueta la da el
+                orden y el tamaño, que es como se lee de todas formas. */}
+            <p className="font-heading text-h1 text-ink sm:text-display lg:text-display-lg">
               {stat.value}
-            </dd>
-            <dt className="mt-1 text-body font-semibold text-ink">{stat.label}</dt>
+            </p>
+            <p className="mt-1 text-body font-semibold text-ink">{stat.label}</p>
             {/* El matiz va con la cifra, no en una nota al pie: un «7» sin
                 el «tres abiertos» sería verdad a medias. */}
             <p className="mt-1.5 text-caption text-muted">{stat.detail}</p>
-          </div>
+          </RevealItem>
         ))}
-      </dl>
+      </RevealGroup>
     </section>
   );
 }

@@ -35,6 +35,7 @@
  */
 
 import { CalendarClock, FolderSearch, HandCoins, MessagesSquare } from "lucide-react";
+import { Reveal, RevealGroup, RevealItem } from "@/components/motion/reveal";
 import type { LandingDict } from "@/lib/i18n/dictionaries/landing";
 import type { IconComponent } from "@/components/ui/kit";
 
@@ -55,41 +56,42 @@ export function SectionNeeds({ copy }: SectionNeedsProps) {
   return (
     <section
       aria-labelledby="needs-titulo"
-      className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 sm:py-24"
+      className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-6 sm:py-24"
     >
-      <div className="max-w-3xl">
+      <Reveal className="max-w-3xl">
         <p className="text-caption font-bold uppercase tracking-widest text-teal-deep">
           {copy.eyebrow}
         </p>
         <h2 id="needs-titulo" className="mt-3 font-heading text-h1 text-ink sm:text-display">
           {copy.title}
         </h2>
-      </div>
+      </Reveal>
 
-      <ul className="mt-10 grid gap-4 sm:mt-14 sm:grid-cols-2">
+      <RevealGroup as="ul" className="mt-9 grid grid-cols-1 gap-3.5 sm:mt-14 sm:grid-cols-2 sm:gap-4">
         {copy.items.map((item, i) => {
           const glifo = GLIFOS[i] ?? GLIFOS[0];
           return (
-            <li
+            <RevealItem
+              as="li"
               key={item.title}
               className="flex gap-4 overflow-hidden rounded-xl border border-line bg-surface shadow-sm"
             >
               {/* La franja de la maqueta. Plana, no una foto de archivo. */}
               <span
                 aria-hidden="true"
-                className={`flex w-16 shrink-0 items-center justify-center sm:w-20 ${glifo.tono}`}
+                className={`flex w-14 shrink-0 items-center justify-center sm:w-20 ${glifo.tono}`}
               >
                 <glifo.icon aria-hidden="true" data-icon={glifo.name} className="size-6" />
               </span>
 
-              <div className="min-w-0 py-5 pr-5">
+              <div className="min-w-0 py-4 pr-4 sm:py-5 sm:pr-5">
                 <h3 className="font-heading text-h3 text-ink">{item.title}</h3>
-                <p className="mt-2 text-body text-muted">{item.body}</p>
+                <p className="mt-1.5 text-body text-muted sm:mt-2">{item.body}</p>
               </div>
-            </li>
+            </RevealItem>
           );
         })}
-      </ul>
+      </RevealGroup>
     </section>
   );
 }

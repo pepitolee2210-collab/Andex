@@ -108,7 +108,7 @@ export function SectionClosing({
       ref={rootRef}
       id={id}
       aria-labelledby={`${id}-titulo`}
-      className={cn("bg-navy px-4 py-20 sm:py-28", className)}
+      className={cn("bg-navy px-5 py-20 sm:py-28", className)}
     >
       <div className="mx-auto max-w-3xl text-center">
         {/* El trazo. Nace dibujado: si GSAP no llega a cargar (o el sistema
@@ -129,16 +129,16 @@ export function SectionClosing({
         </Reveal>
 
         <Reveal delay={0.14}>
-          <p className="mt-4 text-body-lg text-white/75">{subtitle}</p>
+          <p className="mt-4 text-body text-white/75 sm:text-body-lg">{subtitle}</p>
         </Reveal>
 
-        <Reveal delay={0.22} className="mt-9 flex justify-center">
+        <Reveal delay={0.22} className="mt-8 flex justify-center sm:mt-9">
           <CtaLink
             position="footer"
             href={ctaHref}
             size="lg"
             describedBy={`${id}-hint`}
-            className="shadow-lg"
+            className="shadow-lg max-sm:w-full max-sm:justify-center"
           >
             {ctaLabel}
           </CtaLink>

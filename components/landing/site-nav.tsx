@@ -55,13 +55,14 @@ import { CtaLink } from "./cta-link";
  * las claves casan una a una con `dict.landing.nav.links`, así que añadir
  * un enlace sin su copy es error de compilación.
  */
-const NAV_ORDER = [
-  "solucion",
-  "modulos",
-  "servicios",
-  "comunidad",
-  "precios",
-] as const;
+/*
+ * Tres, no cinco. El rediseno de la landing sustituyo `SectionServicios` y
+ * `SectionComunidad` por la vitrina de modulos, y esos dos enlaces quedaron
+ * apuntando a un `id` que ya no existe: pulsarlos no hacia nada. Un enlace
+ * muerto, con este publico, es la primera senal de que el sitio no es lo que
+ * dice. Su copy sigue en el diccionario por si esas secciones vuelven.
+ */
+const NAV_ORDER = ["solucion", "modulos", "precios"] as const;
 
 type NavKey = (typeof NAV_ORDER)[number];
 
@@ -75,8 +76,6 @@ type NavKey = (typeof NAV_ORDER)[number];
 const NAV_HREF: Record<NavKey, string> = {
   solucion: "#solucion",
   modulos: "#modulos",
-  servicios: "#servicios",
-  comunidad: "#comunidad",
   precios: "#precios",
 };
 

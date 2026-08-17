@@ -88,7 +88,7 @@ export function SectionFaq({
     <section
       id={id}
       aria-labelledby={`${uid}-title`}
-      className={cn("border-t border-line px-4 py-14 sm:py-20", className)}
+      className={cn("border-t border-line px-5 py-16 sm:py-24", className)}
     >
       <div className="mx-auto max-w-3xl">
         <Reveal>
@@ -103,7 +103,7 @@ export function SectionFaq({
           </h2>
         </Reveal>
 
-        <div className="mt-8 divide-y divide-line border-y border-line">
+        <div className="mt-7 divide-y divide-line border-y border-line sm:mt-9">
           {items.map((item, index) => {
             const open = openIndex === index;
             const buttonId = `${uid}-q-${index}`;
@@ -123,7 +123,7 @@ export function SectionFaq({
                     onClick={() => setOpenIndex(open ? null : index)}
                     onKeyDown={(event) => handleKeyDown(event, index)}
                     className={cn(
-                      "flex w-full min-h-14 items-center justify-between gap-4 py-4 text-left",
+                      "flex w-full min-h-14 items-center justify-between gap-3 py-4 text-left sm:gap-4",
                       "font-heading text-h3 text-ink",
                       "transition-colors duration-150 hover:text-teal-deep",
                     )}

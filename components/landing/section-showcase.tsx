@@ -41,6 +41,7 @@ import { MODULES } from "@/lib/catalogs/modules";
 import { ROUTES } from "@/lib/config";
 import type { ModuleId, ModuleSlug } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { Reveal, RevealGroup, RevealItem } from "@/components/motion/reveal";
 import { Glyph, KitBadge, type IconComponent } from "@/components/ui/kit";
 import { Button } from "@/components/ui/button";
 import type { LandingDict } from "@/lib/i18n/dictionaries/landing";
@@ -98,17 +99,18 @@ export function SectionShowcase({ copy, modules }: SectionShowcaseProps) {
 
   return (
     <section
+      id="modulos"
       aria-labelledby="showcase-titulo"
-      className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 sm:py-24"
+      className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-6 sm:py-24"
     >
-      <div className="max-w-3xl">
+      <Reveal className="max-w-3xl">
         <p className="text-caption font-bold uppercase tracking-widest text-teal-deep">
           {copy.eyebrow}
         </p>
         <h2 id="showcase-titulo" className="mt-3 font-heading text-h1 text-ink sm:text-display">
           {copy.title}
         </h2>
-      </div>
+      </Reveal>
 
       {/* ── Escritorio: maestro-detalle ── */}
       <div className="mt-10 hidden gap-8 lg:mt-14 lg:grid lg:grid-cols-[minmax(0,20rem)_1fr]">
@@ -190,26 +192,35 @@ export function SectionShowcase({ copy, modules }: SectionShowcaseProps) {
       {/* ── Móvil: lista, no maestro-detalle ──
           A 390px no hay «al lado»: el detalle caería fuera de la pantalla y
           el cambio ocurriría sin que nadie lo viera. */}
-      <ul className="mt-8 grid gap-3 lg:hidden">
+      <RevealGroup as="ul" className="mt-9 grid grid-cols-1 gap-3 lg:hidden">
         {modules.map((m) => {
           const g = GLIFO[m.slug];
           const suEstado = MODULES.find((x) => x.slug === m.slug)?.status;
           return (
-            <li
+            <RevealItem
+              as="li"
               key={m.id}
               className="rounded-xl border border-line bg-surface p-4 shadow-sm"
             >
-              <div className="flex items-center gap-3">
+              {/* La insignia va DEBAJO del titulo, no a su lado. En la misma
+                  fila su ancho es fijo —no parte la frase— y a 390px dejaba
+                  unos cien pixeles al titulo: «Tramites y Estatus Migratorio»
+                  caia en cuatro lineas de dos palabras. Medido a 390px. */}
+              <div className="flex items-start gap-3">
                 <span
                   aria-hidden="true"
                   className="flex size-10 shrink-0 items-center justify-center rounded-md bg-teal-soft text-teal-deep"
                 >
                   <Glyph name={g.name} icon={g.icon} size={20} />
                 </span>
-                <h3 className="min-w-0 flex-1 font-heading text-h3 text-ink">{m.name}</h3>
-                {suEstado !== "live" ? (
-                  <KitBadge tone="building">{copy.building}</KitBadge>
-                ) : null}
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-heading text-h3 text-ink">{m.name}</h3>
+                  {suEstado !== "live" ? (
+                    <p className="mt-2">
+                      <KitBadge tone="building">{copy.building}</KitBadge>
+                    </p>
+                  ) : null}
+                </div>
               </div>
               <p className="mt-2.5 text-body text-muted">{m.body}</p>
               <ul className="mt-3 space-y-2">
@@ -220,12 +231,12 @@ export function SectionShowcase({ copy, modules }: SectionShowcaseProps) {
                   </li>
                 ))}
               </ul>
-            </li>
+            </RevealItem>
           );
         })}
-      </ul>
+      </RevealGroup>
 
-      <div className="mt-8 lg:hidden">
+      <div className="mt-9 lg:hidden">
         <Button href={ROUTES.registro} fullWidth>
           {copy.explore}
         </Button>
