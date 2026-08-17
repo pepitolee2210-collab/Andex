@@ -497,7 +497,13 @@ const es = {
     },
     annual: {
       name: "Anual",
-      badge: "Más elegido",
+      /*
+       * Era «Más elegido», la misma afirmación sobre otra gente que se
+       * quitó del muro de pago: nadie ha elegido plan todavía porque el
+       * piloto no ha empezado. Y las dos pantallas enseñan el mismo plan
+       * dentro del mismo embudo, así que no pueden llamarlo distinto.
+       */
+      badge: "Recomendado",
       price: (p: string) => `${p} / año`,
       // Cifra real: 14 × 12 = 168 · 168 − 140 = 28 (un 17 %, no un 40 %).
       equivalent: (p: string) => `Equivale a ${p} al mes`,
@@ -918,7 +924,7 @@ vision: {
     },
     annual: {
       name: "Annual",
-      badge: "Most chosen",
+      badge: "Recommended",
       price: (p: string) => `${p} / year`,
       equivalent: (p: string) => `That's ${p} a month`,
       savings: (p: string) => `You save ${p} a year`,

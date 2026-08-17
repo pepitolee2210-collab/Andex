@@ -80,13 +80,26 @@ const es = {
       /** §3.4.4 */
       period: "/mes",
       pitch: "Flexible. Cancelas cuando quieras.",
+      /**
+       * La misma multiplicación que el anual, vista desde el otro lado.
+       * No es un precio ni una amenaza: es lo que cuesta sostener el plan
+       * mensual doce meses, y es la cifra con la que se compara el anual.
+       * Sin ella, la resta del "Ahorras $28" había que hacerla de cabeza.
+       */
+      yearly: (amount: string) => `Son ${amount} al año`,
       select: "Elegir el plan mensual",
     },
     annual: {
       name: "Anual",
       period: "/año",
-      /** Exacto §3.4.2 — badge ámbar */
-      badge: "★ MÁS ELEGIDO",
+      /**
+       * §3.4.2 pide «Más elegido». Se aparta a propósito: es una afirmación
+       * sobre lo que ha hecho otra gente y todavía no la ha hecho nadie —el
+       * piloto no ha empezado—. Es la misma prueba social fabricada por la
+       * que la sección de reseñas de la landing sale vacía. «Recomendado»
+       * dice lo mismo en primera persona y es verdad.
+       */
+      badge: "Recomendado",
       /** Exacto §3.4.2 */
       equivalent: (monthly: string) => `Equivale a ${monthly}/mes`,
       /** Exacto §3.4.2 — chip */
@@ -204,12 +217,13 @@ const en = {
       name: "Monthly",
       period: "/month",
       pitch: "Flexible. Cancel whenever you want.",
+      yearly: (amount: string) => `That is ${amount} a year`,
       select: "Choose the monthly plan",
     },
     annual: {
       name: "Annual",
       period: "/year",
-      badge: "★ MOST CHOSEN",
+      badge: "Recommended",
       equivalent: (monthly: string) => `Works out to ${monthly}/month`,
       savings: (amount: string) => `You save ${amount} a year`,
       select: "Choose the annual plan",
