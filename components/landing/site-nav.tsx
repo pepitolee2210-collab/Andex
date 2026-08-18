@@ -62,7 +62,22 @@ import { CtaLink } from "./cta-link";
  * muerto, con este publico, es la primera senal de que el sitio no es lo que
  * dice. Su copy sigue en el diccionario por si esas secciones vuelven.
  */
-const NAV_ORDER = ["solucion", "modulos", "precios"] as const;
+/*
+ * El documento maestro pide cinco enlaces: Soluciones · Módulos · Inglés en
+ * Vivo · Servicios con 20% OFF · Membresía. Quedan tres, y cada baja tiene
+ * su motivo:
+ *
+ *  · «Servicios con 20% OFF» — su sección se dejó fuera por decisión del
+ *    producto, así que el enlace no llevaría a ninguna parte.
+ *  · «Soluciones» — en la estructura reducida no hay una sección que sea
+ *    «las soluciones»: los módulos ya tienen su enlace y el resto son la
+ *    historia del fundador y el respaldo. Antes apuntaba a `#solucion`, un
+ *    `id` que vivía en una sección que esta versión ya no monta.
+ *
+ * Un enlace muerto, con este público, es la primera señal de que el sitio
+ * no es lo que dice ser.
+ */
+const NAV_ORDER = ["modulos", "ingles", "precios"] as const;
 
 type NavKey = (typeof NAV_ORDER)[number];
 
@@ -74,8 +89,8 @@ type NavKey = (typeof NAV_ORDER)[number];
  * Son cinco cadenas; la duplicación sale más barata que el acoplamiento.
  */
 const NAV_HREF: Record<NavKey, string> = {
-  solucion: "#solucion",
   modulos: "#modulos",
+  ingles: "#ingles",
   precios: "#precios",
 };
 

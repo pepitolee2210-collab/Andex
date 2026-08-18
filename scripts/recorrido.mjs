@@ -73,8 +73,11 @@ await comprobar("portada", "el titular se lee (no es navy sobre navy)", async ()
 });
 
 await comprobar("portada", "lleva a registro", async () => {
-  const b = page.getByRole("link", { name: /crear mi cuenta|empezar|registr/i }).first();
-  return (await b.count()) > 0;
+  // Por DESTINO, no por rótulo. Antes buscaba /crear mi cuenta|empezar|
+  // registr/ y se rompió en cuanto el copy de la portada cambió, sin que la
+  // página tuviera nada mal: lo que hay que garantizar es que desde la
+  // portada se llega al registro, no cómo se llame el botón ese mes.
+  return (await page.locator('a[href^="/registro"]').count()) > 0;
 });
 
 // ══════════════════════════════════════════════════════════

@@ -30,7 +30,18 @@ const es = {
 
   // ── S0 · Banner superior ────────────────────────────────
   banner: {
-    text: "Piloto Utah 2026 · Los miembros fundadores congelan su tarifa mientras mantengan la membresía.",
+    /*
+     * El documento maestro dice «congela tu tarifa mensual DE POR VIDA antes
+     * de la próxima actualización». Se escribe sin las dos cosas:
+     *
+     *  · «de por vida» no es cierto — si cancelas, la pierdes. Lo que sí se
+     *    puede sostener es lo que dice §3.4.4: mientras mantengas activa la
+     *    membresía. Prometer de más aquí es lo que hace desconfiar a alguien
+     *    a quien ya le prometieron de más.
+     *  · «antes de la próxima actualización» es un plazo sin fecha, y §3.4.1
+     *    prohíbe la urgencia inventada en todo el producto.
+     */
+    text: "Piloto Utah 2026 · Hazte miembro fundador y congela tu tarifa mientras mantengas tu membresía.",
     cta: "Ver beneficios de fundador",
   },
 
@@ -41,12 +52,15 @@ const es = {
     links: {
       solucion: "Soluciones",
       modulos: "Módulos",
+      ingles: "Inglés en Vivo",
+      /* El documento lo llama «Membresía», no «Precios»: lo que se compra es
+         la pertenencia, y el precio es sólo su etiqueta. */
+      precios: "Membresía",
       servicios: "Servicios directos",
       comunidad: "Comunidad",
-      precios: "Precios",
     },
     login: "Iniciar sesión",
-    cta: "Comenzar ahora",
+    cta: "Comenzar diagnóstico",
     openMenu: "Abrir menú",
     closeMenu: "Cerrar menú",
   },
@@ -113,8 +127,8 @@ const es = {
     body:
       "No es una app más; es la comunidad y el sistema que construí después " +
       "de superar cada traba en EE. UU. Aquí encuentras en un solo lugar " +
-      "tus trámites, crédito, empleo, negocios e inversión para que tu " +
-      "familia avance sin cometer los mismos errores.",
+      "tus trámites, crédito, empleo, negocios, inglés laboral e inversión " +
+      "para que tu familia avance sin cometer los mismos errores.",
     /**
      * Cada punto lleva ahora título y explicación. El título es la promesa
      * en tres palabras; la línea de abajo dice qué hay detrás, que es donde
@@ -123,22 +137,22 @@ const es = {
      */
     trustPoints: [
       {
-        title: "Acompañamiento con experiencia",
+        title: "Acompañamiento y ahorro real",
         body:
-          "Trámites, visas, licencias y citas explicadas desde la práctica " +
-          "real, no desde la teoría.",
+          "Trámites, visas, licencias y citas explicadas desde la práctica, " +
+          "con 20% de descuento para miembros en la gestoría directa.",
       },
       {
-        title: "Crecimiento económico probado",
+        title: "Inglés laboral en vivo y certificaciones",
         body:
-          "De la bancarización e ITIN a la creación de tu LLC, taxes e " +
-          "inversión al 4% APY.",
+          "Clases prácticas para el trabajo de martes a viernes, simulador " +
+          "de entrevistas y formación técnica en taxes y seguros.",
       },
       {
-        title: "Una comunidad que no te deja solo",
+        title: "Crecimiento económico y familia",
         body:
-          "Bolsa de empleo local, eventos en Utah y educación para tus " +
-          "hijos (Starbiz).",
+          "De tu ITIN a la LLC, inversión al 4% APY, bolsa de empleo local " +
+          "y educación empresarial para tus hijos (Starbiz).",
       },
     ],
     cta: "Unirme a la comunidad y armar mi plan",
@@ -148,8 +162,8 @@ const es = {
      * la entrevista viene el plan y su pago.
      */
     ctaHint:
-      "Diagnóstico de 5 preguntas · Diseñado por quienes ya superamos el " +
-      "proceso en EE. UU.",
+      "Diagnóstico de 5 preguntas · Clases en vivo incluidas · Diseñado " +
+      "por quienes ya superamos el proceso en EE. UU.",
     scrollHint: "Baja para conocer ANDEX",
     /**
      * El rótulo que anuncia el recorrido del producto.
@@ -224,7 +238,7 @@ const es = {
     alliancesEyebrow: "Con el ecosistema de",
     alliances: ["USA Latino Prime", "Starbiz Academy"],
     disclaimer:
-      "ANDEX no está afiliado a ninguna agencia gubernamental. Estos trámites son gratuitos en los portales oficiales.",
+      "ANDEX es una plataforma tecnológica y comunitaria privada. No es una agencia gubernamental ni un bufete de abogados, y estos trámites son gratuitos en los portales oficiales. La gestoría y la preparación documental las prestan agentes tramitadores y especialistas autorizados conforme a la normativa vigente.",
   },
 
   // ── S4 · Problema vs solución ───────────────────────────
@@ -475,11 +489,12 @@ const es = {
       price: (p: string) => `${p} / mes`,
       tagline: "Flexible. Cancelas cuando quieras.",
       features: [
-        "Los 7 módulos, completos",
         "Bóveda digital con alertas de vencimiento",
         "Guías migratorias y consulares",
+        "Inglés laboral en vivo, de martes a viernes",
+        "Bolsa de empleo local en Utah",
         "Directorio de vida local y ferias de ayuda",
-        "Soporte de la comunidad",
+        "20% de descuento en la gestoría directa",
       ],
       cta: "Elegir plan mensual",
     },
@@ -497,10 +512,18 @@ const es = {
       equivalent: (p: string) => `Equivale a ${p} al mes`,
       savings: (p: string) => `Ahorras ${p} al año`,
       tagline: "Para quien ya decidió quedarse.",
+      /*
+       * El documento maestro dice «AHORRO DIRECTO DEL 40% anual». Es falso y
+       * no se escribe: 14 × 12 = 168, y 168 − 140 = 28, que es un 17%. El
+       * 40% ya venía marcado como error en la cabecera de este archivo. Un
+       * número inflado en la única cifra que el visitante puede comprobar
+       * con una resta es la forma más rápida de perderlo.
+       */
       features: [
         "Todo lo del plan mensual",
-        "Tarifa congelada mientras mantengas tu membresía",
-        "Acceso prioritario a las alertas de empleo",
+        "Ahorras $28 al año: un 17% sobre pagar mes a mes",
+        "Tarifa congelada mientras mantengas tu membresía, aunque el precio suba para quien entre después",
+        "Prioridad en las alertas de empleo",
       ],
       cta: "Elegir plan anual",
       sealTitle: "Tarifa congelada",
@@ -515,6 +538,75 @@ const es = {
     note: "La membresía se renueva automáticamente. Te avisamos 48 horas antes de cada cobro.",
   },
 
+  /**
+   * ── S3 · RESPALDO Y SEGURIDAD ──
+   *
+   * Una insignia se cambió a propósito. El documento pide «Cifrado Bancario
+   * AES-256», y «nivel bancario» es justo la fórmula que este público oyó de
+   * quien lo estafó: la regla del proyecto prohíbe prometer de más en
+   * seguridad y obliga a decir el límite en la misma frase. AES-256 es
+   * verdad —la bóveda cifra con AES-GCM en el navegador—, así que se queda
+   * la parte comprobable y se le añade lo que de verdad la hace fuerte: que
+   * los archivos no salen del teléfono.
+   */
+  trustBar: {
+    title:
+      "Construido con tecnología de nivel institucional para darte la " +
+      "seguridad, el respaldo y la transparencia que tu familia merece en " +
+      "Estados Unidos.",
+    badges: [
+      {
+        label: "Cifrado AES-256 en tu teléfono",
+        note: "Los documentos se cifran en tu dispositivo y no salen de él.",
+      },
+      { label: "USA Latino Prime Ecosystem", note: "La infraestructura detrás de ANDEX." },
+      { label: "Starbiz Academy Network", note: "Formación empresarial para toda la familia." },
+      { label: "Red certificada IRS PTIN", note: "Preparadores con número asignado por el IRS." },
+      { label: "Guía de licencia de conducir de Utah", note: "Requisitos del DMV, paso a paso." },
+    ],
+  },
+
+  // ── S4 · La historia del fundador ───────────────────────
+  founder: {
+    eyebrow: "Quién está detrás",
+    title: "Sé lo que se siente llegar sin saber a quién acudir ni en quién confiar.",
+    body: [
+      "Cuando llegué a este país me enfrenté a lo mismo que tú: el miedo a " +
+        "cometer un error en un formulario, la frustración de no tener " +
+        "crédito, los abusos de quienes cobran sumas exorbitantes por " +
+        "trámites sencillos y la barrera del idioma.",
+      "Decidí crear ANDEX porque nadie debería tener que descifrar este " +
+        "sistema solo ni perder años de esfuerzo por falta de una guía " +
+        "honesta. Este no es un software creado desde un escritorio; es el " +
+        "mapa real, paso a paso, para que tú y tu familia construyan " +
+        "estabilidad y patrimonio en Estados Unidos.",
+    ],
+  },
+
+  // ── S6 · Inglés laboral en vivo ─────────────────────────
+  english: {
+    eyebrow: "Incluido en la membresía",
+    title: "Domina el inglés que multiplica tus ingresos, no la gramática aburrida.",
+    points: [
+      {
+        title: "Sesiones en vivo, de martes a viernes",
+        body: "Enfoque práctico en situaciones de trabajo reales.",
+      },
+      {
+        title: "Simuladores de entrevista",
+        body: "Práctica intensiva para postular a los puestos mejor pagados de la bolsa de empleo.",
+      },
+      {
+        title: "Inglés por especialidad",
+        body: "Construcción, atención al cliente, ventas, finanzas y trámites.",
+      },
+      {
+        title: "Sin cuotas aparte",
+        body: "Va dentro de la membresía: no se paga ninguna academia externa.",
+      },
+    ],
+  },
+
   // ── S9 · Preguntas frecuentes ───────────────────────────
   faq: {
     eyebrow: "Antes de que preguntes",
@@ -522,7 +614,19 @@ const es = {
     items: [
       {
         q: "¿Y si todavía no estoy en Estados Unidos?",
-        a: "ANDEX empieza antes del viaje. El módulo de preparación cubre visas de turismo y estudio, la cita consular y todo lo que conviene dejar resuelto desde tu país. Cuando llegues, la app cambia contigo.",
+        a: "ANDEX empieza antes del viaje. El módulo de preparación cubre las visas de turismo y estudio, la cita consular, el presupuesto y los primeros pasos. Cuando llegues, la app cambia contigo.",
+      },
+      {
+        q: "¿Por qué la membresía subirá de precio más adelante?",
+        a: "Porque van a entrar herramientas que hoy no existen. Cuando entren, la mensualidad subirá para quien se registre a partir de entonces. El plan anual de $140 congela tu tarifa mientras mantengas la membresía activa.",
+      },
+      {
+        q: "¿Cómo funcionan las clases de inglés laboral en vivo?",
+        a: "Se dan de martes a viernes dentro de la app, en sesiones interactivas y con la grabación disponible después. Van incluidas en la membresía: no se paga ninguna academia aparte.",
+      },
+      {
+        q: "¿Cómo accedo al 20% de descuento en los trámites?",
+        a: "Con la suscripción activa, el descuento se aplica solo cuando pides una gestoría directa. No hay que reclamarlo ni pedir un código.",
       },
       {
         q: "¿Cómo funciona la bóveda de documentos?",
@@ -545,9 +649,9 @@ const es = {
 
   // ── S10 · Cierre y pie ──────────────────────────────────
   closing: {
-    title: "Tu progreso cruza fronteras.",
+    title: "Tu esfuerzo merece un camino claro en Estados Unidos.",
     subtitle: "Empieza a construir tu futuro hoy.",
-    cta: "Completar mi registro",
+    cta: "Iniciar mi diagnóstico de 5 preguntas",
     /*
      * Mismo arreglo que en `hero.ctaHint`: la version anterior prometia
      * «no pedimos tarjeta» y el pago llega tres pantallas despues. Aqui, en
@@ -592,7 +696,7 @@ const en = {
   },
 
   banner: {
-    text: "Utah pilot 2026 · Founding members lock in their rate for as long as they keep their membership.",
+    text: "Utah pilot 2026 · Become a founding member and lock in your rate for as long as you keep your membership.",
     cta: "See founding benefits",
   },
 
@@ -602,12 +706,13 @@ const en = {
     links: {
       solucion: "Solutions",
       modulos: "Modules",
+      ingles: "Live English",
+      precios: "Membership",
       servicios: "Done-for-you",
       comunidad: "Community",
-      precios: "Pricing",
     },
     login: "Log in",
-    cta: "Get started",
+    cta: "Start the check-in",
     openMenu: "Open menu",
     closeMenu: "Close menu",
   },
@@ -628,32 +733,33 @@ const en = {
     body:
       "This is not one more app; it is the community and the system I built " +
       "after getting past every obstacle in the U.S. Here you find your " +
-      "paperwork, credit, work, business and investing in one place, so your " +
-      "family moves forward without repeating the same mistakes.",
+      "paperwork, credit, work, business, workplace English and investing in " +
+      "one place, so your family moves forward without repeating the same " +
+      "mistakes.",
     trustPoints: [
       {
-        title: "Guidance from someone who did it",
+        title: "Guidance and real savings",
         body:
           "Paperwork, visas, licenses and appointments explained from real " +
-          "practice, not from theory.",
+          "practice, with 20% off direct filing help for members.",
       },
       {
-        title: "Proven economic growth",
+        title: "Live workplace English and certifications",
         body:
-          "From opening a bank account and your ITIN to forming your LLC, " +
-          "taxes and investing at 4% APY.",
+          "Practical classes for work, Tuesday to Friday, an interview " +
+          "simulator and technical training in taxes and insurance.",
       },
       {
-        title: "A community that does not leave you alone",
+        title: "Economic growth and family",
         body:
-          "Local job board, events in Utah and education for your children " +
-          "(Starbiz).",
+          "From your ITIN to your LLC, investing at 4% APY, a local job " +
+          "board and business education for your children (Starbiz).",
       },
     ],
     cta: "Join the community and build my plan",
     ctaHint:
-      "A 5-question check-in · Designed by those of us who already got " +
-      "through the process in the U.S.",
+      "A 5-question check-in · Live classes included · Designed by those of " +
+      "us who already got through the process in the U.S.",
     scrollHint: "Scroll to learn about ANDEX",
     tourLabel: "How ANDEX works",
     mockup: {
@@ -924,11 +1030,12 @@ vision: {
       price: (p: string) => `${p} / month`,
       tagline: "Flexible. Cancel whenever you want.",
       features: [
-        "All 7 modules, complete",
         "Digital vault with expiration alerts",
         "Immigration and consular guides",
+        "Live workplace English, Tuesday to Friday",
+        "Local job board in Utah",
         "Local directory and help fairs",
-        "Community support",
+        "20% off direct filing help",
       ],
       cta: "Choose monthly",
     },
@@ -941,8 +1048,9 @@ vision: {
       tagline: "For those who already decided to stay.",
       features: [
         "Everything in the monthly plan",
-        "Rate locked for as long as you keep your membership",
-        "Priority access to job alerts",
+        "You save $28 a year: 17% versus paying month to month",
+        "Rate locked for as long as you keep your membership, even if the price goes up for people who join later",
+        "Priority on job alerts",
       ],
       cta: "Choose annual",
       sealTitle: "Locked rate",
@@ -957,10 +1065,78 @@ vision: {
     note: "Membership renews automatically. We remind you 48 hours before each charge.",
   },
 
+  trustBar: {
+    title:
+      "Built with institution-grade technology to give you the security, " +
+      "the backing and the transparency your family deserves in the " +
+      "United States.",
+    badges: [
+      {
+        label: "AES-256 encryption on your phone",
+        note: "Documents are encrypted on your device and never leave it.",
+      },
+      { label: "USA Latino Prime Ecosystem", note: "The infrastructure behind ANDEX." },
+      { label: "Starbiz Academy Network", note: "Business training for the whole family." },
+      { label: "IRS PTIN certified network", note: "Preparers with an IRS-issued number." },
+      { label: "Utah driver license guide", note: "DMV requirements, step by step." },
+    ],
+  },
+
+  founder: {
+    eyebrow: "Who is behind this",
+    title: "I know what it feels like to arrive with no one to turn to and no one to trust.",
+    body: [
+      "When I came to this country I faced the same things you do: the fear " +
+        "of getting a form wrong, the frustration of having no credit, the " +
+        "abuse of people who charge huge sums for simple paperwork, and the " +
+        "language barrier.",
+      "I decided to build ANDEX because nobody should have to decode this " +
+        "system alone or lose years of effort for want of honest guidance. " +
+        "This is not software written from a desk; it is the real map, step " +
+        "by step, so you and your family can build stability and wealth in " +
+        "the United States.",
+    ],
+  },
+
+  english: {
+    eyebrow: "Included in the membership",
+    title: "Master the English that raises your income, not boring grammar.",
+    points: [
+      {
+        title: "Live sessions, Tuesday to Friday",
+        body: "Practical focus on real workplace situations.",
+      },
+      {
+        title: "Interview simulators",
+        body: "Intensive practice for the best-paid roles on the job board.",
+      },
+      {
+        title: "English by trade",
+        body: "Construction, customer service, sales, finance and paperwork.",
+      },
+      {
+        title: "No separate fees",
+        body: "It is inside the membership: no outside academy to pay for.",
+      },
+    ],
+  },
+
   faq: {
     eyebrow: "Before you ask",
     title: "What everyone asks us",
     items: [
+      {
+        q: "Why will the membership cost more later on?",
+        a: "Because tools that do not exist yet are coming. When they land, the monthly price will go up for people who sign up from then on. The $140 annual plan freezes your rate for as long as your membership stays active.",
+      },
+      {
+        q: "How do the live workplace English classes work?",
+        a: "They run Tuesday to Friday inside the app, as interactive sessions with the recording available afterwards. They are included in the membership: there is no separate academy to pay for.",
+      },
+      {
+        q: "How do I get the 20% off on filing help?",
+        a: "With an active subscription the discount applies on its own when you request direct filing help. There is nothing to claim and no code to enter.",
+      },
       {
         q: "What if I'm not in the United States yet?",
         a: "ANDEX starts before the trip. The preparation module covers tourist and student visas, the consular appointment and everything worth settling from your country. When you arrive, the app changes with you.",
@@ -985,9 +1161,9 @@ vision: {
   },
 
   closing: {
-    title: "Your progress crosses borders.",
+    title: "Your effort deserves a clear path in the United States.",
     subtitle: "Start building your future today.",
-    cta: "Complete my signup",
+    cta: "Start my 5-question check-in",
     hint: "Five questions and you'll see your plan. You see the price before you pay.",
   },
   footer: {
@@ -1007,7 +1183,7 @@ vision: {
       contacto: "Support",
     },
     disclaimer:
-      "ANDEX is not affiliated with any government agency. These procedures are free on the official portals.",
+      "ANDEX is a private technology and community platform. It is not a government agency or a law firm, and these procedures are free on the official portals. Filing help and document preparation are provided by authorized filing agents and specialists under applicable regulations.",
     rights: (year: number) => `© ${year} ANDEX. All rights reserved.`,
   },
 } satisfies LandingDict;

@@ -16,35 +16,46 @@ import { SectionViewTracker } from "@/components/landing/section-view-tracker";
 import { TopBanner } from "@/components/landing/top-banner";
 import { SiteNav } from "@/components/landing/site-nav";
 import { SectionHero } from "@/components/landing/section-hero";
-import { SectionVision } from "@/components/landing/section-vision";
-import { SectionNeeds } from "@/components/landing/section-needs";
-import { SectionScanner } from "@/components/landing/section-scanner";
+import { SectionTrustBar } from "@/components/landing/section-trust-bar";
+import { SectionFounder } from "@/components/landing/section-founder";
+import { SectionEnglish } from "@/components/landing/section-english";
 import { SectionShowcase } from "@/components/landing/section-showcase";
-import { SectionReviews } from "@/components/landing/section-reviews";
 import { SectionPricing } from "@/components/landing/section-pricing";
 import { SectionFaq } from "@/components/landing/section-faq";
 import { SectionClosing } from "@/components/landing/section-closing";
 import { SiteFooter } from "@/components/landing/site-footer";
 
 /**
- * LANDING PAGE — la estructura de las maquetas.
+ * LANDING PAGE — la estructura del documento maestro.
  *
- *   1. Hero .............. la promesa y «Comenzar viaje»
- *   2. Qué es ANDEX ...... con cuatro cifras COMPROBABLES
- *   3. Lo que no funciona  cuatro situaciones, dos por dos
- *   4. El escáner ........ gratis y sin registro
- *   5. Los siete módulos . maestro-detalle en escritorio, lista en móvil
- *   6. El precio ......... antes de pedir un dato de pago
- *   7. Reseñas ........... vacía hoy, y dice por qué
- *   8. Preguntas ......... a dos columnas
- *   9. El cierre
+ * El orden y el contenido salen de «ANDEX_MASTER_SPECIFICATION_DOCUMENT.md»,
+ * sección 3. Los números son los suyos:
  *
- * Se retiraron de la página —los archivos siguen en el repositorio—
- * `SectionTrust`, `SectionCompare`, `ModuleWheel`, `SectionModules`,
- * `SectionServices` y `SectionPurpose`: las cuatro primeras las sustituyen
- * las secciones nuevas, y las dos últimas (misión, visión, Starbiz) son
- * contenido real que la maqueta no contempla y que hay que decidir dónde
- * va — no se borran a la ligera.
+ *   S0. Cinta superior ..... piloto y tarifa congelada
+ *   S1. Navegación ......... Soluciones · Módulos · Inglés en Vivo · Membresía
+ *   S2. Portada ............ «El camino que ya recorrí»
+ *   S3. Respaldo ........... cinco hechos comprobables, con su límite
+ *   S4. El fundador ........ la cita que sostiene el titular
+ *   S5. Los siete módulos .. maestro-detalle en escritorio, lista en móvil
+ *   S6. Inglés en vivo ..... destacada por el terreno, navy sobre crema
+ *   S8. Membresía .......... el precio antes de pedir un dato de pago
+ *   S9. Preguntas .......... acordeón, uno abierto a la vez
+ *   S10. Cierre y pie
+ *
+ * ── Lo que NO está, y por qué ──
+ *
+ * · **S7, servicios directos con 20% OFF**: fuera por decisión del producto.
+ *   El descuento se sigue nombrando donde es un beneficio del plan —portada,
+ *   tabla de precios y FAQ—, pero no tiene sección propia.
+ * · **El escáner gratis, las cifras comprobables, los cuatro problemas y las
+ *   reseñas**: no están en el documento, así que salen de la página. Los
+ *   componentes siguen en el repositorio y vuelven con una línea. El que más
+ *   pesa es el escáner: era la única parte de la página donde el producto
+ *   DEMOSTRABA en vez de contar, y sin registro.
+ *
+ * Se retiraron antes —y siguen en el repositorio— `SectionTrust`,
+ * `SectionCompare`, `ModuleWheel`, `SectionModules`, `SectionServices` y
+ * `SectionPurpose`.
  *
  * NOTA HISTÓRICA — diez secciones.
  *
@@ -79,9 +90,10 @@ function parseContext(raw: string | string[] | undefined): LocationContext | nul
  * esas metricas llevaban tiempo sin registrar nada, sin que nada fallara.
  */
 const TRACKED_SECTIONS = [
-  "solucion",
-  "probar",
+  "respaldo",
+  "fundador",
   "modulos",
+  "ingles",
   "precios",
   "faq",
   "cierre",
@@ -205,35 +217,22 @@ export default async function LandingPage({
           accountHref={ROUTES.registro}
         />
 
-        {/* La costura pinta el color de la sección de abajo sobre el de la de
-            arriba, así que necesita el navy detrás: la portada ya no está
-            sobre el fondo de página. */}
+        {/* ── S3 · Respaldo y seguridad ──
+            La costura pinta el color de la sección de abajo sobre la de
+            arriba, así que necesita el navy detrás: la portada no está sobre
+            el fondo de página. */}
         <div className="bg-navy">
           <SectionSeam to="surface" />
         </div>
-        {/* ── Qué es ANDEX, con cifras que se pueden comprobar ── */}
-        <SectionVision copy={t.vision} />
+        <SectionTrustBar copy={t.trustBar} />
 
-        {/* ── Lo que hoy no funciona ──
-            Va después del qué y antes del cómo: primero que alguien se
-            reconozca en el problema, luego enseñarle la herramienta. */}
-        <SectionSeam to="surface" />
-        <SectionNeeds copy={t.needs} />
-
-        {/* ── El escáner, gratis y sin registro ──
-            No está en las maquetas y se queda a propósito: es la única
-            parte de la página donde el producto DEMUESTRA en vez de
-            contar, y ocurre sin pedir un solo dato. Quitarlo sería
-            cambiar la prueba por una promesa. */}
+        {/* ── S4 · La historia del fundador ──
+            Sostiene el titular de la portada. «El camino que ya recorrí» sin
+            esto es un eslogan; aquí se dice qué camino. */}
         <SectionSeam to="page" />
-        <SectionScanner
-          copy={t.liveScanner}
-          scanCopy={dict.boveda.scan}
-          ctaHref={ROUTES.registro}
-        />
+        <SectionFounder copy={t.founder} />
 
-        {/* ── Los siete módulos, uno a uno ── */}
-        <SectionSeam to="surface" />
+        {/* ── S5 · Los siete módulos ── */}
         <SectionShowcase
           copy={t.showcase}
           modules={modules.map((m) => ({
@@ -245,22 +244,26 @@ export default async function LandingPage({
           }))}
         />
 
-        {/* ── El precio, antes de pedir un dato de pago ──
-            Tampoco está en las maquetas, y también se queda: es un producto
-            de suscripción y esconder el precio hasta el registro es
-            exactamente lo que hace desconfiar a quien ya fue estafado. */}
-        <SectionSeam to="teal-soft" />
+        {/* ── S6 · Inglés laboral en vivo ──
+            Destacada por el terreno: navy en mitad de una página crema. El
+            salto tonal la separa sin marco ni etiqueta de «nuevo». */}
+        <SectionSeam to="navy" />
+        <SectionEnglish copy={t.english} />
+
+        {/* ── S8 · Membresía y precios ──
+            La S7 del documento —servicios directos con 20% OFF— se deja
+            fuera por decisión del producto. El descuento sigue nombrado
+            donde es un beneficio del plan: la portada, esta tabla y la FAQ. */}
+        <div className="bg-navy">
+          <SectionSeam to="teal-soft" />
+        </div>
         <SectionPricing
           copy={pricing}
           monthlyHref={ROUTES.registro}
           annualHref={ROUTES.registro}
         />
 
-        {/* ── Reseñas ──
-            Hoy sale vacía a propósito: no hay ninguna real todavía. */}
-        <SectionSeam to="page" />
-        <SectionReviews copy={t.reviews} />
-
+        {/* ── S9 · Preguntas frecuentes ── */}
         <SectionSeam to="page" />
         <SectionFaq
           eyebrow={t.faq.eyebrow}
@@ -268,6 +271,7 @@ export default async function LandingPage({
           items={t.faq.items}
         />
 
+        {/* ── S10 · Cierre ── */}
         <SectionSeam to="navy" shape="wedge" />
         <SectionClosing
           title={t.closing.title}
