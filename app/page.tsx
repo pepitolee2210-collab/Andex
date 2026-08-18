@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { COOKIES, PRICES, ROUTES } from "@/lib/config";
 import { MODULES } from "@/lib/catalogs/modules";
 import { getGeoHint, suggestedContext } from "@/lib/geo";
+import { imagenesLanding } from "@/lib/landing-images";
 import { getDictionary } from "@/lib/i18n";
 import { getLang } from "@/lib/i18n/server";
 import type { LocationContext } from "@/lib/types";
@@ -110,6 +111,10 @@ export default async function LandingPage({
     cookies(),
     getGeoHint(),
   ]);
+
+  /* Sólo entran las que existen en `public/`: una imagen que todavía no
+     está pintaría el icono de roto en mitad de la sección. */
+  const imagenes = imagenesLanding();
 
   const dict = getDictionary(lang);
   const t = dict.landing;
@@ -224,13 +229,13 @@ export default async function LandingPage({
         <div className="bg-navy">
           <SectionSeam to="surface" />
         </div>
-        <SectionTrustBar copy={t.trustBar} />
+        <SectionTrustBar copy={t.trustBar} images={imagenes.comunidad} />
 
         {/* ── S4 · La historia del fundador ──
             Sostiene el titular de la portada. «El camino que ya recorrí» sin
             esto es un eslogan; aquí se dice qué camino. */}
         <SectionSeam to="page" />
-        <SectionFounder copy={t.founder} />
+        <SectionFounder copy={t.founder} images={imagenes.fundador} />
 
         {/* ── S5 · Los siete módulos ── */}
         <SectionShowcase
@@ -248,7 +253,7 @@ export default async function LandingPage({
             Destacada por el terreno: navy en mitad de una página crema. El
             salto tonal la separa sin marco ni etiqueta de «nuevo». */}
         <SectionSeam to="navy" />
-        <SectionEnglish copy={t.english} />
+        <SectionEnglish copy={t.english} images={imagenes.ingles} />
 
         {/* ── S8 · Membresía y precios ──
             La S7 del documento —servicios directos con 20% OFF— se deja

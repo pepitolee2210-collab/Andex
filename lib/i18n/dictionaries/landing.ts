@@ -550,6 +550,16 @@ const es = {
    * los archivos no salen del teléfono.
    */
   trustBar: {
+    /* Uno por imagen: quien no las ve merece saber qué cambia entre una y
+       otra, no oír tres veces la misma frase. */
+    imageAlts: [
+      "Familias hispanas conversando en un encuentro de la comunidad en Utah.",
+      "Padres y niños en una feria de ayuda al aire libre, con las montañas de Utah al fondo.",
+      "Un grupo de vecinos compartiendo comida en una reunión de barrio.",
+      "El muro de la comunidad de ANDEX abierto en el teléfono, con mensajes entre miembros.",
+      "Una familia siguiendo juntos un taller en vivo de ANDEX desde la tablet.",
+    ],
+    imageNav: "Foto {n} de {total}",
     title:
       "Construido con tecnología de nivel institucional para darte la " +
       "seguridad, el respaldo y la transparencia que tu familia merece en " +
@@ -570,6 +580,10 @@ const es = {
   founder: {
     eyebrow: "Quién está detrás",
     title: "Sé lo que se siente llegar sin saber a quién acudir ni en quién confiar.",
+    /* El texto alterno describe QUÉ SE VE, no repite el titular: quien usa
+       lector de pantalla ya oyó el titular una línea antes. */
+    imageAlts: ["Henry, fundador de ANDEX, en Utah."],
+    imageNav: "Foto {n} de {total}",
     body: [
       "Cuando llegué a este país me enfrenté a lo mismo que tú: el miedo a " +
         "cometer un error en un formulario, la frustración de no tener " +
@@ -587,6 +601,15 @@ const es = {
   english: {
     eyebrow: "Incluido en la membresía",
     title: "Domina el inglés que multiplica tus ingresos, no la gramática aburrida.",
+    /* Las tres dicen lo mismo que la sección: esto ocurre DENTRO de la
+       app. Nada de aulas ni pizarras — el producto es digital y la imagen
+       no puede prometer un sitio físico al que nadie va a ir. */
+    imageAlts: [
+      "Una sesión de inglés en vivo abierta en la app de ANDEX, en el teléfono.",
+      "El simulador de entrevista de trabajo de ANDEX, en la pantalla del teléfono.",
+      "Alguien practicando inglés con la app mientras toma notas.",
+    ],
+    imageNav: "Foto {n} de {total}",
     points: [
       {
         title: "Sesiones en vivo, de martes a viernes",
@@ -1066,6 +1089,14 @@ vision: {
   },
 
   trustBar: {
+    imageAlts: [
+      "Hispanic families talking at a community gathering in Utah.",
+      "Parents and children at an outdoor help fair, with the Utah mountains behind them.",
+      "Neighbours sharing food at a local get-together.",
+      "The ANDEX community wall open on a phone, with messages between members.",
+      "A family following a live ANDEX workshop together on a tablet.",
+    ],
+    imageNav: "Photo {n} of {total}",
     title:
       "Built with institution-grade technology to give you the security, " +
       "the backing and the transparency your family deserves in the " +
@@ -1085,6 +1116,8 @@ vision: {
   founder: {
     eyebrow: "Who is behind this",
     title: "I know what it feels like to arrive with no one to turn to and no one to trust.",
+    imageAlts: ["Henry, founder of ANDEX, in Utah."],
+    imageNav: "Photo {n} of {total}",
     body: [
       "When I came to this country I faced the same things you do: the fear " +
         "of getting a form wrong, the frustration of having no credit, the " +
@@ -1101,6 +1134,12 @@ vision: {
   english: {
     eyebrow: "Included in the membership",
     title: "Master the English that raises your income, not boring grammar.",
+    imageAlts: [
+      "A live English session open inside the ANDEX app, on a phone.",
+      "The ANDEX job-interview simulator on a phone screen.",
+      "Someone practising English with the app while taking notes.",
+    ],
+    imageNav: "Photo {n} of {total}",
     points: [
       {
         title: "Live sessions, Tuesday to Friday",

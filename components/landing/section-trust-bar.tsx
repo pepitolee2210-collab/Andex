@@ -1,6 +1,8 @@
 import { Building2, Car, FileCheck2, GraduationCap, ShieldCheck } from "lucide-react";
 
 import { Reveal, RevealGroup, RevealItem } from "@/components/motion/reveal";
+import type { LandingImage } from "@/lib/landing-images";
+import { MediaSeccion } from "./media-seccion";
 
 /**
  * S3 · RESPALDO INSTITUCIONAL Y SEGURIDAD.
@@ -32,10 +34,16 @@ export type TrustBadge = {
 export type SectionTrustBarCopy = {
   title: string;
   badges: readonly TrustBadge[];
+  /** Qué se ve en cada imagen, en orden. Sale de `lib/i18n`. */
+  imageAlts: readonly string[];
+  /** «Foto {n} de {total}» para los puntos del carrusel. */
+  imageNav: string;
 };
 
 export type SectionTrustBarProps = {
   copy: SectionTrustBarCopy;
+  /** Las que existan en disco. Ver `lib/landing-images.ts`. */
+  images?: readonly LandingImage[];
   id?: string;
 };
 
@@ -46,7 +54,11 @@ export type SectionTrustBarProps = {
  */
 const ICONOS = [ShieldCheck, Building2, GraduationCap, FileCheck2, Car] as const;
 
-export function SectionTrustBar({ copy, id = "respaldo" }: SectionTrustBarProps) {
+export function SectionTrustBar({
+  copy,
+  images = [],
+  id = "respaldo",
+}: SectionTrustBarProps) {
   return (
     <section
       id={id}
@@ -54,6 +66,24 @@ export function SectionTrustBar({ copy, id = "respaldo" }: SectionTrustBarProps)
       className="border-y border-line bg-surface px-5 py-14 sm:px-6 sm:py-20"
     >
       <div className="mx-auto w-full max-w-6xl">
+        {/* La banda de comunidad. Panorámica y baja a propósito: aquí no es
+            el asunto, es el terreno sobre el que se apoya la frase que viene
+            debajo. A la altura de una fotografía normal se comería la
+            sección entera y las cinco insignias caerían fuera de pantalla. */}
+        {images.length > 0 ? (
+          <Reveal className="mb-10 block sm:mb-14">
+            <MediaSeccion
+              images={images}
+              alts={copy.imageAlts}
+              navLabel={copy.imageNav}
+              aspect="aspect-[3/1]"
+              sizes="(min-width: 1280px) 72rem, 100vw"
+              objectPosition="center 45%"
+              className="overflow-hidden rounded-xl bg-surface-alt"
+            />
+          </Reveal>
+        ) : null}
+
         <Reveal className="mx-auto max-w-3xl text-center">
           <h2
             id={`${id}-titulo`}

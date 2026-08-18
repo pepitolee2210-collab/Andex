@@ -1,6 +1,8 @@
 import { Quote } from "lucide-react";
 
 import { Reveal } from "@/components/motion/reveal";
+import type { LandingImage } from "@/lib/landing-images";
+import { MediaSeccion } from "./media-seccion";
 
 /**
  * S4 · LA HISTORIA DEL FUNDADOR.
@@ -16,9 +18,22 @@ import { Reveal } from "@/components/motion/reveal";
  * diseño, que es lo que hace que un lector de pantalla lo anuncie como cita
  * y no como cuerpo de página.
  *
+ * ── El retrato ──
+ *
+ * Es OPCIONAL y la sección está compuesta para las dos versiones. Con foto,
+ * dos columnas en escritorio: el rostro a la izquierda, la cita a la
+ * derecha. Sin foto, una sola columna centrada, exactamente como estaba.
+ * Ninguna de las dos es la versión degradada de la otra.
+ *
+ * `sizes` no es decoración: sin él, el navegador pide la variante de ancho
+ * completo aunque la imagen ocupe un tercio de pantalla, y en el Android de
+ * gama media con datos contados del brief eso son cientos de kilobytes
+ * tirados. Y `priority` está deliberadamente APAGADO: esta sección vive por
+ * debajo del pliegue y adelantar su descarga competiría con el recorrido de
+ * la portada, que sí se ve de entrada.
+ *
  * Server Component: no hay estado. La entrada la ponen las primitivas
- * cliente `Reveal`, escalonadas para que el titular llegue antes que la
- * cita.
+ * cliente `Reveal`, escalonadas para que el titular llegue antes que la cita.
  */
 
 export type SectionFounderCopy = {
@@ -26,57 +41,108 @@ export type SectionFounderCopy = {
   title: string;
   /** Los párrafos de la cita, en orden. */
   body: readonly string[];
+  /** Qué se ve en cada imagen, en orden. Sale de `lib/i18n`. */
+  imageAlts: readonly string[];
+  /** «Foto {n} de {total}» para los puntos del carrusel. */
+  imageNav: string;
 };
 
 export type SectionFounderProps = {
   copy: SectionFounderCopy;
+  /** Las que existan en disco. Ver `lib/landing-images.ts`. */
+  images?: readonly LandingImage[];
   id?: string;
 };
 
-export function SectionFounder({ copy, id = "fundador" }: SectionFounderProps) {
+export function SectionFounder({
+  copy,
+  images = [],
+  id = "fundador",
+}: SectionFounderProps) {
+  const hayImagen = images.length > 0;
+  const cita = (
+    <>
+      {/* El filete teal a la izquierda hace de comilla: marca dónde empieza
+          la voz del fundador y dónde termina, sin necesidad de firmarla. */}
+      <blockquote className="border-l-2 border-teal pl-5 sm:pl-6">
+        {copy.body.map((parrafo, i) => (
+          <p
+            key={parrafo.slice(0, 40)}
+            className={
+              i === 0
+                ? "text-body text-muted sm:text-body-lg"
+                : "mt-4 text-body text-muted sm:text-body-lg"
+            }
+          >
+            {parrafo}
+          </p>
+        ))}
+      </blockquote>
+    </>
+  );
+
   return (
     <section
       id={id}
       aria-labelledby={`${id}-titulo`}
       className="px-5 py-16 sm:px-6 sm:py-24"
     >
-      <div className="mx-auto w-full max-w-3xl">
-        <Reveal>
-          <span
-            aria-hidden="true"
-            className="flex size-11 items-center justify-center rounded-full bg-teal-soft text-teal-deep"
-          >
-            <Quote className="size-5" />
-          </span>
-          <p className="mt-4 text-caption font-bold uppercase tracking-widest text-teal-deep">
-            {copy.eyebrow}
-          </p>
-          <h2
-            id={`${id}-titulo`}
-            className="mt-3 font-heading text-h1 text-ink sm:text-display"
-          >
-            {copy.title}
-          </h2>
-        </Reveal>
+      <div
+        className={
+          hayImagen
+            ? "mx-auto grid w-full max-w-6xl grid-cols-1 items-start gap-9 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-14"
+            : "mx-auto w-full max-w-3xl"
+        }
+      >
+        {hayImagen ? (
+          <Reveal className="lg:sticky lg:top-24">
+            {/* `rounded-xl` y sin sombra en línea: de noche el token de
+                sombra vale `none` y una escrita a mano cancelaría el filete
+                que la sustituye. */}
+            <MediaSeccion
+              images={images}
+              alts={copy.imageAlts}
+              navLabel={copy.imageNav}
+              aspect="aspect-[4/5]"
+              sizes="(min-width: 1024px) 32rem, 100vw"
+              objectPosition="center 30%"
+              className="overflow-hidden rounded-xl bg-surface-alt"
+            />
+          </Reveal>
+        ) : null}
 
-        {/* El filete teal a la izquierda hace de comilla: marca dónde empieza
-            la voz del fundador y dónde termina, sin necesidad de firmarla. */}
-        <Reveal delay={0.1}>
-          <blockquote className="mt-7 border-l-2 border-teal pl-5 sm:mt-9 sm:pl-6">
-            {copy.body.map((parrafo, i) => (
-              <p
-                key={parrafo.slice(0, 40)}
-                className={
-                  i === 0
-                    ? "text-body text-muted sm:text-body-lg"
-                    : "mt-4 text-body text-muted sm:text-body-lg"
-                }
+        <div>
+          <Reveal>
+            {/* El icono de comillas sólo cuando NO hay retrato: con foto, la
+                cara ya dice que alguien habla, y dos señales para lo mismo
+                es una de más. */}
+            {hayImagen ? null : (
+              <span
+                aria-hidden="true"
+                className="flex size-11 items-center justify-center rounded-full bg-teal-soft text-teal-deep"
               >
-                {parrafo}
-              </p>
-            ))}
-          </blockquote>
-        </Reveal>
+                <Quote className="size-5" />
+              </span>
+            )}
+            <p
+              className={`text-caption font-bold uppercase tracking-widest text-teal-deep ${
+                hayImagen ? "" : "mt-4"
+              }`}
+            >
+              {copy.eyebrow}
+            </p>
+            <h2
+              id={`${id}-titulo`}
+              className="mt-3 font-heading text-h1 text-ink sm:text-display"
+            >
+              {copy.title}
+            </h2>
+          </Reveal>
+
+          <Reveal delay={0.1} className="mt-7 block sm:mt-9">
+            {cita}
+          </Reveal>
+        </div>
       </div>
     </section>
   );

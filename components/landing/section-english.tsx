@@ -1,6 +1,8 @@
 import { Check } from "lucide-react";
 
 import { Reveal, RevealGroup, RevealItem } from "@/components/motion/reveal";
+import type { LandingImage } from "@/lib/landing-images";
+import { MediaSeccion } from "./media-seccion";
 
 /**
  * S6 · INGLÉS LABORAL EN VIVO.
@@ -33,14 +35,25 @@ export type SectionEnglishCopy = {
   eyebrow: string;
   title: string;
   points: readonly EnglishPoint[];
+  /** Qué se ve en cada imagen, en orden. Sale de `lib/i18n`. */
+  imageAlts: readonly string[];
+  /** «Foto {n} de {total}» para los puntos del carrusel. */
+  imageNav: string;
 };
 
 export type SectionEnglishProps = {
   copy: SectionEnglishCopy;
+  /** Las que existan en disco. Ver `lib/landing-images.ts`. */
+  images?: readonly LandingImage[];
   id?: string;
 };
 
-export function SectionEnglish({ copy, id = "ingles" }: SectionEnglishProps) {
+export function SectionEnglish({
+  copy,
+  images = [],
+  id = "ingles",
+}: SectionEnglishProps) {
+  const hayImagen = images.length > 0;
   return (
     <section
       id={id}
@@ -60,9 +73,37 @@ export function SectionEnglish({ copy, id = "ingles" }: SectionEnglishProps) {
           </h2>
         </Reveal>
 
+        {/* Con imagen, los cuatro puntos bajan a una sola columna y la
+            foto ocupa la otra mitad: cuatro tarjetas a dos columnas MÁS una
+            imagen al lado dejaban las tarjetas en tiras de texto partido.
+            Sin imagen, la rejilla de dos por dos de siempre. */}
+        <div
+          className={
+            hayImagen
+              ? "mt-9 grid grid-cols-1 items-start gap-7 sm:mt-12 lg:grid-cols-2 lg:gap-12"
+              : "contents"
+          }
+        >
+          {hayImagen ? (
+            <Reveal className="lg:order-2">
+              <MediaSeccion
+                images={images}
+                alts={copy.imageAlts}
+                navLabel={copy.imageNav}
+                aspect="aspect-[3/2]"
+                sizes="(min-width: 1024px) 34rem, 100vw"
+                className="overflow-hidden rounded-xl bg-[color:var(--surface-on-invert)]"
+              />
+            </Reveal>
+          ) : null}
+
         <RevealGroup
           as="ul"
-          className="mt-9 grid grid-cols-1 gap-4 sm:mt-12 sm:grid-cols-2 sm:gap-5"
+          className={
+            hayImagen
+              ? "grid grid-cols-1 gap-4 lg:order-1"
+              : "mt-9 grid grid-cols-1 gap-4 sm:mt-12 sm:grid-cols-2 sm:gap-5"
+          }
         >
           {copy.points.map((punto) => (
             <RevealItem
@@ -90,6 +131,7 @@ export function SectionEnglish({ copy, id = "ingles" }: SectionEnglishProps) {
             </RevealItem>
           ))}
         </RevealGroup>
+        </div>
       </div>
     </section>
   );
