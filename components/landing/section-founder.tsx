@@ -99,15 +99,32 @@ export function SectionFounder({
             {/* `rounded-xl` y sin sombra en línea: de noche el token de
                 sombra vale `none` y una escrita a mano cancelaría el filete
                 que la sustituye. */}
-            <MediaSeccion
-              images={images}
-              alts={copy.imageAlts}
-              navLabel={copy.imageNav}
-              aspect="aspect-[4/5]"
-              sizes="(min-width: 1024px) 32rem, 100vw"
-              objectPosition="center 30%"
-              className="overflow-hidden rounded-xl bg-surface-alt"
-            />
+            {/* El eco del arco detrás del retrato. Decorativo puro, y
+                deliberadamente a media opacidad: es un rastro, no un marco. */}
+            <div className="relative">
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 440 440"
+                className="pointer-events-none absolute -left-8 -top-6 -z-10 hidden w-[calc(100%+4rem)] opacity-50 lg:block"
+              >
+                <path
+                  d="M20 400 A 200 200 0 0 1 420 400"
+                  fill="none"
+                  stroke="var(--accent)"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+              <MediaSeccion
+                images={images}
+                alts={copy.imageAlts}
+                navLabel={copy.imageNav}
+                aspect="aspect-[4/5]"
+                sizes="(min-width: 1024px) 32rem, 100vw"
+                objectPosition="center 30%"
+                className="arco-sup bg-surface-alt"
+              />
+            </div>
           </Reveal>
         ) : null}
 

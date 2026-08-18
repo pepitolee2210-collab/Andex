@@ -174,6 +174,26 @@ const es = {
      */
     tourLabel: "Así funciona ANDEX",
     /**
+     * Las dos tarjetas que se escapan del teléfono en la portada.
+     *
+     * No son adorno: son las dos cosas que este producto hace y que no se
+     * entienden leyendo el nombre de un módulo — que avisa ANTES de que algo
+     * venza, y que las clases son en vivo y tienen hora. Un mockup cerrado
+     * las esconde dentro de una pantalla de 300px; sacándolas, se leen.
+     */
+    tarjetas: {
+      aviso: {
+        label: "Aviso preventivo",
+        title: "Tu permiso de trabajo vence en 60 días",
+        note: "Te avisamos a los 90, 60 y 30.",
+      },
+      vivo: {
+        label: "En vivo ahora",
+        title: "Inglés para la entrevista",
+        note: "MAR–VIE · 19:00 MT",
+      },
+    },
+    /**
      * El mockup reproduce el PANEL REAL, no pantallas inventadas: mismo
      * saludo, misma tarjeta recomendada con su porqué, mismos módulos.
      * Enseñar el producto de verdad convence más que una ilustración.
@@ -604,6 +624,17 @@ const es = {
     /* Las tres dicen lo mismo que la sección: esto ocurre DENTRO de la
        app. Nada de aulas ni pizarras — el producto es digital y la imagen
        no puede prometer un sitio físico al que nadie va a ir. */
+    /* La tarjeta que se escapa de la foto. Dice la única cosa de esta
+       sección que no se entiende leyendo el titular: que las clases tienen
+       día y hora, y que son en vivo de verdad. */
+    /* La tarjeta que se escapa de la foto. Dice la única cosa de esta
+       sección que no se entiende leyendo el titular: que las clases tienen
+       día y hora, y que son en vivo de verdad. */
+    sesion: {
+      label: "Próxima sesión",
+      title: "Inglés para la obra",
+      note: "MIÉ · 19:00 MT",
+    },
     imageAlts: [
       "Una sesión de inglés en vivo abierta en la app de ANDEX, en el teléfono.",
       "El simulador de entrevista de trabajo de ANDEX, en la pantalla del teléfono.",
@@ -785,6 +816,18 @@ const en = {
       "us who already got through the process in the U.S.",
     scrollHint: "Scroll to learn about ANDEX",
     tourLabel: "How ANDEX works",
+    tarjetas: {
+      aviso: {
+        label: "Heads-up",
+        title: "Your work permit expires in 60 days",
+        note: "We tell you at 90, 60 and 30.",
+      },
+      vivo: {
+        label: "Live now",
+        title: "English for the interview",
+        note: "TUE–FRI · 7:00 PM MT",
+      },
+    },
     mockup: {
       ariaLabel: "Preview of the ANDEX dashboard",
       chip: "Utah",
@@ -1134,6 +1177,11 @@ vision: {
   english: {
     eyebrow: "Included in the membership",
     title: "Master the English that raises your income, not boring grammar.",
+    sesion: {
+      label: "Next session",
+      title: "English for the job site",
+      note: "WED · 7:00 PM MT",
+    },
     imageAlts: [
       "A live English session open inside the ANDEX app, on a phone.",
       "The ANDEX job-interview simulator on a phone screen.",

@@ -130,7 +130,7 @@ export function SectionPricing({
     <section
       id={id}
       aria-labelledby={titleId}
-      className="bg-teal-soft px-5 py-16 sm:py-24"
+      className="relative bg-page px-5 py-16 sm:py-24"
     >
       <div className="mx-auto max-w-5xl">
         <Reveal
@@ -181,7 +181,7 @@ export function SectionPricing({
           {/* ── ANUAL — destacado, no escondido el otro ───────────── */}
           <RevealItem className="h-full">
             <article
-              className={`${CARD_BASE} border-2 border-teal-deep shadow-lg ring-4 ring-teal/25`}
+              className={`${CARD_BASE} border-2 border-teal-deep shadow-lg lg:scale-[1.045]`}
             >
               <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                 <h3 className="font-heading text-h3 text-ink">

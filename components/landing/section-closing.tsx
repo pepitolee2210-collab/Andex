@@ -108,7 +108,7 @@ export function SectionClosing({
       ref={rootRef}
       id={id}
       aria-labelledby={`${id}-titulo`}
-      className={cn("bg-navy px-5 py-20 sm:py-28", className)}
+      className={cn("relative overflow-hidden bg-navy-body px-5 py-20 sm:py-28", className)}
     >
       <div className="mx-auto max-w-3xl text-center">
         {/* El trazo. Nace dibujado: si GSAP no llega a cargar (o el sistema

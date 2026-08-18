@@ -66,7 +66,7 @@ export type SiteFooterProps = {
 };
 
 const LINK_CLASS =
-  "inline-flex min-h-11 items-center rounded-md text-body text-muted transition-colors duration-150 hover:text-ink";
+  "inline-flex min-h-11 items-center rounded-md text-body text-[color:var(--text-on-invert-quiet)] transition-colors duration-150 hover:text-[color:var(--text-on-invert)]";
 
 export function SiteFooter({
   brand,
@@ -101,21 +101,21 @@ export function SiteFooter({
 
   return (
     <footer
-      className={cn("border-t border-line bg-surface px-5 py-12 sm:py-16", className)}
+      className={cn("bg-navy-deep px-5 py-12 text-[color:var(--text-on-invert)] sm:py-16", className)}
     >
       <div className="mx-auto max-w-6xl">
         <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 sm:gap-8 lg:grid-cols-4">
           {/* Marca. A 320px va sola arriba; desde 1024 ocupa su columna. */}
           <div className="lg:pr-8">
-            <span className="block font-heading text-h3 font-bold tracking-tight text-ink">
+            <span className="block font-heading text-h3 font-bold tracking-tight text-[color:var(--text-on-invert)]">
               {brand}
             </span>
-            <p className="mt-2 max-w-sm text-body text-muted">{tagline}</p>
+            <p className="mt-2 max-w-sm text-body text-[color:var(--text-on-invert-quiet)]">{tagline}</p>
           </div>
 
           {groups.map((group) => (
             <nav key={group.title} aria-label={group.title}>
-              <h2 className="font-heading text-label font-semibold uppercase tracking-widest text-ink">
+              <h2 className="font-heading text-label font-semibold uppercase tracking-widest text-[color:var(--text-on-invert)]">
                 {group.title}
               </h2>
               <ul className="mt-2 flex flex-col">
@@ -132,10 +132,10 @@ export function SiteFooter({
         </div>
 
         {/* §6 — no afiliación gubernamental. Obligatorio y permanente. */}
-        <p className="mt-10 border-t border-line pt-6 text-body text-muted">
+        <p className="mt-10 border-t border-[color:var(--hairline-on-invert-soft)] pt-6 text-body text-[color:var(--text-on-invert-quiet)]">
           {disclaimer}
         </p>
-        <p className="mt-2 text-caption text-muted">{rights}</p>
+        <p className="mt-2 text-caption text-[color:var(--text-on-invert-quiet)]">{rights}</p>
       </div>
     </footer>
   );

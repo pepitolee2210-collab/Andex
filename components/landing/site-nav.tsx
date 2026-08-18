@@ -241,7 +241,7 @@ export function SiteNav({
         className={cn(
           "sticky top-0 z-40 w-full border-b transition-colors duration-300",
           scrolled
-            ? "border-line bg-surface/80 shadow-sm backdrop-blur-lg"
+            ? "border-[color:var(--hairline-on-invert-soft)] bg-[color:var(--navy-deep)]/85 backdrop-blur-lg"
             : "border-transparent bg-transparent",
           className,
         )}
@@ -252,13 +252,13 @@ export function SiteNav({
             href={ROUTES.landing}
             className="mr-auto inline-flex min-h-11 shrink-0 flex-col justify-center"
           >
-            <span className="font-heading text-h3 font-bold tracking-tight text-ink">
+            <span className="font-heading text-h3 font-bold tracking-tight text-[color:var(--text-on-invert)]">
               {copy.brand}
             </span>
             {/* El tagline solo cabe con holgura a partir de 1440px: entre
                 1024 y 1439 la fila ya va justa con cinco enlaces + cuatro
                 controles a la derecha. */}
-            <span className="hidden text-caption leading-tight text-muted xl:block">
+            <span className="hidden text-caption leading-tight text-[color:var(--text-on-invert-quiet)] xl:block">
               {copy.tagline}
             </span>
           </a>
@@ -278,8 +278,8 @@ export function SiteNav({
                 href={NAV_HREF[key]}
                 className={cn(
                   "inline-flex min-h-11 items-center whitespace-nowrap rounded-md px-2 xl:px-3",
-                  "text-label font-medium text-muted xl:text-body",
-                  "transition-colors duration-150 hover:bg-surface-alt hover:text-ink",
+                  "text-label font-medium text-[color:var(--text-on-invert-quiet)] xl:text-body",
+                  "transition-colors duration-150 hover:bg-[color:var(--surface-on-invert)] hover:text-[color:var(--text-on-invert)]",
                 )}
               >
                 {copy.links[key]}
@@ -325,8 +325,8 @@ export function SiteNav({
             aria-controls="andex-nav-panel"
             className={cn(
               "inline-flex size-11 shrink-0 items-center justify-center rounded-md",
-              "border border-line bg-surface text-ink",
-              "transition-colors duration-150 hover:bg-surface-alt lg:hidden",
+              "border border-[color:var(--hairline-on-invert-soft)] bg-[color:var(--surface-on-invert)] text-[color:var(--text-on-invert)]",
+              "transition-colors duration-150 hover:bg-[color:var(--hairline-on-invert)] lg:hidden",
             )}
           >
             <Menu aria-hidden="true" className="size-5" />

@@ -230,6 +230,97 @@
     to   { transform: translate3d(16%, 0, 0); }
   }
 
+  /* ═══ DIRECCIÓN «PANEL» — el vocabulario de la landing ═══
+
+     ── El arco recorta ──
+     El isotipo de ANDEX es un arco. Aquí deja de ser un logotipo de 26px y
+     pasa a ser la forma con la que la página corta: fotos con la cabeza —o
+     el pie— redondeados en arco, en vez de rectángulos con las esquinas
+     limadas. Es lo que hace que la página no se lea como una pila de cajas.
+
+     El radio es grande a propósito (190px en escritorio). Por debajo de
+     unos 120 no se lee como un arco: se lee como una esquina redondeada
+     que se ha ido de la mano. */
+  .arco-sup { border-radius: 190px 190px var(--radius-lg) var(--radius-lg); overflow: hidden; }
+  .arco-inf { border-radius: var(--radius-lg) var(--radius-lg) 190px 190px; overflow: hidden; }
+  @media (max-width: 640px) {
+    .arco-sup { border-radius: 140px 140px var(--radius-lg) var(--radius-lg); }
+    .arco-inf { border-radius: var(--radius-lg) var(--radius-lg) 140px 140px; }
+  }
+
+  /* ── Vidrio sobre el navy ──
+     La superficie y el filete salen de `globals.css`; aquí sólo se componen
+     con el desenfoque y la sombra. Nunca se escribe la sombra en línea: de
+     noche el token vale `none` y una a mano cancelaría el filete que la
+     sustituye. */
+  .vidrio {
+    background: var(--surface-on-invert);
+    border: 1px solid var(--hairline-on-invert-soft);
+    border-radius: var(--radius-xl);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: var(--shadow-float);
+  }
+  .vidrio.plano { box-shadow: none; }
+  /* La variante que lleva texto encima. Ver `--surface-glass-read`: el
+     vidrio translúcido de verdad sólo vale donde no hay nada que leer. */
+  .vidrio.legible { background: var(--surface-glass-read); }
+
+  /* ── Movimiento ──
+     Todo se anima con `transform` u `opacity`: el compositor lo resuelve en
+     la GPU sin volver a maquetar la página. Nada anima anchos, altos ni
+     filtros, que es donde aparece el tirón en un Android de gama media. */
+
+  /* Las tarjetas que se escapan del teléfono. El giro va en `--giro` para
+     que la rotación de reposo y la del vaivén no se peleen: si la clase
+     fijara `rotate(0)`, la tarjeta se enderezaría al empezar a flotar. */
+  @keyframes andex-flota {
+    0%, 100% { transform: translateY(0) rotate(var(--giro, 0deg)); }
+    50%      { transform: translateY(-10px) rotate(var(--giro, 0deg)); }
+  }
+  .flota { animation: andex-flota 7s ease-in-out infinite; }
+  .flota.lenta { animation-duration: 9.5s; animation-delay: -3s; }
+
+  /* El punto de «en vivo». Late con la curva del sistema, no con un
+     `ease-in-out` genérico: sale rápido y se apaga despacio, como un pulso. */
+  @keyframes andex-late {
+    0%   { box-shadow: 0 0 0 0 var(--pulso-acento); }
+    70%  { box-shadow: 0 0 0 12px transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
+  .late { animation: andex-late 2.6s var(--ease-out) infinite; }
+
+  /* El barrido del botón: UNA pasada cada 5,5 s. Un brillo continuo es un
+     neón de escaparate, y este público ya vio esa web. */
+  @keyframes andex-barrido {
+    0%        { transform: translateX(-140%) skewX(-18deg); }
+    55%, 100% { transform: translateX(320%) skewX(-18deg); }
+  }
+  .brillo { position: relative; overflow: hidden; }
+  .brillo::after {
+    content: '';
+    position: absolute; top: 0; bottom: 0; width: 38%;
+    background: linear-gradient(90deg, transparent, var(--barrido-luz), transparent);
+    animation: andex-barrido 5.5s ease-in-out infinite;
+  }
+
+  /* El arco que se dibuja. `stroke-dashoffset` es de las poquísimas
+     propiedades que compensa animar fuera de `transform`: no provoca
+     maquetación, y no hay otra forma de trazar una línea. */
+  @keyframes andex-trazo { to { stroke-dashoffset: 0; } }
+  .trazo-arco {
+    stroke-dasharray: 640;
+    stroke-dashoffset: 640;
+    animation: andex-trazo 2.4s var(--ease-out) .3s forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .flota, .late { animation: none; }
+    .brillo::after { display: none; }
+    /* El arco no desaparece: se queda dibujado, que es su estado final. */
+    .trazo-arco { animation: none; stroke-dashoffset: 0; }
+  }
+
   /* ── El reloj de los beneficios de la portada ──
      Los tres se turnan solos cada diez segundos. Esta barra corre esos diez
      segundos debajo del que está abierto, y no es adorno: contenido que se

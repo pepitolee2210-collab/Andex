@@ -63,13 +63,15 @@ export function SectionTrustBar({
     <section
       id={id}
       aria-labelledby={`${id}-titulo`}
-      className="border-y border-line bg-surface px-5 py-14 sm:px-6 sm:py-20"
+      className="relative bg-navy-deep px-5 py-14 text-[color:var(--text-on-invert)] sm:px-6 sm:py-20"
     >
       <div className="mx-auto w-full max-w-6xl">
         {/* La banda de comunidad. Panorámica y baja a propósito: aquí no es
             el asunto, es el terreno sobre el que se apoya la frase que viene
             debajo. A la altura de una fotografía normal se comería la
             sección entera y las cinco insignias caerían fuera de pantalla. */}
+        {/* La cabeza en arco: la forma del isotipo recortando la foto, en
+            vez de un rectángulo con las esquinas limadas. */}
         {images.length > 0 ? (
           <Reveal className="mb-10 block sm:mb-14">
             <MediaSeccion
@@ -79,7 +81,7 @@ export function SectionTrustBar({
               aspect="aspect-[3/1]"
               sizes="(min-width: 1280px) 72rem, 100vw"
               objectPosition="center 45%"
-              className="overflow-hidden rounded-xl bg-surface-alt"
+              className="arco-sup bg-[color:var(--surface-on-invert)] ring-1 ring-[color:var(--hairline-on-invert-soft)]"
             />
           </Reveal>
         ) : null}
@@ -87,15 +89,18 @@ export function SectionTrustBar({
         <Reveal className="mx-auto max-w-3xl text-center">
           <h2
             id={`${id}-titulo`}
-            className="font-heading text-h2 text-ink sm:text-h1"
+            className="font-heading text-h2 text-[color:var(--text-on-invert)] sm:text-h1"
           >
             {copy.title}
           </h2>
         </Reveal>
 
+        {/* Píldoras que fluyen. Cinco columnas iguales obligaban a que la
+            insignia más corta ocupara lo mismo que la más larga, y el bloque
+            se leía como una tabla. Envueltas, cada una mide lo que dice. */}
         <RevealGroup
           as="ul"
-          className="mt-9 grid grid-cols-1 gap-x-6 gap-y-6 sm:mt-12 sm:grid-cols-2 lg:grid-cols-5 lg:gap-x-5"
+          className="mt-9 flex flex-wrap justify-center gap-3 sm:mt-12"
         >
           {copy.badges.map((badge, i) => {
             const Icono = ICONOS[i] ?? ShieldCheck;
@@ -107,19 +112,19 @@ export function SectionTrustBar({
                    derecha— porque cinco bloques centrados uno bajo otro son
                    cinco pantallas de scroll. Desde `lg` se apilan, que es
                    donde la rejilla de cinco columnas los deja estrechos. */
-                className="flex items-start gap-3 lg:flex-col lg:items-center lg:gap-2.5 lg:text-center"
+                className="vidrio plano flex items-center gap-3 rounded-full py-3 pl-3.5 pr-5"
               >
                 <span
                   aria-hidden="true"
-                  className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-teal-soft text-teal-deep"
+                  className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[color:var(--accent-wash-invert)] text-[color:var(--text-on-invert-accent)]"
                 >
-                  <Icono className="size-5" />
+                  <Icono className="size-[18px]" />
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-body font-semibold leading-[1.35] text-ink">
+                  <span className="block text-body font-semibold leading-[1.25] text-[color:var(--text-on-invert)]">
                     {badge.label}
                   </span>
-                  <span className="mt-1 block text-caption leading-[1.5] text-muted">
+                  <span className="mt-0.5 block text-caption leading-[1.4] text-[color:var(--text-on-invert-quiet)]">
                     {badge.note}
                   </span>
                 </span>

@@ -25,6 +25,8 @@ export type SeamTone =
   | "surface"
   | "surface-alt"
   | "navy"
+  | "navy-deep"
+  | "navy-body"
   | "teal-soft";
 
 const FILL: Record<SeamTone, string> = {
@@ -32,14 +34,20 @@ const FILL: Record<SeamTone, string> = {
   surface: "text-surface",
   "surface-alt": "text-surface-alt",
   navy: "text-navy",
+  "navy-deep": "text-navy-deep",
+  "navy-body": "text-navy-body",
   "teal-soft": "text-teal-soft",
 };
 
 export type SectionSeamProps = {
   /** Color de la sección que viene DEBAJO. */
   to: SeamTone;
-  /** `curve` es suave; `wedge` corta en diagonal, más rotundo. */
-  shape?: "curve" | "wedge";
+  /**
+   * `curve` es suave; `wedge` corta en diagonal, más rotundo; `arco` es el
+   * arco del isotipo a escala de página — simétrico y alto, la sección de
+   * abajo sube por el centro. Es el que da la forma a la landing.
+   */
+  shape?: "curve" | "wedge" | "arco";
   className?: string;
 };
 
@@ -68,7 +76,11 @@ export function SectionSeam({ to, shape = "curve", className }: SectionSeamProps
         className={cn("block h-10 w-full sm:h-16 lg:h-20", FILL[to])}
         style={reduced ? undefined : { scaleY, transformOrigin: "bottom" }}
       >
-        {shape === "curve" ? (
+        {shape === "arco" ? (
+          // El arco de la marca. Simétrico y con la cima muy arriba: la
+          // sección de abajo no «entra» por un lado, emerge por el centro.
+          <path d="M0 90 C 360 -6, 1080 -6, 1440 90 Z" fill="currentColor" />
+        ) : shape === "curve" ? (
           // Curva asimétrica: el punto bajo cae a la izquierda, donde vive el
           // texto. Una curva simétrica se lee como decoración; esta acompaña
           // la lectura.

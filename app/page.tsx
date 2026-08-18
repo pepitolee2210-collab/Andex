@@ -216,6 +216,7 @@ export default async function LandingPage({
             accountCta: t.hero.cta,
             ctaHint: t.hero.ctaHint,
             tourLabel: t.hero.tourLabel,
+            tarjetas: t.hero.tarjetas,
             disclaimer: t.trust.disclaimer,
             tour: dict.tour,
           }}
@@ -226,18 +227,25 @@ export default async function LandingPage({
             La costura pinta el color de la sección de abajo sobre la de
             arriba, así que necesita el navy detrás: la portada no está sobre
             el fondo de página. */}
-        <div className="bg-navy">
-          <SectionSeam to="surface" />
+        {/* Las costuras pasan a ARCO: es la forma del isotipo a escala de
+            página, y es lo que hace que la landing deje de leerse como una
+            pila de bandas rectas. La de la portada necesita el navy detrás
+            porque la sección de arriba no está sobre el fondo de página. */}
+        <div className="bg-navy-body">
+          <SectionSeam to="navy-deep" shape="arco" />
         </div>
         <SectionTrustBar copy={t.trustBar} images={imagenes.comunidad} />
 
         {/* ── S4 · La historia del fundador ──
             Sostiene el titular de la portada. «El camino que ya recorrí» sin
             esto es un eslogan; aquí se dice qué camino. */}
-        <SectionSeam to="page" />
+        <div className="bg-navy-deep">
+          <SectionSeam to="page" shape="arco" />
+        </div>
         <SectionFounder copy={t.founder} images={imagenes.fundador} />
 
         {/* ── S5 · Los siete módulos ── */}
+        <SectionSeam to="navy-body" shape="arco" />
         <SectionShowcase
           copy={t.showcase}
           modules={modules.map((m) => ({
@@ -252,15 +260,14 @@ export default async function LandingPage({
         {/* ── S6 · Inglés laboral en vivo ──
             Destacada por el terreno: navy en mitad de una página crema. El
             salto tonal la separa sin marco ni etiqueta de «nuevo». */}
-        <SectionSeam to="navy" />
         <SectionEnglish copy={t.english} images={imagenes.ingles} />
 
         {/* ── S8 · Membresía y precios ──
             La S7 del documento —servicios directos con 20% OFF— se deja
             fuera por decisión del producto. El descuento sigue nombrado
             donde es un beneficio del plan: la portada, esta tabla y la FAQ. */}
-        <div className="bg-navy">
-          <SectionSeam to="teal-soft" />
+        <div className="bg-navy-body">
+          <SectionSeam to="page" shape="arco" />
         </div>
         <SectionPricing
           copy={pricing}
@@ -269,7 +276,7 @@ export default async function LandingPage({
         />
 
         {/* ── S9 · Preguntas frecuentes ── */}
-        <SectionSeam to="page" />
+        <SectionSeam to="navy-body" shape="arco" />
         <SectionFaq
           eyebrow={t.faq.eyebrow}
           title={t.faq.title}
@@ -277,7 +284,6 @@ export default async function LandingPage({
         />
 
         {/* ── S10 · Cierre ── */}
-        <SectionSeam to="navy" shape="wedge" />
         <SectionClosing
           title={t.closing.title}
           subtitle={t.closing.subtitle}

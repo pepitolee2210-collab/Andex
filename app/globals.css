@@ -31,6 +31,10 @@
      en vez de inventarse un hex a mano.
      ═══════════════════════════════════════════════════════ */
 
+  /* `navy-950` es el suelo de la portada: por debajo del 900, para que
+     la cinta, el respaldo y el pie se hundan un paso respecto al cuerpo
+     y la página tenga fondo en vez de una sola plancha de color. */
+  --navy-950: #04101C;
   --navy-900: #08192B; --navy-800: #102A43; --navy-700: #1C3D5A;
   --navy-600: #2E5573; --navy-300: #7C93A8; --navy-100: #DDE5EC;
   --navy-50:  #EDF2F6;
@@ -104,6 +108,30 @@
      larga corta demasiado: se leían tres tabiques en vez de una lista.
      Estos dos son la versión de panel: una superficie que apenas se
      levanta del navy y un filete que sólo insinúa la división. */
+  /* El lavado de acento sobre navy. `--accent-wash` es crema y sobre
+     oscuro desaparece; éste es el teal a baja opacidad, que sí se ve. */
+  --accent-wash-invert: rgba(18, 184, 166, 0.16);
+  /* ── Tintas SOBRE VIDRIO ──
+     Una tarjeta de vidrio no se apoya en el navy: deja pasar lo que tenga
+     detrás, y en la portada eso es el halo que ilumina el teléfono.
+     Fotografiado, el fondo real bajo esas letras es #405464 —muy por encima
+     del #08192B de la sección—, y ahí las tintas del navy plano se caen:
+     `--text-on-invert-quiet` da 4.18:1 y el ámbar oscuro, 1.33:1.
+
+     Éstas están calculadas contra ese fondo, no contra el de la sección. */
+  --text-on-glass-quiet: #CBD9E4;
+  --text-on-glass-amber: #FBE0A6;
+  /* ── El vidrio que SÍ lleva texto ──
+     El de 0.055 de alfa sirve para una superficie decorativa, no para una
+     que hay que leer: medido a lo largo del ciclo de la aurora, el fondo que
+     lo atraviesa va de rgb(62,83,101) a rgb(154,164,170) —el halo del
+     teléfono pasa por debajo— y el mismo texto oscilaba entre 5.5:1 y
+     1.9:1. Un texto cuya legibilidad depende de lo que se mueva por detrás
+     es un fallo, no un estilo.
+
+     Éste es navy casi opaco: sigue siendo vidrio —se nota lo que hay
+     detrás— pero el contraste ya no depende de ello. */
+  --surface-glass-read: rgba(8, 25, 43, 0.82);
   --surface-on-invert: rgba(255, 255, 255, 0.055);
   --hairline-on-invert-soft: rgba(255, 255, 255, 0.11);
 
@@ -113,6 +141,10 @@
      titular, y un fondo que sube y baja de luminosidad mueve el contraste
      del texto con él. Medido sobre el recorrido entero de la animación, el
      texto no baja de su mínimo en ningún fotograma. */
+  /* El halo del pulso y la luz del barrido: son colores, así que viven
+     aquí y no en la clase que los usa. */
+  --pulso-acento: rgba(18, 184, 166, .55);
+  --barrido-luz:  rgba(255, 255, 255, .34);
   --aurora-teal:  rgba(18, 184, 166, .17);
   --aurora-deep:  rgba(28, 61, 90, .55);
   --aurora-cool:  rgba(137, 176, 205, .10);
@@ -146,6 +178,8 @@
 
   --navy:       var(--navy-800);
   --navy-hover: var(--navy-900);
+  --navy-deep:  var(--navy-950);
+  --navy-body:  var(--navy-900);
   --navy-soft:  var(--navy-50);
   --cream:      var(--cream-100);
 
@@ -387,7 +421,9 @@
     --text-on-invert: var(--cream-text); --text-on-invert-quiet: #AFC4CB;
     --text-on-invert-accent: var(--teal-200);
 
-    --navy-50: var(--ink-700); --navy-100: #33333A; --navy-600: #C9C7C1;
+    --navy-950: #0B0B0D;
+    --navy-950: #0B0B0D;
+  --navy-50: var(--ink-700); --navy-100: #33333A; --navy-600: #C9C7C1;
     --navy-700: #DEDCD6;       --navy-800: #17323F;
     --teal-50: #0A2A27;  --teal-100: #0C3632; --teal-200: #8AE7D9;
     --teal-700: #6FE0D0; --teal-800: #7FE6D7;
@@ -417,14 +453,23 @@
     --bar-bg: rgba(11, 11, 13, .88);
     --camera-surface: #101216;
     --hairline-on-invert: rgba(244, 242, 236, .22);
+  --accent-wash-invert: rgba(138, 231, 217, .14);
+  --text-on-glass-quiet: #CBD9E4;
+  --text-on-glass-amber: #FBE0A6;
   --surface-on-invert: rgba(244, 242, 236, .05);
   --hairline-on-invert-soft: rgba(244, 242, 236, .10);
   --aurora-teal:  rgba(138, 231, 217, .10);
   --aurora-deep:  rgba(23, 50, 63, .60);
   --aurora-cool:  rgba(175, 196, 203, .06);
   --aurora-sheen: rgba(244, 242, 236, .03);
+    --accent-wash-invert: rgba(138, 231, 217, .14);
+    --text-on-glass-quiet: #CBD9E4;
+    --text-on-glass-amber: #FBE0A6;
+    --surface-glass-read: rgba(11, 11, 13, 0.86);
     --surface-on-invert: rgba(244, 242, 236, .05);
     --hairline-on-invert-soft: rgba(244, 242, 236, .10);
+    --pulso-acento: rgba(138, 231, 217, .5);
+    --barrido-luz:  rgba(244, 242, 236, .26);
     --aurora-teal:  rgba(138, 231, 217, .10);
     --aurora-deep:  rgba(23, 50, 63, .60);
     --aurora-cool:  rgba(175, 196, 203, .06);
@@ -580,6 +625,8 @@
   --color-surface:     var(--surface);
   --color-surface-alt: var(--surface-alt);
   --color-ink:         var(--text);
+  --color-navy-deep:   var(--navy-deep);
+  --color-navy-body:   var(--navy-body);
   --color-muted:       var(--text-muted);
   --color-disabled:    var(--text-disabled);
   --color-line:        var(--line);

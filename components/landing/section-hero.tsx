@@ -40,7 +40,7 @@
  */
 
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { TourDict } from "@/lib/i18n/dictionaries/tour";
 import { HeroBenefits, type HeroBenefit } from "./hero-benefits";
@@ -67,6 +67,11 @@ export type HeroCopy = {
   ctaHint: string;
   /** Anuncia el recorrido del producto: «Así funciona ANDEX». */
   tourLabel: string;
+  /** Las dos tarjetas que se escapan del teléfono. */
+  tarjetas: {
+    aviso: { label: string; title: string; note: string };
+    vivo: { label: string; title: string; note: string };
+  };
   /** No-afiliación: cierra la pantalla, no vive en una nota al pie. */
   disclaimer: string;
   /** Guion del recorrido del producto (sólo escritorio). */
@@ -99,7 +104,7 @@ export function SectionHero({ copy, accountHref, className }: SectionHeroProps) 
       id="hero"
       aria-labelledby="hero-titulo"
       className={cn(
-        "relative isolate w-full overflow-hidden bg-navy text-[color:var(--text-on-invert)]",
+        "relative isolate w-full overflow-hidden bg-navy-body text-[color:var(--text-on-invert)]",
         className,
       )}
     >
@@ -113,6 +118,25 @@ export function SectionHero({ copy, accountHref, className }: SectionHeroProps) 
         <span className="masa-3" />
         <span className="reflejo" />
       </div>
+
+      {/* El arco del isotipo, a escala de página y trazándose al entrar. Es
+          el mismo gesto que el logotipo de la barra, sólo que aquí mide mil
+          cuatrocientos píxeles y sostiene la composición en vez de firmarla. */}
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 1440 860"
+        preserveAspectRatio="none"
+        className="pointer-events-none absolute inset-x-0 top-24 -z-10 h-[70%] w-full opacity-50"
+      >
+        <path
+          className="trazo-arco"
+          d="M-60 800 C 200 760 260 200 660 190 C 1060 180 1140 640 1500 560"
+          fill="none"
+          stroke="var(--text-on-invert-accent)"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+        />
+      </svg>
 
       <div className="relative mx-auto w-full max-w-6xl lg:grid lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-20 lg:px-6 lg:py-20 xl:py-24">
         {/* ── La portada, tal cual el diseño ─────────────── */}
@@ -143,7 +167,7 @@ export function SectionHero({ copy, accountHref, className }: SectionHeroProps) 
             <span className="inline-flex items-center gap-2 rounded-full bg-[color:var(--hairline-on-invert)] px-3.5 py-1.5 text-caption font-semibold text-[color:var(--text-on-invert)]">
               <span
                 aria-hidden="true"
-                className="size-1.5 rounded-full bg-[color:var(--text-on-invert-accent)]"
+                className="late size-1.5 rounded-full bg-[color:var(--text-on-invert-accent)]"
               />
               {copy.badge}
             </span>
@@ -206,7 +230,7 @@ export function SectionHero({ copy, accountHref, className }: SectionHeroProps) 
               onClick={() =>
                 trackLazy("landing_cta_clicked", { cta_position: "hero" })
               }
-              className="ax-btn btn-onInvert btn-lg wide group"
+              className="ax-btn btn-onInvert btn-lg wide group brillo"
             >
               {copy.accountCta}
               {/* La flecha es del botón, no del diccionario: una saeta
@@ -272,8 +296,72 @@ export function SectionHero({ copy, accountHref, className }: SectionHeroProps) 
           >
             {copy.tourLabel}
           </p>
-          <div className="hero-sube" style={{ animationDelay: "620ms" }}>
-            <PhoneTour copy={copy.tour} />
+          {/* El teléfono, inclinado, y las dos tarjetas saliéndose de él.
+              La inclinación es de dos grados: suficiente para que el bloque
+              deje de ser un rectángulo alineado con la rejilla, poco para
+              que nadie lea el mockup torcido.
+
+              Las tarjetas van en `absolute` sobre un contenedor `relative`,
+              así que NO empujan nada: el alto de la portada lo sigue fijando
+              el teléfono. Y su giro vive en `--giro` para que la rotación de
+              reposo y la del vaivén no se peleen.
+
+              Los desplazamientos NEGATIVOS son el punto: la gracia es que se
+              escapen del teléfono, no que se le pongan encima. Puestas a
+              `left-0` tapaban el logotipo y la mitad del recorrido, y en vez
+              de leerse como producto asomando se leían como un error de
+              maquetación. Sólo muerden el borde. */}
+          <div className="relative">
+            <div
+              className="hero-sube [transform:rotate(-2.2deg)]"
+              style={{ animationDelay: "620ms" }}
+            >
+              <PhoneTour copy={copy.tour} />
+            </div>
+
+            <div
+              className="vidrio legible flota absolute -left-1 top-[20%] w-[12.5rem] p-3.5 sm:left-2 sm:w-[13.5rem] lg:-left-14 lg:top-[22%] lg:w-[14.5rem] lg:p-4"
+              style={{ ["--giro" as string]: "-4deg", transform: "rotate(-4deg)" }}
+            >
+              <div className="flex items-center gap-2.5">
+                <span
+                  aria-hidden="true"
+                  className="flex size-7 shrink-0 items-center justify-center rounded-full bg-amber-soft text-amber-deep"
+                >
+                  <Clock className="size-4" />
+                </span>
+                <span className="text-caption font-bold uppercase tracking-[0.14em] text-[color:var(--text-on-glass-amber)]">
+                  {copy.tarjetas.aviso.label}
+                </span>
+              </div>
+              <p className="mt-2.5 text-body font-semibold leading-[1.3] text-[color:var(--text-on-invert)]">
+                {copy.tarjetas.aviso.title}
+              </p>
+              <p className="mt-1 text-caption text-[color:var(--text-on-glass-quiet)]">
+                {copy.tarjetas.aviso.note}
+              </p>
+            </div>
+
+            <div
+              className="vidrio legible flota lenta absolute -right-1 top-[66%] w-[12rem] p-3.5 sm:right-2 sm:w-[13rem] lg:-right-10 lg:top-[68%] lg:w-[13.5rem] lg:p-4"
+              style={{ ["--giro" as string]: "3.4deg", transform: "rotate(3.4deg)" }}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-caption font-bold uppercase tracking-[0.14em] text-[color:var(--teal-200)]">
+                  {copy.tarjetas.vivo.label}
+                </span>
+                <span
+                  aria-hidden="true"
+                  className="late size-1.5 shrink-0 rounded-full bg-[color:var(--text-on-invert-accent)]"
+                />
+              </div>
+              <p className="mt-2.5 text-body font-semibold leading-[1.3] text-[color:var(--text-on-invert)]">
+                {copy.tarjetas.vivo.title}
+              </p>
+              <p className="mt-1 text-caption tabular-nums text-[color:var(--text-on-glass-quiet)]">
+                {copy.tarjetas.vivo.note}
+              </p>
+            </div>
           </div>
         </div>
       </div>

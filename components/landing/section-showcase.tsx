@@ -101,13 +101,16 @@ export function SectionShowcase({ copy, modules }: SectionShowcaseProps) {
     <section
       id="modulos"
       aria-labelledby="showcase-titulo"
-      className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-6 sm:py-24"
+      className="relative bg-navy-body text-[color:var(--text-on-invert)]"
     >
+      {/* El ancho y el aire viven en un envoltorio: el fondo tiene que ir a
+          sangre para que la costura de arco de arriba encaje con él. */}
+      <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-6 sm:py-24">
       <Reveal className="max-w-3xl">
-        <p className="text-caption font-bold uppercase tracking-widest text-teal-deep">
+        <p className="text-caption font-bold uppercase tracking-widest text-[color:var(--teal-200)]">
           {copy.eyebrow}
         </p>
-        <h2 id="showcase-titulo" className="mt-3 font-heading text-h1 text-ink sm:text-display">
+        <h2 id="showcase-titulo" className="mt-3 font-heading text-h1 text-[color:var(--text-on-invert)] sm:text-display">
           {copy.title}
         </h2>
       </Reveal>
@@ -118,7 +121,7 @@ export function SectionShowcase({ copy, modules }: SectionShowcaseProps) {
           role="tablist"
           aria-label={copy.pickerLabel}
           aria-orientation="vertical"
-          className="flex flex-col gap-1.5 border-r border-line pr-6"
+          className="flex flex-col gap-1.5 border-r border-[color:var(--hairline-on-invert-soft)] pr-6"
         >
           {modules.map((m, i) => {
             const g = GLIFO[m.slug];
@@ -140,15 +143,17 @@ export function SectionShowcase({ copy, modules }: SectionShowcaseProps) {
                 className={cn(
                   "flex min-h-14 items-center gap-3 rounded-lg px-3 text-left transition-colors",
                   activoEste
-                    ? "bg-teal-soft text-ink"
-                    : "text-muted hover:bg-surface-alt hover:text-ink",
+                    ? "bg-[color:var(--accent-wash-invert)] text-[color:var(--text-on-invert)]"
+                    : "text-[color:var(--text-on-invert-quiet)] hover:bg-[color:var(--surface-on-invert)] hover:text-[color:var(--text-on-invert)]",
                 )}
               >
                 <span
                   aria-hidden="true"
                   className={cn(
                     "flex size-10 shrink-0 items-center justify-center rounded-md",
-                    activoEste ? "bg-teal-deep text-white" : "bg-surface-alt",
+                    activoEste
+                      ? "bg-[color:var(--text-on-invert-accent)] text-[color:var(--navy-900)]"
+                      : "bg-[color:var(--surface-on-invert)] text-[color:var(--text-on-invert-quiet)]",
                   )}
                 >
                   <Glyph name={g.name} icon={g.icon} size={20} />
@@ -170,13 +175,13 @@ export function SectionShowcase({ copy, modules }: SectionShowcaseProps) {
             {estado !== "live" ? (
               <KitBadge tone="building">{copy.building}</KitBadge>
             ) : null}
-            <h3 className="mt-3 font-heading text-h1 text-ink">{elegido.name}</h3>
-            <p className="mt-4 max-w-2xl text-body-lg text-muted">{elegido.body}</p>
+            <h3 className="mt-3 font-heading text-h1 text-[color:var(--text-on-invert)]">{elegido.name}</h3>
+            <p className="mt-4 max-w-2xl text-body-lg text-[color:var(--text-on-invert-quiet)]">{elegido.body}</p>
 
             <ul className="mt-6 max-w-2xl space-y-3">
               {elegido.features.map((f) => (
-                <li key={f} className="flex gap-3 border-t border-line pt-3 text-body text-ink">
-                  <Check aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-teal-deep" />
+                <li key={f} className="flex gap-3 border-t border-[color:var(--hairline-on-invert-soft)] pt-3 text-body text-[color:var(--text-on-invert)]">
+                  <Check aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-[color:var(--text-on-invert-accent)]" />
                   <span className="min-w-0">{f}</span>
                 </li>
               ))}
@@ -200,7 +205,7 @@ export function SectionShowcase({ copy, modules }: SectionShowcaseProps) {
             <RevealItem
               as="li"
               key={m.id}
-              className="rounded-xl border border-line bg-surface p-4 shadow-sm"
+              className="vidrio plano p-4"
             >
               {/* La insignia va DEBAJO del titulo, no a su lado. En la misma
                   fila su ancho es fijo —no parte la frase— y a 390px dejaba
@@ -209,12 +214,12 @@ export function SectionShowcase({ copy, modules }: SectionShowcaseProps) {
               <div className="flex items-start gap-3">
                 <span
                   aria-hidden="true"
-                  className="flex size-10 shrink-0 items-center justify-center rounded-md bg-teal-soft text-teal-deep"
+                  className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[color:var(--accent-wash-invert)] text-[color:var(--text-on-invert-accent)]"
                 >
                   <Glyph name={g.name} icon={g.icon} size={20} />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <h3 className="font-heading text-h3 text-ink">{m.name}</h3>
+                  <h3 className="font-heading text-h3 text-[color:var(--text-on-invert)]">{m.name}</h3>
                   {suEstado !== "live" ? (
                     <p className="mt-2">
                       <KitBadge tone="building">{copy.building}</KitBadge>
@@ -222,11 +227,11 @@ export function SectionShowcase({ copy, modules }: SectionShowcaseProps) {
                   ) : null}
                 </div>
               </div>
-              <p className="mt-2.5 text-body text-muted">{m.body}</p>
+              <p className="mt-2.5 text-body text-[color:var(--text-on-invert-quiet)]">{m.body}</p>
               <ul className="mt-3 space-y-2">
                 {m.features.map((f) => (
-                  <li key={f} className="flex gap-2.5 text-caption text-muted">
-                    <Check aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-teal-deep" />
+                  <li key={f} className="flex gap-2.5 text-caption text-[color:var(--text-on-invert-quiet)]">
+                    <Check aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-[color:var(--text-on-invert-accent)]" />
                     <span className="min-w-0">{f}</span>
                   </li>
                 ))}
@@ -240,6 +245,7 @@ export function SectionShowcase({ copy, modules }: SectionShowcaseProps) {
         <Button href={ROUTES.registro} fullWidth>
           {copy.explore}
         </Button>
+      </div>
       </div>
     </section>
   );

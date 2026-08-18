@@ -88,22 +88,22 @@ export function SectionFaq({
     <section
       id={id}
       aria-labelledby={`${uid}-title`}
-      className={cn("border-t border-line px-5 py-16 sm:py-24", className)}
+      className={cn("relative bg-navy-body px-5 py-16 text-[color:var(--text-on-invert)] sm:py-24", className)}
     >
       <div className="mx-auto max-w-3xl">
         <Reveal>
-          <p className="text-label font-semibold tracking-wide text-muted">
+          <p className="text-label font-semibold tracking-wide text-[color:var(--text-on-invert-quiet)]">
             {eyebrow}
           </p>
           <h2
             id={`${uid}-title`}
-            className="mt-2 font-heading text-h1 text-ink"
+            className="mt-2 font-heading text-h1 text-[color:var(--text-on-invert)]"
           >
             {title}
           </h2>
         </Reveal>
 
-        <div className="mt-7 divide-y divide-line border-y border-line sm:mt-9">
+        <div className="mt-7 divide-y divide-[color:var(--hairline-on-invert-soft)] border-y border-[color:var(--hairline-on-invert-soft)] sm:mt-9">
           {items.map((item, index) => {
             const open = openIndex === index;
             const buttonId = `${uid}-q-${index}`;
@@ -124,8 +124,8 @@ export function SectionFaq({
                     onKeyDown={(event) => handleKeyDown(event, index)}
                     className={cn(
                       "flex w-full min-h-14 items-center justify-between gap-3 py-4 text-left sm:gap-4",
-                      "font-heading text-h3 text-ink",
-                      "transition-colors duration-150 hover:text-teal-deep",
+                      "font-heading text-h3 text-[color:var(--text-on-invert)]",
+                      "transition-colors duration-150 hover:text-[color:var(--teal-200)]",
                     )}
                   >
                     <span className="min-w-0">{item.q}</span>
@@ -134,8 +134,11 @@ export function SectionFaq({
                       animate={{ rotate: open ? 180 : 0 }}
                       transition={{ duration: reduced ? 0 : 0.3, ease: EASE }}
                       className={cn(
-                        "inline-flex size-8 shrink-0 items-center justify-center rounded-full",
-                        open ? "bg-teal-soft text-teal-deep" : "text-muted",
+                        "inline-flex size-9 shrink-0 items-center justify-center rounded-full",
+                        "border border-[color:var(--hairline-on-invert-soft)]",
+                        open
+                          ? "bg-[color:var(--accent-wash-invert)] text-[color:var(--text-on-invert-accent)]"
+                          : "text-[color:var(--text-on-invert-quiet)]",
                       )}
                     >
                       <ChevronDown className="size-5" />
@@ -169,7 +172,7 @@ export function SectionFaq({
                         transition={{ duration, ease: EASE }}
                         className="overflow-hidden"
                       >
-                        <p className="pb-5 pr-4 text-body text-muted sm:pr-10">
+                        <p className="pb-5 pr-4 text-body text-[color:var(--text-on-invert-quiet)] sm:pr-10">
                           {item.a}
                         </p>
                       </motion.div>

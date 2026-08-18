@@ -39,6 +39,8 @@ export type SectionEnglishCopy = {
   imageAlts: readonly string[];
   /** «Foto {n} de {total}» para los puntos del carrusel. */
   imageNav: string;
+  /** La tarjeta de la próxima sesión, que se escapa de la foto. */
+  sesion: { label: string; title: string; note: string };
 };
 
 export type SectionEnglishProps = {
@@ -58,7 +60,7 @@ export function SectionEnglish({
     <section
       id={id}
       aria-labelledby={`${id}-titulo`}
-      className="bg-navy px-5 py-16 text-[color:var(--text-on-invert)] sm:px-6 sm:py-24"
+      className="relative bg-navy-body px-5 py-16 text-[color:var(--text-on-invert)] sm:px-6 sm:py-24"
     >
       <div className="mx-auto w-full max-w-5xl">
         <Reveal className="max-w-3xl">
@@ -85,15 +87,40 @@ export function SectionEnglish({
           }
         >
           {hayImagen ? (
-            <Reveal className="lg:order-2">
+            <Reveal className="relative lg:order-2">
+              {/* Aquí el arco va abajo, no arriba: la sección de al lado ya
+                  lleva la cabeza redondeada y repetir la misma forma dos
+                  veces seguidas la convierte en un patrón, no en un gesto. */}
               <MediaSeccion
                 images={images}
                 alts={copy.imageAlts}
                 navLabel={copy.imageNav}
                 aspect="aspect-[3/2]"
                 sizes="(min-width: 1024px) 34rem, 100vw"
-                className="overflow-hidden rounded-xl bg-[color:var(--surface-on-invert)]"
+                className="arco-inf bg-[color:var(--surface-on-invert)]"
               />
+              {/* El mismo gesto de la portada, repetido una vez: producto
+                  real asomando por el borde. */}
+              <div
+                className="vidrio legible flota absolute -left-2 -top-5 w-[12rem] p-3.5 sm:-left-5 sm:w-[13rem]"
+                style={{ ["--giro" as string]: "-3.6deg", transform: "rotate(-3.6deg)" }}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-caption font-bold uppercase tracking-[0.14em] text-[color:var(--teal-200)]">
+                    {copy.sesion.label}
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="late size-1.5 shrink-0 rounded-full bg-[color:var(--text-on-invert-accent)]"
+                  />
+                </div>
+                <p className="mt-2.5 text-body font-semibold leading-[1.3] text-[color:var(--text-on-invert)]">
+                  {copy.sesion.title}
+                </p>
+                <p className="mt-1 text-caption tabular-nums text-[color:var(--text-on-glass-quiet)]">
+                  {copy.sesion.note}
+                </p>
+              </div>
             </Reveal>
           ) : null}
 
