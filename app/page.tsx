@@ -194,6 +194,7 @@ export default async function LandingPage({
             titleLines: t.hero.titleLines,
             title: t.hero.title,
             titleAccent: t.hero.titleAccent,
+            body: t.hero.body,
             trustPoints: t.hero.trustPoints,
             accountCta: t.hero.cta,
             ctaHint: t.hero.ctaHint,

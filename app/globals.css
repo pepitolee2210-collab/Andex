@@ -98,6 +98,25 @@
   --bar-bg:         rgba(247, 245, 239, 0.82);
   --camera-surface: #16324C;
   --hairline-on-invert: rgba(255, 255, 255, 0.22);
+  /* ── Superficie y filete SOBRE navy ──
+     El 0.22 del filete es el correcto para una píldora suelta —el
+     distintivo del piloto—, pero como separador de filas de una lista
+     larga corta demasiado: se leían tres tabiques en vez de una lista.
+     Estos dos son la versión de panel: una superficie que apenas se
+     levanta del navy y un filete que sólo insinúa la división. */
+  --surface-on-invert: rgba(255, 255, 255, 0.055);
+  --hairline-on-invert-soft: rgba(255, 255, 255, 0.11);
+
+  /* ── EL FONDO VIVO DE LA PORTADA ──
+     Tres masas de luz que van a la deriva sobre el navy, más un reflejo que
+     lo cruza despacio. Las opacidades son bajas A PROPÓSITO: encima va el
+     titular, y un fondo que sube y baja de luminosidad mueve el contraste
+     del texto con él. Medido sobre el recorrido entero de la animación, el
+     texto no baja de su mínimo en ningún fotograma. */
+  --aurora-teal:  rgba(18, 184, 166, .17);
+  --aurora-deep:  rgba(28, 61, 90, .55);
+  --aurora-cool:  rgba(137, 176, 205, .10);
+  --aurora-sheen: rgba(255, 255, 255, .045);
   --skeleton-base:  var(--sand-200);
   --skeleton-sheen: var(--sand-300);
 
@@ -398,6 +417,18 @@
     --bar-bg: rgba(11, 11, 13, .88);
     --camera-surface: #101216;
     --hairline-on-invert: rgba(244, 242, 236, .22);
+  --surface-on-invert: rgba(244, 242, 236, .05);
+  --hairline-on-invert-soft: rgba(244, 242, 236, .10);
+  --aurora-teal:  rgba(138, 231, 217, .10);
+  --aurora-deep:  rgba(23, 50, 63, .60);
+  --aurora-cool:  rgba(175, 196, 203, .06);
+  --aurora-sheen: rgba(244, 242, 236, .03);
+    --surface-on-invert: rgba(244, 242, 236, .05);
+    --hairline-on-invert-soft: rgba(244, 242, 236, .10);
+    --aurora-teal:  rgba(138, 231, 217, .10);
+    --aurora-deep:  rgba(23, 50, 63, .60);
+    --aurora-cool:  rgba(175, 196, 203, .06);
+    --aurora-sheen: rgba(244, 242, 236, .03);
 
     --surface-highlight-night: #2B2109;
     --line-on-invert-night:    #23485A;

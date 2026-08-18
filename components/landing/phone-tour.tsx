@@ -763,7 +763,19 @@ export function PhoneTour({ copy, className }: PhoneTourProps) {
                 portada, que es la única pantalla a sangre del producto. Con
                 los colores de superficie clara —`text-ink` es navy— el texto
                 quedaba navy sobre navy, invisible. */}
-            <p className="text-caption font-bold uppercase tracking-widest text-[color:var(--text-on-invert-accent)]">
+            {/* Teal CLARO, no el de acento, y el más claro de los dos.
+                Este rótulo cae dentro del halo que ilumina el teléfono, y
+                desde que la portada tiene fondo vivo ese halo además
+                respira: el fondo fotografiado bajo estas letras va de
+                rgb(74,98,118) a rgb(80,103,123) a lo largo del ciclo.
+
+                Con `--text-on-invert-accent` daba 2.29:1. Con `--teal-200`
+                subía a 4.74, pero en el fotograma más claro se quedaba en
+                4.39 y el mínimo son 4.5 — falla por cuatro centésimas, que
+                sigue siendo fallar. `--teal-100` aguanta el peor fotograma
+                con 4.99. Medido a lo largo de toda la animación, no en una
+                captura suelta. */}
+            <p className="text-caption font-bold uppercase tracking-widest text-[color:var(--teal-100)]">
               {current.eyebrow}
             </p>
             <p className="mt-1.5 text-body text-[color:var(--text-on-invert)]">

@@ -40,9 +40,10 @@
  */
 
 import Link from "next/link";
-import { Check } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { TourDict } from "@/lib/i18n/dictionaries/tour";
+import { HeroBenefits, type HeroBenefit } from "./hero-benefits";
 import { PhoneTour } from "./phone-tour";
 import { trackLazy } from "./track-lazy";
 
@@ -53,10 +54,12 @@ export type HeroCopy = {
   titleLines: readonly string[];
   /** El titular completo en un solo nodo, para lectores de pantalla. */
   title: string;
-  /** La segunda línea del titular, en teal: qué buscamos. */
+  /** El subtítulo en teal, un escalón por debajo del titular. */
   titleAccent: string;
-  /** Tres hechos comprobables. No adjetivos. */
-  trustPoints: readonly string[];
+  /** La bajada: qué es esto y qué cubre. */
+  body: string;
+  /** Tres puntos, cada uno con su título y su explicación. */
+  trustPoints: readonly HeroBenefit[];
   /** Dónde está el piloto. Va arriba, pequeño. */
   badge: string;
   accountCta: string;
@@ -96,11 +99,22 @@ export function SectionHero({ copy, accountHref, className }: SectionHeroProps) 
       id="hero"
       aria-labelledby="hero-titulo"
       className={cn(
-        "w-full bg-navy text-[color:var(--text-on-invert)]",
+        "relative isolate w-full overflow-hidden bg-navy text-[color:var(--text-on-invert)]",
         className,
       )}
     >
-      <div className="mx-auto w-full max-w-6xl lg:grid lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-20 lg:px-6 lg:py-20 xl:py-24">
+      {/* El fondo vivo. Va antes que el contenido y detrás de él: decorativo
+          puro, sin foco, sin lectura y sin capturar el ratón. Toda su
+          mecánica vive en `kit.css` (.hero-fondo) y sus colores en
+          `globals.css`, que es donde manda la regla. */}
+      <div aria-hidden="true" className="hero-fondo -z-10">
+        <span className="masa-1" />
+        <span className="masa-2" />
+        <span className="masa-3" />
+        <span className="reflejo" />
+      </div>
+
+      <div className="relative mx-auto w-full max-w-6xl lg:grid lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-20 lg:px-6 lg:py-20 xl:py-24">
         {/* ── La portada, tal cual el diseño ─────────────── */}
         {/* La altura descuenta lo que la landing pone encima —la cinta y la
             barra de navegación— para que la portada quepa entera en la
@@ -115,7 +129,7 @@ export function SectionHero({ copy, accountHref, className }: SectionHeroProps) 
             Ahora la altura la da el contenido y el ritmo lo dan los
             márgenes. Ocupa casi la pantalla igual, pero porque lo que hay
             dentro la llena, no porque se la obligue. */}
-        <div className="flex flex-col items-center px-6 pb-14 pt-3 text-center max-[680px]:pb-10 max-[680px]:pt-1 sm:px-8 lg:items-stretch lg:px-0 lg:pb-0 lg:pt-0 lg:text-left">
+        <div className="flex flex-col items-center px-6 pb-14 pt-3 text-center max-[680px]:pb-10 max-[680px]:pt-1 sm:px-8 lg:px-0 lg:pb-0 lg:pt-0">
           {/* 1 · El alcance.
               Aquí iba la marca otra vez, con su símbolo — y la barra de
               navegación ya la lleva justo encima. Dos ANDEX apilados no
@@ -140,7 +154,7 @@ export function SectionHero({ copy, accountHref, className }: SectionHeroProps) 
               da color propio a `h1`, y una regla de elemento gana siempre a lo
               heredado del contenedor. Sin esto el titular sale navy sobre
               navy — invisible. */}
-          <div className="flex flex-col items-center pt-6 max-[680px]:pt-2 sm:pt-10 lg:flex-1 lg:items-stretch lg:justify-center lg:py-14">
+          <div className="flex w-full flex-col items-center pt-6 max-[680px]:pt-2 sm:pt-10 lg:flex-1 lg:justify-center lg:py-14">
             <h1
               id="hero-titulo"
               className="hero-entra font-heading text-[1.9375rem] font-extrabold leading-[1.08] tracking-[-0.028em] text-[color:var(--text-on-invert)] sm:text-[2.75rem] lg:text-[3.5rem]"
@@ -153,57 +167,76 @@ export function SectionHero({ copy, accountHref, className }: SectionHeroProps) 
                     {line}
                   </span>
                 ))}
-                {/* La segunda línea, en teal: separa QUIÉNES SOMOS de QUÉ
-                    BUSCAMOS sin necesidad de otro titular. */}
-                <span className="mt-2 block text-[color:var(--text-on-invert-accent)]">
+                {/* El subtítulo, en teal y un escalón por debajo en cuerpo.
+                    Al mismo tamaño las dos frases competían y ninguna
+                    mandaba; con este salto se lee lo que es: una afirmación
+                    y el giro que la vuelve hacia quien lee. */}
+                <span className="mt-2.5 block text-[0.72em] leading-[1.16] text-[color:var(--text-on-invert-accent)]">
                   {copy.titleAccent}
                 </span>
               </span>
             </h1>
 
+            {/* La bajada. Alineada a la izquierda incluso en móvil, donde el
+                resto del bloque va centrado: son cinco líneas, y cinco
+                líneas centradas se leen a tirones porque cada renglón
+                empieza en un sitio distinto. El bloque sí va centrado, así
+                que la composición no se rompe. */}
+            <p
+              className="hero-entra mx-auto mt-5 max-w-[54ch] text-left text-body leading-[1.6] text-[color:var(--text-on-invert-quiet)] max-[680px]:mt-4 sm:mt-6 sm:text-body-lg"
+              style={{ animationDelay: "150ms" }}
+            >
+              {copy.body}
+            </p>
 
-
-            {/* Los tres hechos. Cada uno con su visto: se leen como una
-                lista de lo que ya es cierto, no como características. */}
-            {/* Los tres hechos suben a segunda capa: entre el titular y
-                ellos ya no hay un subtítulo que repita lo mismo en largo. */}
-            <ul className="mt-8 flex flex-col gap-3.5 text-left max-[680px]:mt-5 max-[680px]:gap-2.5 sm:mt-11 sm:gap-4">
-              {copy.trustPoints.map((punto, i) => (
-                <li
-                  key={punto}
-                  className="hero-entra flex gap-3 text-body leading-[1.5] text-[color:var(--text-on-invert)]"
-                  style={{ animationDelay: `${240 + i * 70}ms` }}
-                >
-                  <Check
-                    aria-hidden="true"
-                    className="mt-0.5 size-5 shrink-0 text-[color:var(--text-on-invert-accent)]"
-                  />
-                  <span className="min-w-0">{punto}</span>
-                </li>
-              ))}
-            </ul>
           </div>
 
-          {/* 3 · Las dos acciones y el aviso */}
+          {/* 3 · La acción, DEBAJO DEL PÁRRAFO y no al final.
+              Antes cerraba la columna, después de los tres beneficios
+              desplegados: quien ya estaba convencido leyendo la bajada tenía
+              que pasar por trescientos píxeles de argumentos antes de
+              encontrar dónde pulsar. Ahora está donde nace la intención, y
+              los beneficios quedan para quien todavía no la tiene. */}
           <div
-            className="hero-entra mt-10 flex flex-col gap-3.5 max-[680px]:mt-6 sm:mt-12 lg:mt-0 lg:pb-2"
-            style={{ animationDelay: "470ms" }}
+            className="hero-entra mt-7 flex w-full flex-col gap-3.5 max-[680px]:mt-5 sm:mt-8 lg:mt-8 lg:pb-0"
+            style={{ animationDelay: "300ms" }}
           >
             <Link
               href={accountHref}
               onClick={() =>
                 trackLazy("landing_cta_clicked", { cta_position: "hero" })
               }
-              className="ax-btn btn-onInvert btn-lg wide"
+              className="ax-btn btn-onInvert btn-lg wide group"
             >
               {copy.accountCta}
+              {/* La flecha es del botón, no del diccionario: una saeta
+                  metida en la cadena viaja a los dos idiomas como si fuera
+                  texto y no se puede animar. */}
+              <ArrowRight
+                aria-hidden="true"
+                className="ml-2 size-5 shrink-0 transition-transform duration-200 group-hover:translate-x-1"
+              />
             </Link>
 
             {/* Lo que cuesta empezar, pegado al botón: es lo que decide si
                 alguien lo toca ahora o lo deja para luego. */}
+            {/* En escritorio se alinea con la columna, no al centro: era la
+                única línea centrada dentro de un bloque alineado a la
+                izquierda y se leía como si se hubiera caído del sitio. */}
             <p className="text-center text-caption leading-[1.55] text-[color:var(--text-on-invert-quiet)]">
               {copy.ctaHint}
             </p>
+          </div>
+
+          {/* 4 · Los beneficios, plegados y turnándose solos.
+              Desplegados medían 340px de la primera pantalla y empujaban el
+              mockup fuera de vista. El título de cada uno ya es la promesa
+              entera; la explicación es para quien quiera comprobarla. */}
+          <div
+            className="hero-entra mt-8 w-full text-left max-[680px]:mt-6 sm:mt-10"
+            style={{ animationDelay: "380ms" }}
+          >
+            <HeroBenefits items={copy.trustPoints} />
           </div>
         </div>
 

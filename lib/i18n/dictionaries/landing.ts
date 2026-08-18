@@ -74,94 +74,82 @@ const es = {
   },
 
   // ── S2 · Hero ───────────────────────────────────────────
+  /**
+   * ── EL CONCEPTO: «el mapa trazado por quien ya lo vivió» ──
+   *
+   * El hero deja de hablar en nombre de un producto y pasa a hablar en
+   * nombre de una persona que ya hizo el camino. Es un cambio de registro,
+   * no de palabras: «El camino que ya recorrí» sólo lo puede decir alguien
+   * que lo recorrió, y con este público esa es la única credencial que
+   * pesa más que un superlativo.
+   *
+   * La primera persona del singular es deliberada y va hasta el final:
+   * el titular dice «recorrí» y la bajada dice «construí». La micro-copia
+   * del pie cierra en plural —«quienes ya superamos»— porque ahí ya no
+   * habla el fundador, habla la comunidad, que es justo lo que se ofrece.
+   */
   hero: {
-    badge: "Piloto en Utah",
+    badge: "Creado desde la experiencia real · Piloto Utah",
+    title: "El camino que ya recorrí. Ahora trazado para tu progreso.",
+    titleLines: ["El camino que ya recorrí."],
     /**
-     * EL ESLOGAN.
-     *
-     * Tiene que decir quiénes somos y qué buscamos, y resumir los siete
-     * módulos en algo que cualquiera reconozca. Los siete son papeles,
-     * trámites, dinero, negocio, comunidad, inglés y trabajo — y eso cabe
-     * en cuatro palabras que nadie tiene que descifrar:
-     *
-     *   tus papeles  →  Bóveda + Trámites y Estatus Migratorio
-     *   tu inglés    →  Academia de Certificaciones
-     *   tu trabajo   →  Conexión Laboral + Finanzas + Desarrollo Empresarial
-     *   tu gente     →  Comunidad y Vida Local
-     *
-     * La segunda línea dice qué buscamos: avanzar, no sobrevivir. Es la
-     * misión del producto en cinco palabras.
-     *
-     * Se descartaron las de registro comercial —«transforma tu experiencia»,
-     * «el sistema operativo del inmigrante»— porque este público ya oyó ese
-     * tono de quien le cobró por trámites gratis.
+     * El segundo tiempo, en teal. Es SUBTÍTULO, no segunda línea del
+     * titular: va un escalón por debajo en tamaño. Puestos al mismo cuerpo,
+     * las dos frases competían y ninguna mandaba —y ésta es la que gira la
+     * primera hacia quien lee: yo lo recorrí, ahora es tuyo.
      */
+    titleAccent: "Ahora trazado para tu progreso.",
     /**
-     * EL TITULAR, EN DOS TIEMPOS.
+     * LA BAJADA.
      *
-     *   «Todo lo tuyo, en su sitio.»  →  los SIETE módulos sin nombrar uno
-     *   «Ordenado para tu caso.»      →  lo que hace la tecnología
-     *
-     * El primero alude a los siete de golpe: papeles, trámites, dinero,
-     * negocio, comunidad, inglés y empleo son «lo tuyo». Nombrarlos
-     * obligaba a enumerar y a alargar.
-     *
-     * El segundo dice qué hace ANDEX por dentro, y no es un adorno: el
-     * motor de recomendación reordena los módulos según lo que la persona
-     * contestó en la entrevista, y cita el porqué en la propia tarjeta. Es
-     * una función construida y con 31 pruebas detrás, así que se puede
-     * decir sin faltar a la verdad.
-     *
-     * EL CAMBIO DE VIDA, SIN EXAGERAR. «En su sitio» es todo lo que se
-     * promete, y es todo lo que hace falta: quien vive esto sabe lo que
-     * cuesta que nada esté en su sitio. Se descartaron «transforma tu
-     * vida», «tu nueva vida empieza aquí» y parecidas — este público ya
-     * oyó ese tono de quien le cobró por trámites gratis, y la promesa
-     * grande es justo lo que le hace desconfiar.
+     * Empieza negando lo que se supone que es —«no es una app más»— porque
+     * es exactamente lo que piensa quien llega: otra aplicación que promete.
+     * Y nombra los cinco frentes de golpe para que nadie tenga que deducir
+     * el alcance del producto de un eslogan.
      */
-    title: "Todo lo tuyo, en su sitio. Ordenado para tu caso.",
-    titleLines: ["Todo lo tuyo,", "en su sitio."],
-    /** El segundo tiempo, en teal: lo que hace la tecnología. */
-    titleAccent: "Ordenado para tu caso.",
+    /* ` ` entre «EE.» y «UU.»: con un espacio normal la abreviatura se
+       parte al final del renglón y queda un «EE.» huérfano arriba y «UU.»
+       solo abajo. Pasó en escritorio, medido. */
+    body:
+      "No es una app más; es la comunidad y el sistema que construí después " +
+      "de superar cada traba en EE. UU. Aquí encuentras en un solo lugar " +
+      "tus trámites, crédito, empleo, negocios e inversión para que tu " +
+      "familia avance sin cometer los mismos errores.",
     /**
-     * El subtítulo se fue entero.
-     *
-     * Decía en treinta palabras lo mismo que el titular en nueve, y debajo
-     * los tres hechos volvían a decirlo por tercera vez. En la única
-     * pantalla donde alguien decide si sigue leyendo, repetir es lo que
-     * hace que no lea nada.
-     *
-     * El titular dice QUÉ; los tres hechos dicen POR QUÉ CREERLO. No hace
-     * falta una capa en medio.
-     */
-    /**
-     * LA CONFIANZA SE DEMUESTRA, NO SE DECLARA.
-     *
-     * Tres hechos comprobables en lugar de tres adjetivos. El segundo dice
-     * su límite en la misma línea: prometer de más en seguridad es peor que
-     * no prometer nada.
-     */
-    /**
-     * Tres hechos, y ninguno pasa de siete palabras.
-     *
-     * Se recortaron sin perder lo que importa: el segundo sigue diciendo
-     * que los documentos NO SALEN del teléfono —la promesa entera está en
-     * el verbo— y el tercero sigue diciendo lo que ANDEX no es, que con
-     * este público pesa más que cualquier superlativo.
+     * Cada punto lleva ahora título y explicación. El título es la promesa
+     * en tres palabras; la línea de abajo dice qué hay detrás, que es donde
+     * se cae la mayoría de las landings: prometen «acompañamiento» y nunca
+     * dicen de qué.
      */
     trustPoints: [
-      "Talleres en vivo, de martes a viernes",
-      "Tus documentos no salen de tu teléfono",
-      "Sin afiliación con ninguna agencia del gobierno",
+      {
+        title: "Acompañamiento con experiencia",
+        body:
+          "Trámites, visas, licencias y citas explicadas desde la práctica " +
+          "real, no desde la teoría.",
+      },
+      {
+        title: "Crecimiento económico probado",
+        body:
+          "De la bancarización e ITIN a la creación de tu LLC, taxes e " +
+          "inversión al 4% APY.",
+      },
+      {
+        title: "Una comunidad que no te deja solo",
+        body:
+          "Bolsa de empleo local, eventos en Utah y educación para tus " +
+          "hijos (Starbiz).",
+      },
     ],
-    cta: "Comenzar viaje",
+    cta: "Unirme a la comunidad y armar mi plan",
     /**
-     * Antes decía «no pedimos tarjeta», y era falso: después del registro y
-     * de la entrevista viene el plan y su pago. Decirlo aquí y cobrar tres
-     * pantallas después es exactamente lo que hace desconfiar a alguien que
-     * ya fue engañado. Ahora dice el recorrido entero.
+     * Dice el recorrido entero y quién lo diseñó. La versión anterior
+     * prometía «no pedimos tarjeta» y era falso: después del registro y de
+     * la entrevista viene el plan y su pago.
      */
-    ctaHint: "Cinco preguntas. Ves el precio antes de pagar.",
+    ctaHint:
+      "Diagnóstico de 5 preguntas · Diseñado por quienes ya superamos el " +
+      "proceso en EE. UU.",
     scrollHint: "Baja para conocer ANDEX",
     /**
      * El rótulo que anuncia el recorrido del producto.
@@ -633,17 +621,39 @@ const en = {
   },
 
   hero: {
-    badge: "Pilot in Utah",
-    title: "Everything of yours, in its place. Ordered around your case.",
-    titleLines: ["Everything of yours,", "in its place."],
-    titleAccent: "Ordered around your case.",
+    badge: "Built from lived experience · Utah pilot",
+    title: "The road I already walked. Now mapped for your progress.",
+    titleLines: ["The road I already walked."],
+    titleAccent: "Now mapped for your progress.",
+    body:
+      "This is not one more app; it is the community and the system I built " +
+      "after getting past every obstacle in the U.S. Here you find your " +
+      "paperwork, credit, work, business and investing in one place, so your " +
+      "family moves forward without repeating the same mistakes.",
     trustPoints: [
-      "Live workshops, Tuesday to Friday",
-      "Your documents never leave your phone",
-      "Not affiliated with any government agency",
+      {
+        title: "Guidance from someone who did it",
+        body:
+          "Paperwork, visas, licenses and appointments explained from real " +
+          "practice, not from theory.",
+      },
+      {
+        title: "Proven economic growth",
+        body:
+          "From opening a bank account and your ITIN to forming your LLC, " +
+          "taxes and investing at 4% APY.",
+      },
+      {
+        title: "A community that does not leave you alone",
+        body:
+          "Local job board, events in Utah and education for your children " +
+          "(Starbiz).",
+      },
     ],
-    cta: "Start the journey",
-    ctaHint: "Five questions. You see the price before you pay.",
+    cta: "Join the community and build my plan",
+    ctaHint:
+      "A 5-question check-in · Designed by those of us who already got " +
+      "through the process in the U.S.",
     scrollHint: "Scroll to learn about ANDEX",
     tourLabel: "How ANDEX works",
     mockup: {
