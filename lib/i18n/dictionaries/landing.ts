@@ -118,17 +118,28 @@ const es = {
      *
      * Empieza negando lo que se supone que es —«no es una app más»— porque
      * es exactamente lo que piensa quien llega: otra aplicación que promete.
-     * Y nombra los cinco frentes de golpe para que nadie tenga que deducir
-     * el alcance del producto de un eslogan.
+     * Y nombra los frentes de golpe para que nadie tenga que deducir el
+     * alcance del producto de un eslogan.
+     *
+     * «En tu plataforma encontrarás todo esto» y no «aquí encuentras en un
+     * solo lugar»: el «todo esto» apunta a la lista que viene detrás y a
+     * nada más. «Todo lo que necesitas» sonaría mejor y sería una promesa
+     * que el producto no puede sostener — cuatro de los siete módulos
+     * siguen cerrados.
+     *
+     * Y «trámites MIGRATORIOS», con su apellido: «trámites» a secas lo lee
+     * cada quien a su manera, y el trámite migratorio es la razón por la que
+     * la mayoría llega a esta página.
      */
     /* ` ` entre «EE.» y «UU.»: con un espacio normal la abreviatura se
        parte al final del renglón y queda un «EE.» huérfano arriba y «UU.»
        solo abajo. Pasó en escritorio, medido. */
     body:
       "No es una app más; es la comunidad y el sistema que construí después " +
-      "de superar cada traba en EE. UU. Aquí encuentras en un solo lugar " +
-      "tus trámites, crédito, empleo, negocios, inglés laboral e inversión " +
-      "para que tu familia avance sin cometer los mismos errores.",
+      "de superar cada traba en EE. UU. En tu plataforma encontrarás " +
+      "todo esto: trámites migratorios, crédito, empleo, negocios, inglés " +
+      "laboral e inversión, para que tu familia avance sin cometer los " +
+      "mismos errores.",
     /**
      * Cada punto lleva ahora título y explicación. El título es la promesa
      * en tres palabras; la línea de abajo dice qué hay detrás, que es donde
@@ -759,10 +770,10 @@ const en = {
     titleAccent: "Now mapped for your progress.",
     body:
       "This is not one more app; it is the community and the system I built " +
-      "after getting past every obstacle in the U.S. Here you find your " +
-      "paperwork, credit, work, business, workplace English and investing in " +
-      "one place, so your family moves forward without repeating the same " +
-      "mistakes.",
+      "after getting past every obstacle in the U.S. Inside your platform " +
+      "you will find all of this: immigration paperwork, credit, work, " +
+      "business, workplace English and investing, so your family moves " +
+      "forward without repeating the same mistakes.",
     trustPoints: [
       {
         title: "Guidance and real savings",
