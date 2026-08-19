@@ -187,7 +187,7 @@ export function SectionShowcase({ copy, modules }: SectionShowcaseProps) {
               ))}
             </ul>
 
-            <Button href={ROUTES.registro} className="mt-8">
+            <Button href={ROUTES.bienvenida} className="mt-8">
               {copy.explore}
             </Button>
           </div>
@@ -242,7 +242,7 @@ export function SectionShowcase({ copy, modules }: SectionShowcaseProps) {
       </RevealGroup>
 
       <div className="mt-9 lg:hidden">
-        <Button href={ROUTES.registro} fullWidth>
+        <Button href={ROUTES.bienvenida} fullWidth>
           {copy.explore}
         </Button>
       </div>

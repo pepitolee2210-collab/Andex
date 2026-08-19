@@ -93,6 +93,10 @@ export const ROUTES = {
   login: "/login",
   registro: "/registro",
   recuperar: "/recuperar",
+  /* El embudo nuevo entra por aquí: bienvenida → pago → cuenta →
+     comunidad. `entrevista` y `membresia` siguen existiendo —las usa quien ya
+     tiene cuenta— pero ya no son el camino de entrada. */
+  bienvenida: "/bienvenida",
   entrevista: "/entrevista",
   membresia: "/membresia",
   pago: "/pago",
@@ -100,6 +104,8 @@ export const ROUTES = {
   panel: "/panel",
   modulo: (slug: string) => `/modulo/${slug}`,
   perfil: "/perfil",
+  /* Donde aterriza quien acaba de entrar: la gente, no un panel vacío. */
+  comunidad: "/modulo/comunidad",
   inversiones: "/inversiones",
   tienda: "/tienda",
   design: "/design",

@@ -27,11 +27,21 @@ const MODULO_PREFIX = ROUTES.modulo("").replace(/\/$/, "");
 const PROTECTED_PREFIXES: readonly string[] = [
   ROUTES.entrevista,
   ROUTES.membresia,
-  ROUTES.pago,
   ROUTES.panel,
   MODULO_PREFIX,
   ROUTES.perfil,
 ];
+
+/*
+ * `/pago` YA NO está aquí, y es la consecuencia directa del embudo nuevo:
+ * se cobra antes de que exista la cuenta, así que exigir sesión para entrar
+ * a pagar cerraria la puerta antes de abrirla.
+ *
+ * Lo que se paga sin sesión queda anotado en `lib/pago-pendiente.ts` y la
+ * cuenta se crea después contra ese registro. `/pago/exito` tampoco exige
+ * sesión por lo mismo: es la pantalla que recoge a quien acaba de pagar y
+ * todavía no es nadie.
+ */
 
 function isProtected(pathname: string): boolean {
   return PROTECTED_PREFIXES.some(

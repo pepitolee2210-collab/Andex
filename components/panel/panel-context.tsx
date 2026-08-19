@@ -19,7 +19,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { ROUTES } from "@/lib/config";
 import { getDataStore, type LocationTransition, type StoredRanking } from "@/lib/data";
 import { hasDashboardAccess } from "@/lib/auth/routing";
@@ -89,6 +89,43 @@ export type PanelValue = {
   setSubscription: (subscription: SubscriptionInfo) => void;
 };
 
+/**
+ * DÓNDE LA ENTREVISTA ES IMPRESCINDIBLE.
+ *
+ * Sólo el panel. Es la pantalla que ORDENA los siete módulos a partir del
+ * perfil; sin perfil no tiene nada que ordenar y enseñaría un orden inventado
+ * como si fuera una recomendación.
+ *
+ * Un módulo concreto es otra cosa: se abre y se usa sin haber contestado
+ * nada. Hasta hace poco el guardián mandaba a la entrevista desde CUALQUIER
+ * pantalla del panel, y con el embudo nuevo —bienvenida → pago → cuenta →
+ * comunidad— eso echaba de la comunidad a quien acababa de pagar, que es
+ * exactamente donde se le prometió aterrizar. §3.2 regla 6 ya decía que la
+ * entrevista se puede saltar; esto lo cumple.
+ */
+function exigePerfil(pathname: string): boolean {
+  return pathname === ROUTES.panel || pathname.startsWith(`${ROUTES.panel}/`);
+}
+
+/**
+ * EL ORDEN DE LOS MÓDULOS, CON PERFIL O SIN ÉL.
+ *
+ * Sin perfil no se puntúa nada: se usa el orden por defecto del contexto, con
+ * `score: 0` y razón `context_default`. Eso no es una recomendación
+ * disfrazada — quien lee esos scores lee también la razón, y ahí dice que el
+ * orden viene del contexto y no de lo que el usuario contó.
+ *
+ * El contexto que se supone es `in_us`, y es una SUPOSICIÓN: quien llega aquí
+ * sin perfil acaba de pagar desde Estados Unidos. En cuanto conteste la
+ * entrevista, el orden se recalcula con lo que dijo y esto deja de aplicar.
+ */
+function rankear(
+  profile: StoredProfile | null,
+  behavior: ModuleBehavior[],
+): ModuleScore[] {
+  return profile ? computeScores(profile, behavior) : fallbackScores("in_us");
+}
+
 const PanelContext = createContext<PanelValue | null>(null);
 
 export function usePanel(): PanelValue {
@@ -128,6 +165,10 @@ export type PanelProviderProps = {
 export function PanelProvider({ lang, children }: PanelProviderProps) {
   const dict = useMemo(() => getDictionary(lang), [lang]);
   const router = useRouter();
+  const pathname = usePathname();
+  /* La ruta de ENTRADA, no la actual: el guardián corre una sola vez al
+     montar, y leerla por ref evita que el efecto dependa de la navegación. */
+  const rutaDeEntrada = useRef(pathname);
 
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<StoredProfile | null>(null);
@@ -170,9 +211,10 @@ export function PanelProvider({ lang, children }: PanelProviderProps) {
       ]);
       if (!alive) return;
 
-      // Sin perfil no hay contexto de ubicación y el panel no puede adaptarse
-      // a nada (§3.2 regla 6): al principio del embudo.
-      if (!loadedProfile) {
+      // Sin perfil, a la entrevista SÓLO desde donde hace falta (ver
+      // `exigePerfil`). En un módulo se entra igual: el orden por defecto del
+      // contexto vale hasta que el usuario conteste.
+      if (!loadedProfile && exigePerfil(rutaDeEntrada.current)) {
         router.replace(ROUTES.entrevista);
         return;
       }
@@ -189,7 +231,7 @@ export function PanelProvider({ lang, children }: PanelProviderProps) {
       // (§3.2 regla 6: puede saltar). Es distinto de "saltó el onboarding",
       // que no deja borrador y se resuelve con la hero card genérica.
       let pendingStep: number | null = null;
-      if (!loadedProfile.onboardingCompleted) {
+      if (!loadedProfile || !loadedProfile.onboardingCompleted) {
         const wizard = await store.getWizardState().catch(() => null);
         if (!alive) return;
         pendingStep = wizard ? wizard.currentStep : null;
@@ -202,7 +244,7 @@ export function PanelProvider({ lang, children }: PanelProviderProps) {
         // §3.3.2 — el re-ranking corre AL INICIAR SESIÓN, no en tiempo real.
         const previousTop = loadedRanking?.scores?.[0]?.moduleId ?? null;
         nextBehavior = bumpSessionsWithoutOpen(nextBehavior, previousTop);
-        nextScores = computeScores(loadedProfile, nextBehavior);
+        nextScores = rankear(loadedProfile, nextBehavior);
         markSessionRanked();
         const stored: StoredRanking = {
           scores: nextScores,
@@ -216,13 +258,13 @@ export function PanelProvider({ lang, children }: PanelProviderProps) {
         // Dentro de la misma sesión se lee lo persistido (§3.3.1).
         nextScores = loadedRanking.scores;
       } else {
-        nextScores = computeScores(loadedProfile, nextBehavior);
+        nextScores = rankear(loadedProfile, nextBehavior);
       }
 
       if (!alive) return;
 
       if (nextScores.length === 0) {
-        nextScores = fallbackScores(loadedProfile.locationContext);
+        nextScores = fallbackScores(loadedProfile?.locationContext ?? "in_us");
       }
 
       setProfile(loadedProfile);

@@ -41,6 +41,8 @@ import { KitField, KIT_INPUT_CLASS } from "./kit-field";
 import { MagicLinkSent } from "./magic-link-sent";
 import { OrDivider } from "./or-divider";
 import { focusField } from "./focus";
+import { getDataStore } from "@/lib/data";
+import { borrarPagoPendiente, leerPagoPendiente } from "@/lib/pago-pendiente";
 
 const FIELD_IDS = {
   firstName: "registro-nombre",
@@ -173,8 +175,7 @@ export function RegistroForm({ lang }: { lang: Lang }) {
 
     await recordConsents();
     toast.success(t.success.accountCreated);
-    // §3: del registro se pasa a la entrevista, nunca al paywall.
-    router.replace(ROUTES.entrevista);
+    router.replace(await destinoTrasCrear());
     router.refresh();
   }
 
@@ -203,7 +204,7 @@ export function RegistroForm({ lang }: { lang: Lang }) {
     if (isDemoMode) {
       // Demo: el enlace se da por tocado y la sesión ya está abierta.
       toast.success(t.success.loggedIn);
-      router.replace(ROUTES.entrevista);
+      router.replace(await destinoTrasCrear());
       router.refresh();
       return;
     }
@@ -398,4 +399,31 @@ export function RegistroForm({ lang }: { lang: Lang }) {
       </p>
     </div>
   );
+}
+
+/**
+ * A DÓNDE VA QUIEN ACABA DE CREAR LA CUENTA.
+ *
+ * El embudo nuevo cobra ANTES de registrar, así que aquí puede haber un pago
+ * esperando. Si lo hay: se activa la membresía sobre la cuenta recién creada,
+ * se borra el registro —dejarlo activaría la membresía del siguiente que use
+ * este navegador, y este público comparte teléfono más de lo que se suele
+ * suponer— y se aterriza en la comunidad, que es donde está la gente.
+ *
+ * Si NO lo hay, se sigue por el embudo de siempre: la entrevista.
+ */
+async function destinoTrasCrear(): Promise<string> {
+  const pendiente = leerPagoPendiente();
+  if (!pendiente) return ROUTES.entrevista;
+
+  try {
+    const store = getDataStore();
+    await store.activateDemoSubscription?.(pendiente.plan);
+  } catch {
+    /* Si la activación falla, la cuenta ya existe y el cobro está anotado:
+       mejor entrar y que el perfil enseñe el estado real que quedarse en una
+       pantalla en blanco. */
+  }
+  borrarPagoPendiente();
+  return ROUTES.comunidad;
 }

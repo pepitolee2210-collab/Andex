@@ -85,6 +85,7 @@ import {
   ScreenHeader,
   SectionLabel,
   Segmented,
+  StatePanel,
 } from "@/components/ui/kit";
 import { GoalCard } from "./goal-card";
 import { usePanel } from "./panel-context";
@@ -268,7 +269,32 @@ export function PerfilView() {
     [profile, lang],
   );
 
-  if (loading || !profile || !draft) return null;
+  if (loading) return null;
+
+  /**
+   * PERFIL VACÍO — quien pagó y todavía no contestó la entrevista.
+   *
+   * El embudo nuevo —bienvenida → pago → cuenta → comunidad— deja entrar sin
+   * perfil a propósito (§3.2 regla 6: la entrevista se puede saltar). Antes
+   * esta pantalla devolvía `null` en ese caso, así que tocar "Perfil" abría
+   * una pantalla EN BLANCO. Ahora dice qué falta y ofrece contestarlo, sin
+   * obligar: el resto de la app sigue abierto.
+   */
+  if (!profile || !draft) {
+    const h = dict.panel.hero;
+    return (
+      <div className="mx-auto w-full max-w-2xl px-5 pb-10 pt-6 sm:px-6">
+        <ScreenHeader title={dict.perfil.title} />
+        <KitCard className="mt-[22px]">
+          <StatePanel icon={User} title={h.genericTitle} body={h.genericBody}>
+            <Button href={ROUTES.entrevista} className="mt-5">
+              {h.genericCta}
+            </Button>
+          </StatePanel>
+        </KitCard>
+      </div>
+    );
+  }
 
   const t = dict.perfil;
   const context = profile.locationContext;

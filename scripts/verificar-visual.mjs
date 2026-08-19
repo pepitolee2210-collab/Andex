@@ -207,7 +207,16 @@ const page = await ctx.newPage();
 
 console.log(`\nVerificando ${BASE}\n`);
 console.log("Públicas");
-for (const [ruta, nombre] of [["/", "landing"], ["/registro", "registro"], ["/login", "login"]]) {
+/* La bienvenida y el pago van aquí, con las públicas: son las DOS primeras
+   pantallas que ve cualquiera que entre, y ninguna exige sesión. Si sólo se
+   midieran las de dentro, el embudo entero quedaría sin medir. */
+for (const [ruta, nombre] of [
+  ["/", "landing"],
+  ["/bienvenida", "bienvenida"],
+  ["/pago", "pago"],
+  ["/registro", "registro"],
+  ["/login", "login"],
+]) {
   await page.goto(BASE + ruta, { waitUntil: "load" });
   await revisar(page, nombre);
 }

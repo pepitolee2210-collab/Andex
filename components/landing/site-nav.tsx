@@ -137,7 +137,7 @@ export function SiteNav({
   themeAriaLabel,
   themeLabels,
   loginHref = ROUTES.login,
-  ctaHref = ROUTES.registro,
+  ctaHref = ROUTES.bienvenida,
   backPath = ROUTES.landing,
   className,
 }: SiteNavProps) {

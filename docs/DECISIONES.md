@@ -205,3 +205,19 @@ landing con esta frase mientras siga sin respaldo.
 - Test A/B hero interrogativo vs afirmativo (§3.1.1, R3).
 - Validación legal del copy "tarifa congelada" (§3.4.4, R2) — **bloqueante para publicar**.
 - Contenido EN completo es traducción funcional; revisar antes de lanzar el toggle (Decisión abierta #4 del PRD).
+
+## El embudo se reordena (2026-08-18)
+
+| # | Decisión | Porqué |
+|---|---|---|
+| **D62** | **El embudo pasa a ser bienvenida → pago → cuenta → comunidad.** Se COBRA antes de que exista la cuenta. Antes era landing → registro → entrevista → muro de pago. | Decisión del dueño del producto, tomada expresamente. Quien llega no conoce ANDEX de nada, así que lo primero es que Henry le cuente qué es —en video, no en texto— y lo segundo el precio, de frente. La entrevista de cinco pasos dejó de ser peaje: pedirla antes de que la persona sepa qué está comprando gasta la única atención que hay. |
+| **D63** | **El correo es obligatorio en la pantalla de pago**, con su propio error y foco al campo. | Aquí se cobra antes de que exista cuenta: sin correo el cobro queda **huérfano** —no se puede vincular a nadie ni avisar a quien pagó si cierra la pestaña antes de registrarse—. Lo cazó el recorrido en navegador («cobró sin correo»), no una prueba unitaria. |
+| **D64** | El cobro se anota en `andex_pago_pendiente` (plan, correo, instante) con vigencia de 24 h, y **el registro lo consume y lo borra**. Nunca guarda nada de la tarjeta. | Entre pagar y crear la cuenta hay un hueco donde la persona puede cerrar la pestaña. Sin esa nota, el dinero cobrado no tendría a quién activarle nada. Se borra al consumirlo porque, si sobreviviera, la siguiente cuenta creada en ese navegador estrenaría una suscripción que nadie pagó. |
+| **D65** | **La entrevista deja de ser peaje de todo el panel: sólo la exige `/panel`.** El resto de pantallas se abren sin perfil y usan el orden por defecto del contexto. | El guardián mandaba a la entrevista desde cualquier ruta del panel; con el embudo nuevo eso echaba de la comunidad a quien acababa de pagar, que es justo donde se le prometió aterrizar. §3.2 regla 6 ya decía que la entrevista se puede saltar. El panel es la única pantalla que de verdad la necesita: es la que ORDENA los siete módulos a partir del perfil. |
+| **D66** | `/perfil` sin entrevista contestada **no se queda en blanco**: dice qué falta y ofrece contestarla. | Consecuencia directa de D65 — ahora existe gente dentro sin perfil. La pantalla devolvía `null` en ese caso. |
+
+**Lo que descubrió el rediseño, y no tenía que ver con él:** al dejar entrar en la
+comunidad sin perfil, el verificador visual **midió esa pantalla por primera vez** —antes
+rebotaba a la entrevista y medía otra cosa—. Encontró la nota «el botón de entrar aparece
+cuando la sala abra» a **3.94:1**, por debajo del 4.5 exigido. Llevaba ahí desde que existe
+la pantalla.

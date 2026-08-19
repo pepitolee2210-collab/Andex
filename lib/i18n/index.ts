@@ -23,6 +23,7 @@ import type {
 
 import { common } from "./dictionaries/common";
 import { landing } from "./dictionaries/landing";
+import { bienvenida } from "./dictionaries/bienvenida";
 import { tour } from "./dictionaries/tour";
 import { boveda } from "./dictionaries/boveda";
 import { academia } from "./dictionaries/academia";
@@ -60,6 +61,7 @@ export type { TiendaDict } from "./dictionaries/tienda";
 export type Dictionary = {
   common: (typeof common)[Lang];
   landing: (typeof landing)[Lang];
+  bienvenida: (typeof bienvenida)[Lang];
   tour: (typeof tour)[Lang];
   boveda: (typeof boveda)[Lang];
   academia: (typeof academia)[Lang];
@@ -80,6 +82,7 @@ export function getDictionary(lang: Lang): Dictionary {
   return {
     common: common[lang],
     landing: landing[lang],
+    bienvenida: bienvenida[lang],
     tour: tour[lang],
     boveda: boveda[lang],
     academia: academia[lang],

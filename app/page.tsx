@@ -220,7 +220,7 @@ export default async function LandingPage({
             disclaimer: t.trust.disclaimer,
             tour: dict.tour,
           }}
-          accountHref={ROUTES.registro}
+          accountHref={ROUTES.bienvenida}
         />
 
         {/* ── S3 · Respaldo y seguridad ──
@@ -271,8 +271,8 @@ export default async function LandingPage({
         </div>
         <SectionPricing
           copy={pricing}
-          monthlyHref={ROUTES.registro}
-          annualHref={ROUTES.registro}
+          monthlyHref={`${ROUTES.pago}?plan=monthly`}
+          annualHref={`${ROUTES.pago}?plan=annual`}
         />
 
         {/* ── S9 · Preguntas frecuentes ── */}
@@ -289,7 +289,7 @@ export default async function LandingPage({
           subtitle={t.closing.subtitle}
           ctaLabel={t.closing.cta}
           hint={t.closing.hint}
-          ctaHref={ROUTES.registro}
+          ctaHref={ROUTES.bienvenida}
         />
       </main>
 
@@ -298,7 +298,7 @@ export default async function LandingPage({
       <MobileCtaBar
         label={t.hero.cta}
         hint={t.closing.hint}
-        href={ROUTES.registro}
+        href={ROUTES.bienvenida}
       />
 
       <SiteFooter

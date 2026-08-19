@@ -88,6 +88,16 @@ const CATALOGO = {
 
 export type LandingImageKey = keyof typeof CATALOGO;
 
+/**
+ * La PRIMERA de un conjunto que exista en disco, o `null`.
+ *
+ * Para los sitios que quieren una sola imagen —el cartel del video de
+ * bienvenida— y no un carrusel.
+ */
+export function imagenLanding(clave: LandingImageKey): LandingImage | null {
+  return imagenesDe(clave)[0] ?? null;
+}
+
 /** Las de un conjunto que existen en `public/`, en su orden. */
 export function imagenesDe(clave: LandingImageKey): LandingImage[] {
   return CATALOGO[clave].filter((imagen) =>

@@ -127,14 +127,26 @@ hora buscando un fallo que no existe.
 
 ## Estado
 
-**Funciona**: portada con escáner gratis sin registro · registro ·
-entrevista de 5 pasos · membresía y pago simulado · panel · Bóveda completa
-· Comunidad con talleres y zonas horarias · Academia con nueve temarios de
+**El embudo, en este orden** (D62, agosto de 2026): portada →
+**`/bienvenida`** (el video de Henry) → **`/pago`** → `/registro` →
+`/modulo/comunidad`. Se **cobra antes de que exista la cuenta**, así que el
+correo del pago es obligatorio (D63) y el cobro se anota en
+`andex_pago_pendiente` hasta que el registro lo consume (D64). La entrevista
+de 5 pasos sigue viva, pero **sólo `/panel` la exige** (D65): el resto del
+panel se abre sin perfil.
+
+**Funciona**: portada con escáner gratis sin registro · bienvenida · pago
+directo · registro · entrevista de 5 pasos · panel · Bóveda completa ·
+Comunidad con talleres y zonas horarias · Academia con nueve temarios de
 inglés y sus manuales en PDF · Inversiones · perfil · administración de
 talleres.
 
 **Pendiente, y conviene tenerlo presente porque son promesas ya publicadas:**
 
+- **El video de bienvenida no existe.** El marco está montado y rotulado
+  como pendiente en `components/embudo/bienvenida-screen.tsx`; cuando llegue
+  el archivo se sustituye el bloque `pendiente` por el `<video>` y no cambia
+  nada más.
 - **Los avisos de 90/60/30/7 días no existen.** Es la promesa central del
   producto y no hay nada detrás.
 - `/terminos`, `/privacidad` y `/contacto` dan **404** estando enlazadas

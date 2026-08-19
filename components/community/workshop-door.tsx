@@ -353,8 +353,12 @@ export function WorkshopDoor({
         </KitNotice>
       ) : null}
 
+      {/* `text-muted`, no `text-disabled`: esto no es un control apagado, es
+          la frase que explica POR QUÉ no hay botón todavía. Medido sobre la
+          tarjeta real daba 3.94:1 con el tono anterior —por debajo del 4.5
+          exigido—, y encima es lo único que responde a «¿y ahora qué?». */}
       {nota ? (
-        <p className="mt-3 text-pretty text-label leading-[1.45] text-disabled">{nota}</p>
+        <p className="mt-3 text-pretty text-label leading-[1.45] text-muted">{nota}</p>
       ) : null}
 
       {salto ? (

@@ -20,6 +20,7 @@ const ctx = await browser.newContext({
   isMobile: true,
   hasTouch: true,
 });
+
 const page = await ctx.newPage();
 
 // ── Vigilancia permanente ────────────────────────────────
@@ -38,6 +39,17 @@ page.on("response", (r) => {
 });
 
 const resultados = [];
+/* Si el recorrido se cae a media pista, lo hecho hasta ahí no se pierde: sin
+   esto, un fallo duro en la bóveda oculta los 20 aciertos anteriores. */
+let resumido = false;
+process.on("exit", () => {
+  if (resumido) return;
+  console.log("");
+  console.log("── el recorrido murió a media pista; esto es lo que dio tiempo a comprobar ──");
+  for (const r of resultados) {
+    console.log(`${r.bien ? " ok " : " ✗  "} ${r.area.padEnd(11)} ${r.que}${r.detalle ? `  — ${r.detalle}` : ""}`);
+  }
+});
 function ok(area, que) { resultados.push({ area, que, bien: true }); }
 function mal(area, que, detalle) { resultados.push({ area, que, bien: false, detalle }); }
 
@@ -72,23 +84,126 @@ await comprobar("portada", "el titular se lee (no es navy sobre navy)", async ()
   return color !== fondo;
 });
 
-await comprobar("portada", "lleva a registro", async () => {
-  // Por DESTINO, no por rótulo. Antes buscaba /crear mi cuenta|empezar|
-  // registr/ y se rompió en cuanto el copy de la portada cambió, sin que la
-  // página tuviera nada mal: lo que hay que garantizar es que desde la
-  // portada se llega al registro, no cómo se llame el botón ese mes.
-  return (await page.locator('a[href^="/registro"]').count()) > 0;
+await comprobar("portada", "lleva a la bienvenida, no al registro", async () => {
+  // Por DESTINO, no por rótulo. Y el destino cambió: el embudo nuevo empieza
+  // por el video de Henry, no por el formulario. Si algún botón se quedó
+  // apuntando a /registro, se salta el video y el pago enteros.
+  const alEmbudo = await page.locator('a[href^="/bienvenida"]').count();
+  const alRegistro = await page.locator('a[href^="/registro"]').count();
+  if (alEmbudo === 0) throw new Error("ningún botón lleva a /bienvenida");
+  if (alRegistro > 0) throw new Error(`${alRegistro} botones se saltan el embudo`);
+  return true;
 });
 
-// ══════════════════════════════════════════════════════════
-paso("REGISTRO");
-await page.goto(BASE + "/registro", { waitUntil: "domcontentloaded" });
+// ════════════════════════════════════════════════════════
+// EL EMBUDO NUEVO: bienvenida → pago → cuenta → comunidad.
+//
+// El orden importa, y es el que nadie espera: se COBRA ANTES de que exista
+// la cuenta. Todo lo que se comprueba aquí gira alrededor de eso — que el
+// correo del pago sea el que crea la cuenta, que el cobro quede anotado
+// mientras el usuario rellena el registro, y que al final aterrice en la
+// comunidad y no en una entrevista de cinco pasos que nadie le prometió.
+// ════════════════════════════════════════════════════════
+paso("BIENVENIDA — el video de Henry");
+await page.goto(BASE + "/bienvenida", { waitUntil: "domcontentloaded" });
 await page.waitForTimeout(1200);
 
+await comprobar("bienvenida", "no exige sesión", async () => {
+  // Si volviera a estar protegida, el embudo empezaría por un login.
+  return page.url().includes("/bienvenida");
+});
+
+await comprobar("bienvenida", "el hueco del video está reservado en 16:9", async () => {
+  // El archivo todavía no existe. Lo que no puede pasar es que al llegar
+  // empuje la página hacia abajo: el marco reserva su proporción DESDE AHORA.
+  const marco = page.locator(".aspect-video").first();
+  if (!(await marco.count())) throw new Error("no hay marco con proporción");
+  const r = await marco.boundingBox();
+  const proporcion = r.width / r.height;
+  if (Math.abs(proporcion - 16 / 9) > 0.04) {
+    throw new Error(`proporción ${proporcion.toFixed(2)}`);
+  }
+  return true;
+});
+
+await comprobar("bienvenida", "el estado PENDIENTE está rotulado", async () => {
+  // Un marco vacío que parece un reproductor acaba en producción sin que
+  // nadie se dé cuenta. Mientras no haya archivo, tiene que decirlo.
+  return /pendiente|pending/i.test(await texto());
+});
+
+await comprobar("bienvenida", "el recorrido dice en qué paso va", async () => {
+  return (await page.locator('[role="group"][aria-label*="aso"]').count()) > 0;
+});
+
+await comprobar("bienvenida", "continuar lleva al pago", async () => {
+  await page.getByRole("link", { name: /continuar|continue/i }).first().click();
+  /* 30 s y no 15: en desarrollo /pago compila la primera vez que se visita,
+     así que un margen corto mide la velocidad del compilador y no si el
+     botón navega. */
+  await page.waitForURL("**/pago**", { timeout: 30_000 });
+  return true;
+});
+
+// ════════════════════════════════════════════════════════
+paso("PAGO — antes de que exista la cuenta");
+await page.waitForTimeout(1200);
+
+await comprobar("pago", "se puede pagar SIN sesión", async () => {
+  // Si `middleware.ts` volviera a proteger /pago, el embudo se rompe entero:
+  // el usuario iría al login antes de haber podido pagar.
+  return page.url().includes("/pago");
+});
+
+await comprobar("pago", "NINGÚN campo de tarjeta es nuestro", async () => {
+  // Regla dura: un `<input>` propio metería el producto en el alcance de
+  // PCI DSS. Aquí es donde más tienta ponerlo, así que aquí se comprueba.
+  const propios = await page.locator(
+    'input[name*="card" i], input[name*="tarjeta" i], input[autocomplete*="cc-"], ' +
+      'input[inputmode="numeric"][maxlength="19"]',
+  ).count();
+  if (propios) throw new Error(`${propios} campos de tarjeta propios`);
+  return true;
+});
+
+await comprobar("pago", "dice que la cuenta se crea después, con ese correo", async () => {
+  // Pagar y que no te pidan la cuenta hasta el paso siguiente se lee como
+  // haber perdido el dinero. El texto tiene que decirlo ANTES de cobrar.
+  return /cuenta.{0,40}siguiente paso|account.{0,40}next step/i.test(await texto());
+});
+
 const CORREO = `recorrido${Date.now()}@andex.test`;
+
+await comprobar("pago", "sin correo no cobra", async () => {
+  await page.getByRole("button", { name: /pagar|pay /i }).first().click().catch(() => {});
+  await page.waitForTimeout(1000);
+  const anotado = await page.evaluate(() => localStorage.getItem("andex_pago_pendiente"));
+  if (anotado) throw new Error("cobró sin correo");
+  return page.url().includes("/pago");
+});
+
+await comprobar("pago", "cobra y anota el cobro antes de mandar al registro", async () => {
+  await page.locator('input[type="email"]').first().fill(CORREO);
+  await page.getByRole("button", { name: /pagar|pay /i }).first().click();
+  await page.waitForURL("**/registro", { timeout: 20000 });
+  const anotado = await page.evaluate(() => localStorage.getItem("andex_pago_pendiente"));
+  if (!anotado) {
+    throw new Error("el cobro no quedó anotado: se pierde si cierra la pestaña");
+  }
+  const { plan, email } = JSON.parse(anotado);
+  if (!plan) throw new Error("sin plan");
+  if (email !== CORREO) throw new Error("el correo anotado no es el que se escribió");
+  return true;
+});
+
+// ════════════════════════════════════════════════════════
+paso("REGISTRO — la cuenta, ya pagada");
+await page.waitForTimeout(1000);
+
 await comprobar("registro", "los tres campos existen y aceptan texto", async () => {
   await page.locator('input[type="text"]').first().fill("María López");
-  await page.locator('input[type="email"]').fill(CORREO);
+  const correo = page.locator('input[type="email"]').first();
+  if (!(await correo.inputValue())) await correo.fill(CORREO);
   await page.locator('input[type="password"]').first().fill("ClaveSegura123");
   return true;
 });
@@ -96,24 +211,61 @@ await comprobar("registro", "los tres campos existen y aceptan texto", async () 
 await comprobar("registro", "no se puede crear la cuenta sin aceptar", async () => {
   const b = page.getByRole("button", { name: /crear mi cuenta/i }).first();
   const antes = page.url();
-  await b.click({ trial: true }).catch(() => {});
   await b.click().catch(() => {});
   await page.waitForTimeout(900);
-  // O sigue en /registro, o hay un aviso a la vista
   const sigue = page.url().includes("registro");
   const aviso = (await page.locator('[role="alert"]').count()) > 0;
   return sigue || aviso || antes === page.url();
 });
 
-await comprobar("registro", "acepta y entra", async () => {
+await comprobar("registro", "acepta, y el pago pendiente lo lleva a la COMUNIDAD", async () => {
   await page.getByRole("checkbox").first().click();
   await page.getByRole("button", { name: /crear mi cuenta/i }).click();
-  await page.waitForTimeout(2500);
-  return !page.url().includes("/registro");
+  await page.waitForURL("**/modulo/comunidad", { timeout: 25000 });
+  return true;
 });
 
-// ══════════════════════════════════════════════════════════
-paso("ENTREVISTA — 5 pasos");
+await comprobar("registro", "el cobro anotado se limpia al consumirlo", async () => {
+  // Si sobreviviera, la próxima cuenta creada en este navegador activaría
+  // una suscripción que nadie pagó.
+  return (await page.evaluate(() => localStorage.getItem("andex_pago_pendiente"))) === null;
+});
+
+// ════════════════════════════════════════════════════════
+paso("COMUNIDAD — se entra sin haber contestado la entrevista");
+// La espera es larga a propósito: el rebote llegaba DESPUÉS de pintar, así
+// que mirar demasiado pronto daba un falso verde.
+await page.waitForTimeout(4000);
+
+await comprobar("comunidad", "NO rebota a la entrevista", async () => {
+  // Ésta es la regresión que rompería la promesa del embudo. El guardián del
+  // panel mandaba a la entrevista desde CUALQUIER pantalla; ahora sólo desde
+  // el panel, que es la única que necesita el perfil para ordenar módulos.
+  if (page.url().includes("entrevista")) throw new Error("rebotó a la entrevista");
+  return page.url().includes("/modulo/comunidad");
+});
+
+await comprobar("comunidad", "la suscripción quedó activa", async () => {
+  const sub = await page.evaluate(() => localStorage.getItem("andex_demo_subscription"));
+  if (!sub) throw new Error("pagó y no se le activó ninguna suscripción");
+  return true;
+});
+
+await comprobar("perfil", "sin entrevista NO está en blanco", async () => {
+  // Quien pagó y saltó la entrevista puede tocar "Perfil". Antes veía una
+  // pantalla vacía; ahora se le dice qué falta y se le ofrece contestarlo.
+  await page.goto(BASE + "/perfil", { waitUntil: "domcontentloaded" });
+  await page.waitForTimeout(2500);
+  if (page.url().includes("entrevista")) return true;
+  const t = (await texto()).trim();
+  if (t.length < 60) throw new Error(`pantalla casi vacía (${t.length} caracteres)`);
+  return true;
+});
+
+// ════════════════════════════════════════════════════════
+paso("ENTREVISTA — 5 pasos (se ofrece, no se obliga)");
+await page.goto(BASE + "/entrevista", { waitUntil: "domcontentloaded" });
+await page.waitForTimeout(1500);
 let pasosHechos = 0;
 for (let i = 0; i < 8; i++) {
   if (!page.url().includes("entrevista")) break;
@@ -134,47 +286,36 @@ for (let i = 0; i < 8; i++) {
     if (await o.count()) await o.click().catch(() => {});
   }
 
-  const seguir = page.getByRole("button", { name: /continuar|siguiente|ver mi plan|terminar/i }).first();
+  const seguir = page
+    .getByRole("button", { name: /continuar|siguiente|ver mi plan|terminar/i })
+    .first();
   if (!(await seguir.count())) break;
   await seguir.click().catch(() => {});
   await page.waitForTimeout(1400);
   if ((await texto()) !== antes) pasosHechos++;
 }
-await comprobar("entrevista", `avanza por sus pasos (${pasosHechos} transiciones)`, async () => pasosHechos >= 4);
+await comprobar(
+  "entrevista",
+  `avanza por sus pasos (${pasosHechos} transiciones)`,
+  async () => pasosHechos >= 4,
+);
 
-// ══════════════════════════════════════════════════════════
-paso("MEMBRESÍA Y PAGO");
-if (!page.url().includes("pago") && !page.url().includes("panel")) {
-  await page.goto(BASE + "/membresia", { waitUntil: "domcontentloaded" });
-  await page.waitForTimeout(1400);
-}
-
-await comprobar("membresía", "el sello aparece UNA sola vez", async () => {
-  await page.goto(BASE + "/membresia", { waitUntil: "domcontentloaded" });
-  await page.waitForTimeout(1500);
-  const n = await page.locator('[data-sello], .sello, [class*="seal"]').count();
-  return n <= 1;
+await comprobar("membresía", "quien YA pagó no vuelve a ver el muro", async () => {
+  /* La entrevista termina empujando a /membresia sin mirar si hay
+     suscripción. Con el embudo nuevo eso le pasa a alguien que YA pagó, así
+     que el muro tiene que apartarse solo. La espera es al DESTINO y no a un
+     reloj: leer la URL demasiado pronto daba un falso rojo con el redirect
+     todavía en vuelo. */
+  await page.waitForURL((u) => !u.pathname.startsWith("/membresia"), { timeout: 20000 });
+  return !page.url().includes("/membresia");
 });
 
-await comprobar("membresía", "no hay ningún campo de tarjeta propio", async () => {
-  const campos = await page.locator(
-    'input[name*="card" i], input[name*="tarjeta" i], input[autocomplete*="cc-"]'
-  ).count();
-  return campos === 0;
-});
-
-await comprobar("pago", "el pago simulado deja entrar", async () => {
-  const plan = page.getByRole("button", { name: /anual|elegir|continuar/i }).first();
-  if (await plan.count()) { await plan.click().catch(() => {}); await page.waitForTimeout(1500); }
-  if (!page.url().includes("/pago")) await page.goto(BASE + "/pago", { waitUntil: "domcontentloaded" });
-  await page.waitForTimeout(1400);
-  await page.getByRole("checkbox").first().click().catch(() => {});
-  await page.getByRole("button", { name: /simular el pago|pagar|confirmar/i }).first().click().catch(() => {});
-  await page.waitForTimeout(2800);
+await comprobar("panel", "con perfil y suscripción, el panel abre", async () => {
   await page.goto(BASE + "/panel", { waitUntil: "domcontentloaded" });
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(2500);
   return page.url().includes("/panel");
 });
+
 
 // ══════════════════════════════════════════════════════════
 paso("ARMAZÓN");
@@ -627,6 +768,7 @@ await comprobar("reglas", `ninguna prosa por debajo de 13px (${pequeno})`, async
 
 // ══════════════════════════════════════════════════════════
 console.log("\n" + "═".repeat(66));
+resumido = true;
 const fallos = resultados.filter((r) => !r.bien);
 for (const r of resultados) {
   console.log(`${r.bien ? " ok " : " ✗  "} ${r.area.padEnd(11)} ${r.que}${r.detalle ? `  — ${r.detalle}` : ""}`);
