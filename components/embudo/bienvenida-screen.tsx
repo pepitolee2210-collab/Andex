@@ -26,13 +26,14 @@ import { cn } from "@/lib/utils";
  * Para montarlo: deja el archivo y sustituye el bloque `pendiente` por el
  * `<video>` con su `poster`. Nada más de esta pantalla cambia.
  *
- * ── Nunca se reproduce solo ──
+ * ── Nunca se reproduce solo, pero tampoco hay atajo ──
  *
- * La duración y los subtítulos se dicen ANTES del play, y hay una salida
- * clara. No es una concesión: el público objetivo usa Android de gama media
- * con datos contados, y un video que arranca solo le cuesta dinero a quien
- * abre la página. Obligar a verlo antes de dejar avanzar es la forma más
- * rápida de perder a alguien que ya venía decidido.
+ * El video es obligatorio por decisión de producto: quien entra no conoce
+ * ANDEX de nada, y la única salida de aquí es «Continuar». Lo que sí se
+ * respeta es que el play lo dé la persona: el público objetivo usa Android
+ * de gama media con datos contados, y un video que arranca solo le cuesta
+ * dinero a quien abre la página. Por eso la duración y los subtítulos se
+ * dicen ANTES del play — quien paga sus megas quiere saber cuántos gasta.
  */
 
 export type BienvenidaScreenProps = {
@@ -136,10 +137,20 @@ export function BienvenidaScreen({
               >
                 <Play className="size-6 text-[color:var(--text-on-glass-quiet)]" />
               </span>
-              <p className="font-mono text-caption uppercase tracking-[0.06em] text-[color:var(--text-on-glass-quiet)]">
+              <p className="max-w-full font-mono text-caption uppercase tracking-[0.06em] text-[color:var(--text-on-glass-quiet)]">
                 {t.pendiente.label}
               </p>
-              <p className="text-caption text-[color:var(--text-on-invert-quiet)]">
+              {/* Esta frase está dirigida a quien deje el archivo, no a quien
+                  entra: fuera del teléfono. A 390px el marco 16:9 mide 197px
+                  de alto y no caben el icono, el rótulo, dos líneas y los
+                  distintivos — se montaban unos encima de otros. Quien mira
+                  desde un teléfono ya sabe a qué atenerse con el rótulo.
+
+                  `max-w-full` tampoco es decoración: en una columna flex
+                  centrada el hijo se dimensiona a su contenido, así que la
+                  frase se salía del marco y el `overflow-hidden` la cortaba
+                  a media palabra. */}
+              <p className="hidden max-w-full text-balance text-caption text-[color:var(--text-on-invert-quiet)] sm:block">
                 {t.pendiente.note}
               </p>
             </div>
@@ -193,16 +204,6 @@ export function BienvenidaScreen({
               className="ml-2 size-5 shrink-0 transition-transform duration-200 group-hover:translate-x-1"
             />
           </Link>
-
-          {/* La salida. Ver la cabecera del archivo: no es una concesión. */}
-          <p className="mt-4 text-center">
-            <Link
-              href={ROUTES.pago}
-              className="inline-flex min-h-11 items-center text-label text-[color:var(--text-on-invert-quiet)] underline decoration-[color:var(--hairline-on-invert)] underline-offset-4 transition-colors hover:text-[color:var(--text-on-invert)]"
-            >
-              {t.skip}
-            </Link>
-          </p>
 
           <p className="mt-4 text-center text-caption leading-[1.55] text-[color:var(--text-on-invert-quiet)]">
             {t.nota}

@@ -740,8 +740,23 @@
   --text-micro--font-weight: 700;
   --text-micro--letter-spacing: 0.07em;
 
-  /* Breakpoints (§2.4): 640 / 1024 / 1440. Usar sm:, lg:, xl: */
-  --breakpoint-xl: 1440px;
+  /* Breakpoints (§2.4): 640 / 1024 / 1440. Usar sm:, lg:, xl:
+     ────────────────────────────────────────────────────────
+     EN REM, y no en px, aunque 90rem y 1440px sean lo mismo.
+
+     Tailwind ORDENA los breakpoints para decidir qué gana cuando dos
+     variantes tocan la misma propiedad, y esa comparación es entre valores
+     de la misma unidad. Con `1440px` frente a los `40rem/48rem/64rem/96rem`
+     de fábrica no sabía compararlos y colocaba el bloque de xl ANTES que el
+     de lg en la hoja: `@media (width >= 1440px)` salía en la posición 70853
+     y `@media (width >= 64rem)` en la 76217.
+
+     La consecuencia es silenciosa y de todo el proyecto: cualquier
+     `xl:` que compita con un `lg:` por la misma propiedad PERDÍA, sin error
+     ni aviso — la clase estaba en el HTML, la regla estaba en la hoja, la
+     media query daba `true`, y el navegador aplicaba la de lg. Se descubrió
+     porque una foto se negaba a crecer a 1440. */
+  --breakpoint-xl: 90rem;
 }
 
 /* ── Base ── */

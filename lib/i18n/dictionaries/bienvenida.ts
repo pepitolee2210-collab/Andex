@@ -5,13 +5,13 @@
  * el marco está montado y rotulado como pendiente, y en cuanto el archivo
  * esté sólo hay que dejarlo.
  *
- * ── Por qué hay salida ──
+ * ── Por qué no hay salida ──
  *
- * `skip` no es una concesión. El público objetivo usa Android de gama media
- * con datos contados: obligar a ver dos minutos de video antes de dejar
- * avanzar es la forma más rápida de perder a alguien que ya venía decidido.
- * La duración y los subtítulos se dicen ANTES del play por lo mismo — quien
- * paga sus megas quiere saber cuántos va a gastar.
+ * Aquí no se puede saltar: quien entra no conoce ANDEX de nada y esto es lo
+ * único que se lo explica antes de pedirle dinero. Lo que sí se respeta es
+ * que el play lo dé la persona — el público objetivo usa Android de gama
+ * media con datos contados—, y por eso la duración y los subtítulos se dicen
+ * ANTES del play: quien paga sus megas quiere saber cuántos va a gastar.
  */
 
 const es = {
@@ -38,7 +38,6 @@ const es = {
   ],
 
   cta: "Continuar",
-  skip: "Prefiero verlo después",
   nota: "El video queda guardado en tu cuenta. No se reproduce solo: no gastamos tus datos sin que lo pidas.",
 
   /** El recorrido, arriba: cuatro pasos y en cuál estás. */
@@ -70,7 +69,6 @@ const en: typeof es = {
   ],
 
   cta: "Continue",
-  skip: "I would rather watch it later",
   nota: "The video stays in your account. It does not autoplay: we do not spend your data unless you ask.",
 
   pasos: ["Welcome", "Membership", "Your account", "Community"],

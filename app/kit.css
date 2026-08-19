@@ -271,16 +271,6 @@
      la GPU sin volver a maquetar la página. Nada anima anchos, altos ni
      filtros, que es donde aparece el tirón en un Android de gama media. */
 
-  /* Las tarjetas que se escapan del teléfono. El giro va en `--giro` para
-     que la rotación de reposo y la del vaivén no se peleen: si la clase
-     fijara `rotate(0)`, la tarjeta se enderezaría al empezar a flotar. */
-  @keyframes andex-flota {
-    0%, 100% { transform: translateY(0) rotate(var(--giro, 0deg)); }
-    50%      { transform: translateY(-10px) rotate(var(--giro, 0deg)); }
-  }
-  .flota { animation: andex-flota 7s ease-in-out infinite; }
-  .flota.lenta { animation-duration: 9.5s; animation-delay: -3s; }
-
   /* El punto de «en vivo». Late con la curva del sistema, no con un
      `ease-in-out` genérico: sale rápido y se apaga despacio, como un pulso. */
   @keyframes andex-late {
@@ -315,7 +305,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .flota, .late { animation: none; }
+    .late { animation: none; }
     .brillo::after { display: none; }
     /* El arco no desaparece: se queda dibujado, que es su estado final. */
     .trazo-arco { animation: none; stroke-dashoffset: 0; }

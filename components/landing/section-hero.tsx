@@ -40,9 +40,10 @@
  */
 
 import Link from "next/link";
-import { ArrowRight, Clock } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { TourDict } from "@/lib/i18n/dictionaries/tour";
+import type { LandingImage } from "@/lib/landing-images";
 import { HeroBenefits, type HeroBenefit } from "./hero-benefits";
 import { PhoneTour } from "./phone-tour";
 import { trackLazy } from "./track-lazy";
@@ -67,19 +68,22 @@ export type HeroCopy = {
   ctaHint: string;
   /** Anuncia el recorrido del producto: «Así funciona ANDEX». */
   tourLabel: string;
-  /** Las dos tarjetas que se escapan del teléfono. */
-  tarjetas: {
-    aviso: { label: string; title: string; note: string };
-    vivo: { label: string; title: string; note: string };
-  };
   /** No-afiliación: cierra la pantalla, no vive en una nota al pie. */
   disclaimer: string;
   /** Guion del recorrido del producto (sólo escritorio). */
   tour: TourDict;
+  /** Qué se ve en la foto de Henry, para quien no la ve. */
+  fotoAlt: string;
 };
 
 export type SectionHeroProps = {
   copy: HeroCopy;
+  /**
+   * Henry sujetando el teléfono. Llega como prop y no se resuelve aquí: el
+   * catálogo comprueba el disco con `node:fs` y esto acaba en el cliente.
+   * Si falta el archivo llega `null` y se pinta el mockup de siempre.
+   */
+  foto?: LandingImage | null;
   accountHref: string;
   className?: string;
 };
@@ -96,7 +100,7 @@ export type SectionHeroProps = {
  * pantalla sin título. Lo primero que se lee no puede depender de que una
  * animación termine.
  */
-export function SectionHero({ copy, accountHref, className }: SectionHeroProps) {
+export function SectionHero({ copy, accountHref, foto = null, className }: SectionHeroProps) {
   const lines = copy.titleLines;
 
   return (
@@ -296,71 +300,19 @@ export function SectionHero({ copy, accountHref, className }: SectionHeroProps) 
           >
             {copy.tourLabel}
           </p>
-          {/* El teléfono, inclinado, y las dos tarjetas saliéndose de él.
-              La inclinación es de dos grados: suficiente para que el bloque
-              deje de ser un rectángulo alineado con la rejilla, poco para
-              que nadie lea el mockup torcido.
+          {/* CON FOTO: Henry sujeta el teléfono y la app corre dentro de su
+              pantalla. Sin inclinar — la foto ya trae su propia perspectiva
+              y torcerla la delata como recorte pegado.
 
-              Las tarjetas van en `absolute` sobre un contenedor `relative`,
-              así que NO empujan nada: el alto de la portada lo sigue fijando
-              el teléfono. Y su giro vive en `--giro` para que la rotación de
-              reposo y la del vaivén no se peleen.
-
-              Los desplazamientos NEGATIVOS son el punto: la gracia es que se
-              escapen del teléfono, no que se le pongan encima. Puestas a
-              `left-0` tapaban el logotipo y la mitad del recorrido, y en vez
-              de leerse como producto asomando se leían como un error de
-              maquetación. Sólo muerden el borde. */}
+              SIN FOTO: el mockup de siempre, inclinado dos grados. Bastan
+              para que el bloque deje de ser un rectángulo alineado con la
+              rejilla, y son pocos para que nadie lo lea torcido. */}
           <div className="relative">
             <div
-              className="hero-sube [transform:rotate(-2.2deg)]"
+              className={cn("hero-sube", !foto && "[transform:rotate(-2.2deg)]")}
               style={{ animationDelay: "620ms" }}
             >
-              <PhoneTour copy={copy.tour} />
-            </div>
-
-            <div
-              className="vidrio legible flota absolute -left-1 top-[20%] w-[12.5rem] p-3.5 sm:left-2 sm:w-[13.5rem] lg:-left-14 lg:top-[22%] lg:w-[14.5rem] lg:p-4"
-              style={{ ["--giro" as string]: "-4deg", transform: "rotate(-4deg)" }}
-            >
-              <div className="flex items-center gap-2.5">
-                <span
-                  aria-hidden="true"
-                  className="flex size-7 shrink-0 items-center justify-center rounded-full bg-amber-soft text-amber-deep"
-                >
-                  <Clock className="size-4" />
-                </span>
-                <span className="text-caption font-bold uppercase tracking-[0.14em] text-[color:var(--text-on-glass-amber)]">
-                  {copy.tarjetas.aviso.label}
-                </span>
-              </div>
-              <p className="mt-2.5 text-body font-semibold leading-[1.3] text-[color:var(--text-on-invert)]">
-                {copy.tarjetas.aviso.title}
-              </p>
-              <p className="mt-1 text-caption text-[color:var(--text-on-glass-quiet)]">
-                {copy.tarjetas.aviso.note}
-              </p>
-            </div>
-
-            <div
-              className="vidrio legible flota lenta absolute -right-1 top-[66%] w-[12rem] p-3.5 sm:right-2 sm:w-[13rem] lg:-right-10 lg:top-[68%] lg:w-[13.5rem] lg:p-4"
-              style={{ ["--giro" as string]: "3.4deg", transform: "rotate(3.4deg)" }}
-            >
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-caption font-bold uppercase tracking-[0.14em] text-[color:var(--teal-200)]">
-                  {copy.tarjetas.vivo.label}
-                </span>
-                <span
-                  aria-hidden="true"
-                  className="late size-1.5 shrink-0 rounded-full bg-[color:var(--text-on-invert-accent)]"
-                />
-              </div>
-              <p className="mt-2.5 text-body font-semibold leading-[1.3] text-[color:var(--text-on-invert)]">
-                {copy.tarjetas.vivo.title}
-              </p>
-              <p className="mt-1 text-caption tabular-nums text-[color:var(--text-on-glass-quiet)]">
-                {copy.tarjetas.vivo.note}
-              </p>
+              <PhoneTour copy={copy.tour} foto={foto} fotoAlt={copy.fotoAlt} />
             </div>
           </div>
         </div>

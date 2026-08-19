@@ -39,8 +39,6 @@ export type SectionEnglishCopy = {
   imageAlts: readonly string[];
   /** «Foto {n} de {total}» para los puntos del carrusel. */
   imageNav: string;
-  /** La tarjeta de la próxima sesión, que se escapa de la foto. */
-  sesion: { label: string; title: string; note: string };
 };
 
 export type SectionEnglishProps = {
@@ -99,28 +97,6 @@ export function SectionEnglish({
                 sizes="(min-width: 1024px) 34rem, 100vw"
                 className="arco-inf bg-[color:var(--surface-on-invert)]"
               />
-              {/* El mismo gesto de la portada, repetido una vez: producto
-                  real asomando por el borde. */}
-              <div
-                className="vidrio legible flota absolute -left-2 -top-5 w-[12rem] p-3.5 sm:-left-5 sm:w-[13rem]"
-                style={{ ["--giro" as string]: "-3.6deg", transform: "rotate(-3.6deg)" }}
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-caption font-bold uppercase tracking-[0.14em] text-[color:var(--teal-200)]">
-                    {copy.sesion.label}
-                  </span>
-                  <span
-                    aria-hidden="true"
-                    className="late size-1.5 shrink-0 rounded-full bg-[color:var(--text-on-invert-accent)]"
-                  />
-                </div>
-                <p className="mt-2.5 text-body font-semibold leading-[1.3] text-[color:var(--text-on-invert)]">
-                  {copy.sesion.title}
-                </p>
-                <p className="mt-1 text-caption tabular-nums text-[color:var(--text-on-glass-quiet)]">
-                  {copy.sesion.note}
-                </p>
-              </div>
             </Reveal>
           ) : null}
 

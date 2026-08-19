@@ -61,6 +61,19 @@ const CATALOGO = {
   /** Retrato del fundador (S4). Vertical 4:5. Una sola: es un retrato. */
   fundador: [{ src: "/imagenes/fundador.jpg", width: 1000, height: 1250 }],
 
+  /**
+   * Henry sujetando el teléfono, para la portada. Recorte con transparencia
+   * real: 38% del lienzo es transparente, el alfa tiene 36 valores (borde
+   * suave, no dentado) y NINGÚN píxel del contorno es casi blanco — así que
+   * sobre el navy no aparece la orla clara típica de un recorte hecho contra
+   * fondo blanco. Medido, no supuesto.
+   *
+   * La pantalla del teléfono va apagada en la foto a propósito: encima se
+   * monta el recorrido del producto, que es DOM vivo. Dónde va exactamente
+   * lo dice `PANTALLA_HENRY`.
+   */
+  henryTelefono: [{ src: "/imagenes/henry-telefono.png", width: 1000, height: 1250 }],
+
   /** El inglés en vivo, dentro de la plataforma (S6). Apaisadas 3:2. */
   ingles: [
     { src: "/imagenes/ingles-1.jpg", width: 1500, height: 1000 },
@@ -105,10 +118,11 @@ export function imagenesDe(clave: LandingImageKey): LandingImage[] {
   );
 }
 
-/** Los tres conjuntos, resueltos de una vez. Lo que la landing necesita. */
+/** Todos los conjuntos, resueltos de una vez. Lo que la landing necesita. */
 export function imagenesLanding(): Record<LandingImageKey, LandingImage[]> {
   return {
     fundador: imagenesDe("fundador"),
+    henryTelefono: imagenesDe("henryTelefono"),
     ingles: imagenesDe("ingles"),
     comunidad: imagenesDe("comunidad"),
   };

@@ -216,10 +216,11 @@ export default async function LandingPage({
             accountCta: t.hero.cta,
             ctaHint: t.hero.ctaHint,
             tourLabel: t.hero.tourLabel,
-            tarjetas: t.hero.tarjetas,
             disclaimer: t.trust.disclaimer,
             tour: dict.tour,
+            fotoAlt: t.hero.fotoAlt,
           }}
+          foto={imagenes.henryTelefono[0] ?? null}
           accountHref={ROUTES.bienvenida}
         />
 

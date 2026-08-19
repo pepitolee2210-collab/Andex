@@ -22,7 +22,7 @@
  *    es el paso que más vende, y los puntos siguen funcionando.
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   Bell,
@@ -41,6 +41,8 @@ import {
   Users,
 } from "lucide-react";
 import type { TourDict } from "@/lib/i18n/dictionaries/tour";
+import type { LandingImage } from "@/lib/landing-images";
+import { FotoConPantalla } from "./foto-con-pantalla";
 import { cn } from "@/lib/utils";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -55,6 +57,28 @@ const TILE_ICONS = [FolderLock, Briefcase, TrendingUp, Users, GraduationCap, Pla
 export type PhoneTourProps = {
   copy: TourDict;
   className?: string;
+  /**
+   * DENTRO DE UNA FOTO: se pinta sólo la pantalla, sin chasis, sin halo,
+   * sin botones laterales y sin isla dinámica.
+   *
+   * Cuando el teléfono ya está en la foto —Henry sujetándolo—, todo eso ya
+   * existe fotografiado. Pintarlo otra vez da un teléfono dentro de otro
+   * teléfono y, peor, taparía los dedos que envuelven el canto, que son lo
+   * que hace creíble que lo esté sujetando.
+   *
+   * La narración y los puntos de paso NO se encogen: siguen fuera y a su
+   * tamaño. Es la misma división que ya tenía el recorrido —la pantalla
+   * enseña, el texto explica—, sólo que ahora la pantalla mide lo que mide
+   * un teléfono en una mano.
+   */
+  dentroDeFoto?: boolean;
+  /**
+   * La foto donde encajar la pantalla. Con ella, `dentroDeFoto` se da por
+   * hecho: el teléfono lo pone la foto.
+   */
+  foto?: LandingImage | null;
+  /** Qué se ve en la foto, para quien no la ve. */
+  fotoAlt?: string;
 };
 
 // ─── Piezas compartidas del teléfono ─────────────────────
@@ -583,9 +607,50 @@ function ScreenCommunity({ s }: { s: TourDict["steps"]["community"] }) {
   );
 }
 
+/**
+ * La pantalla desnuda, con o sin foto alrededor.
+ *
+ * Sin foto se devuelve tal cual —sirve para encajarla en cualquier otro
+ * marco—; con foto, `FotoConPantalla` la mide y la encoge hasta el hueco.
+ */
+function PantallaEnvuelta({
+  foto,
+  alt,
+  ariaLabel,
+  children,
+}: {
+  foto: LandingImage | null;
+  alt: string;
+  ariaLabel: string;
+  children: ReactNode;
+}) {
+  const pantalla = (
+    <div
+      role="img"
+      aria-label={ariaLabel}
+      className="relative h-full w-full overflow-hidden bg-page"
+    >
+      {children}
+    </div>
+  );
+  if (!foto) return pantalla;
+  return (
+    <FotoConPantalla foto={foto} alt={alt}>
+      {pantalla}
+    </FotoConPantalla>
+  );
+}
+
 // ─── El recorrido ────────────────────────────────────────
 
-export function PhoneTour({ copy, className }: PhoneTourProps) {
+export function PhoneTour({
+  copy,
+  className,
+  dentroDeFoto = false,
+  foto = null,
+  fotoAlt = "",
+}: PhoneTourProps) {
+  const enFoto = dentroDeFoto || foto !== null;
   const reduced = useReducedMotion();
   const { steps } = copy;
   // Con movimiento reducido se abre en el panel: es el paso que más vende.
@@ -643,12 +708,110 @@ export function PhoneTour({ copy, className }: PhoneTourProps) {
   return (
     <div
       ref={rootRef}
-      className={cn("mx-auto w-full max-w-[19.5rem]", className)}
+      /* El tope de 19.5rem es el ancho al que está dibujado el mockup. Con
+         foto no aplica: ahí el ancho lo manda la fotografía, y encajonarla a
+         312px dejaba a Henry del tamaño de un sello.
+
+         En escritorio la foto SE SALE de su columna a propósito. Medido: la
+         columna del teléfono mide 426px a 1024, 486 a partir de 1280, y a su
+         derecha quedan 24, 88 y 168px de aire respectivamente. Cada anchura
+         se come ese aire y ni un píxel más — pasarse recorta a Henry contra
+         el borde, porque la sección va con `overflow-hidden` y no avisa: no
+         aparece barra horizontal, simplemente le falta una mano.
+
+         Los cortes son 1024 y 1280; el 1280 se escribe a mano porque este
+         proyecto no usa `md` y su `xl` vale 1440 (D5). */
+      className={cn(
+        "mx-auto w-full",
+        enFoto
+          ? "max-w-[26rem] sm:max-w-[30rem] lg:max-w-none lg:w-[28rem] xl:w-[38rem]"
+          : "max-w-[19.5rem]",
+        className,
+      )}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
       onBlurCapture={() => setPaused(false)}
     >
+      {/* ── La pantalla ──
+          Dentro de la foto se pinta desnuda: el chasis, el halo, los botones
+          y la isla ya están fotografiados, y repintarlos daría un teléfono
+          dentro de otro y taparía los dedos que envuelven el canto.
+
+          Fuera de la foto sigue el mockup completo de siempre. */}
+      {enFoto ? (
+        <PantallaEnvuelta foto={foto} alt={fotoAlt} ariaLabel={copy.ariaLabel}>
+
+              {index === 0 ? null : <AppBar chip={copy.chip} />}
+
+              <div
+                className={cn(
+                  "relative overflow-hidden px-4",
+                  index === 0 ? "h-full" : "h-[calc(100%-6.4rem)]",
+                )}
+              >
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={index}
+                    initial={reduced ? false : { opacity: 0, x: 22 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={reduced ? undefined : { opacity: 0, x: -22 }}
+                    transition={{ duration: 0.4, ease: EASE }}
+                    className="h-full"
+                  >
+                    {index === 0 ? <ScreenWelcome s={steps.welcome} /> : null}
+                    {index === 1 ? (
+                      <ScreenBranch s={steps.branch} next={copy.nextLabel} />
+                    ) : null}
+                    {index === 2 ? (
+                      <ScreenInterests s={steps.interests} next={copy.nextLabel} />
+                    ) : null}
+                    {index === 3 ? <ScreenGoal s={steps.goal} /> : null}
+                    {index === 4 ? <ScreenPanel s={steps.panel} /> : null}
+                    {index === 5 ? <ScreenCommunity s={steps.community} /> : null}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+
+              {/* Barra de pestañas y asa de inicio. En la bienvenida no
+                  aparece: la app todavía se está abriendo. */}
+              <div
+                className={cn(
+                  "absolute inset-x-0 bottom-0 border-t border-line bg-surface pb-2.5 pt-2",
+                  index === 0 && "hidden",
+                )}
+              >
+                <div className="flex items-end justify-around px-5">
+                  {[Home, FolderLock, Briefcase, Users].map((Icon, i) => {
+                    // En los pasos del registro aún no hay pestañas activas;
+                    // en el panel manda Inicio y en comunidad, Comunidad.
+                    const activeTab = index === 4 ? 0 : index === 5 ? 3 : -1;
+                    return (
+                      <span
+                        key={i}
+                        className={cn(
+                          "flex flex-col items-center gap-0.5",
+                          i === activeTab ? "text-teal-deep" : "text-disabled",
+                        )}
+                      >
+                        <Icon aria-hidden="true" className="size-3.5" />
+                        <span
+                          className={cn(
+                            "h-0.5 w-4 rounded-full transition-colors",
+                            i === activeTab ? "bg-teal-deep" : "bg-transparent",
+                          )}
+                        />
+                      </span>
+                    );
+                  })}
+                </div>
+                <span
+                  aria-hidden="true"
+                  className="mx-auto mt-1.5 block h-[3px] w-[6.5rem] rounded-full bg-ink/25"
+                />
+              </div>
+        </PantallaEnvuelta>
+      ) : (
       <div role="img" aria-label={copy.ariaLabel} className="relative">
         {/* Halo: superficie teal, jamás con texto encima (§2.1.1) */}
         <div
@@ -746,6 +909,7 @@ export function PhoneTour({ copy, className }: PhoneTourProps) {
           </div>
         </div>
       </div>
+      )}
 
       {/* ── Narración: fuera del teléfono ─────────────────
           Dentro sería un cartel que la app real no tiene, y restaría
