@@ -20,6 +20,35 @@ const es = {
     submitting: "Un momento…",
   },
 
+  /**
+   * PASO 3 DEL EMBUDO — el registro DESPUÉS de haber pagado.
+   *
+   * Cuando hay un cobro esperando, la pantalla cambia de tono: no pide una
+   * cuenta, entrega una membresía y pide el nombre que va encima. Por eso el
+   * botón dice «Activar mi membresía» y no «Crear mi cuenta» — es lo mismo
+   * técnicamente y no lo es para quien acaba de pagar 250 dólares.
+   *
+   * Sin cobro esperando, nada de esto se pinta y el registro es el de
+   * siempre: se llega por la puerta de al lado y también hay que dejar
+   * entrar.
+   *
+   * Los importes NO se escriben aquí (D17): llegan de `PRICES`.
+   */
+  credencial: {
+    label: "Membresía",
+    plan: { monthly: "Mensual", annual: "Anual" },
+    desde: "Miembro desde",
+    piloto: "Piloto",
+    pilotoValor: "UTAH",
+    pagada: (importe: string) => `Pagada · ${importe}`,
+    recibo: "Recibo en tu correo",
+    heading: "Ponle tu nombre.",
+    lead: "La membresía ya es tuya. Sólo falta la cuenta desde la que vas a entrar.",
+    submit: "Activar mi membresía",
+    /** El distintivo del campo de correo: de dónde salió ese dato. */
+    correoDelPago: "del pago",
+    paso: "03 / 04",
+  },
   registro: {
     eyebrow: "CREA TU CUENTA",
     title: "Empecemos por tu correo",
@@ -168,6 +197,20 @@ const en = {
     submitting: "One moment…",
   },
 
+  credencial: {
+    label: "Membership",
+    plan: { monthly: "Monthly", annual: "Annual" },
+    desde: "Member since",
+    piloto: "Pilot",
+    pilotoValor: "UTAH",
+    pagada: (importe: string) => `Paid · ${importe}`,
+    recibo: "Receipt in your email",
+    heading: "Put your name on it.",
+    lead: "The membership is already yours. All that is left is the account you will sign in with.",
+    submit: "Activate my membership",
+    correoDelPago: "from the payment",
+    paso: "03 / 04",
+  },
   registro: {
     eyebrow: "CREATE YOUR ACCOUNT",
     title: "Let's start with your email",

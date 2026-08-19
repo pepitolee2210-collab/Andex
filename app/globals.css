@@ -145,6 +145,15 @@
      aquí y no en la clase que los usa. */
   --pulso-acento: rgba(18, 184, 166, .55);
   --barrido-luz:  rgba(255, 255, 255, .34);
+  /* ── La credencial del registro ──
+     El paso 3 del embudo enseña la membresía como un OBJETO —una tarjeta con
+     su fecha de alta— porque lo que la persona acaba de hacer es comprarla.
+     El degradado va de un teal profundo al navy más oscuro: es lo que hace
+     que se lea como una superficie con volumen y no como un rectángulo. El
+     tono de arranque no existía en la paleta y por eso se declara aquí, que
+     es el único sitio donde puede vivir un color. */
+  --credencial-inicio: #0E3A47;
+
   --aurora-teal:  rgba(18, 184, 166, .17);
   --aurora-deep:  rgba(28, 61, 90, .55);
   --aurora-cool:  rgba(137, 176, 205, .10);

@@ -155,44 +155,31 @@ await comprobar("pago", "se puede pagar SIN sesión", async () => {
   return page.url().includes("/pago");
 });
 
-await comprobar("pago", "NINGÚN campo de tarjeta es nuestro", async () => {
-  // Regla dura: un `<input>` propio metería el producto en el alcance de
-  // PCI DSS. Aquí es donde más tienta ponerlo, así que aquí se comprueba.
-  const propios = await page.locator(
-    'input[name*="card" i], input[name*="tarjeta" i], input[autocomplete*="cc-"], ' +
-      'input[inputmode="numeric"][maxlength="19"]',
-  ).count();
-  if (propios) throw new Error(`${propios} campos de tarjeta propios`);
+await comprobar("pago", "NO se pide NADA: ni correo ni tarjeta", async () => {
+  /* Regla dura: ANDEX no toca datos de tarjeta. Desde que el cobro entero
+     ocurre en la caja alojada de Stripe, la comprobación es más fuerte que
+     buscar campos de tarjeta — aquí no debe haber NINGÚN campo de entrada. */
+  const campos = await page.locator("input:not([type=radio]):not([type=hidden])").count();
+  if (campos) throw new Error(`${campos} campos de entrada donde no debería haber ninguno`);
   return true;
 });
 
-await comprobar("pago", "dice que la cuenta se crea después, con ese correo", async () => {
-  // Pagar y que no te pidan la cuenta hasta el paso siguiente se lee como
-  // haber perdido el dinero. El texto tiene que decirlo ANTES de cobrar.
-  return /cuenta.{0,40}siguiente paso|account.{0,40}next step/i.test(await texto());
+await comprobar("pago", "avisa de que se sale a Stripe y se vuelve", async () => {
+  /* Salir del dominio sin avisar se lee como que algo se rompió. El texto
+     tiene que decir, ANTES de pulsar, que Stripe pide el correo y la tarjeta
+     y que después se vuelve aquí a crear la cuenta. */
+  return /stripe.{0,80}(correo|tarjeta)/i.test(await texto());
 });
 
-const CORREO = `recorrido${Date.now()}@andex.test`;
-
-await comprobar("pago", "sin correo no cobra", async () => {
-  await page.getByRole("button", { name: /pagar|pay /i }).first().click().catch(() => {});
-  await page.waitForTimeout(1000);
-  const anotado = await page.evaluate(() => localStorage.getItem("andex_pago_pendiente"));
-  if (anotado) throw new Error("cobró sin correo");
-  return page.url().includes("/pago");
-});
-
-await comprobar("pago", "cobra y anota el cobro antes de mandar al registro", async () => {
-  await page.locator('input[type="email"]').first().fill(CORREO);
-  await page.getByRole("button", { name: /pagar|pay /i }).first().click();
-  await page.waitForURL("**/registro", { timeout: 20000 });
+await comprobar("pago", "el botón lleva a la caja y anota el cobro", async () => {
+  await page.getByRole("button", { name: /continuar al pago|continue to secure/i }).click();
+  await page.waitForURL("**/registro", { timeout: 30_000 });
   const anotado = await page.evaluate(() => localStorage.getItem("andex_pago_pendiente"));
   if (!anotado) {
     throw new Error("el cobro no quedó anotado: se pierde si cierra la pestaña");
   }
-  const { plan, email } = JSON.parse(anotado);
-  if (!plan) throw new Error("sin plan");
-  if (email !== CORREO) throw new Error("el correo anotado no es el que se escribió");
+  const { plan } = JSON.parse(anotado);
+  if (plan !== "monthly" && plan !== "annual") throw new Error(`plan raro: ${plan}`);
   return true;
 });
 
@@ -200,16 +187,32 @@ await comprobar("pago", "cobra y anota el cobro antes de mandar al registro", as
 paso("REGISTRO — la cuenta, ya pagada");
 await page.waitForTimeout(1000);
 
+/* El correo lo pide el registro, no el pago: desde que cobra la caja alojada
+   de Stripe, en modo demo no hay pasarela que lo recoja. */
+const CORREO = `recorrido${Date.now()}@andex.test`;
+
 await comprobar("registro", "los tres campos existen y aceptan texto", async () => {
   await page.locator('input[type="text"]').first().fill("María López");
   const correo = page.locator('input[type="email"]').first();
+  /* En producción llega escrito desde Stripe; en demo no hay pasarela que lo
+     dé, así que se escribe aquí. Se comprueba el hueco, no quién lo llenó. */
   if (!(await correo.inputValue())) await correo.fill(CORREO);
   await page.locator('input[type="password"]').first().fill("ClaveSegura123");
   return true;
 });
 
+await comprobar("registro", "la credencial enseña lo que se acaba de comprar", async () => {
+  /* Es el argumento entero de esta pantalla: quien viene de pagar en otro
+     dominio tiene que ver su membresía antes que un formulario. */
+  const hay = await page.locator(".credencial").count();
+  if (!hay) throw new Error("no se pinta la credencial");
+  const t = await texto();
+  if (!/pagada/i.test(t)) throw new Error("no dice que está pagada");
+  return true;
+});
+
 await comprobar("registro", "no se puede crear la cuenta sin aceptar", async () => {
-  const b = page.getByRole("button", { name: /crear mi cuenta/i }).first();
+  const b = page.getByRole("button", { name: /crear mi cuenta|activar mi membres/i }).first();
   const antes = page.url();
   await b.click().catch(() => {});
   await page.waitForTimeout(900);
@@ -220,7 +223,7 @@ await comprobar("registro", "no se puede crear la cuenta sin aceptar", async () 
 
 await comprobar("registro", "acepta, y el pago pendiente lo lleva a la COMUNIDAD", async () => {
   await page.getByRole("checkbox").first().click();
-  await page.getByRole("button", { name: /crear mi cuenta/i }).click();
+  await page.getByRole("button", { name: /crear mi cuenta|activar mi membres/i }).click();
   await page.waitForURL("**/modulo/comunidad", { timeout: 25000 });
   return true;
 });
@@ -672,7 +675,16 @@ for (const [ruta, area, esperado] of [
   ["/inversiones", "inversiones", /\$/],
 ]) {
   await page.goto(BASE + ruta, { waitUntil: "domcontentloaded" });
-  await page.waitForTimeout(2200);
+  /* Se espera al CONTENIDO, no a un reloj. Estas pantallas se arman en el
+     cliente —«Armando tu panel…»— y en desarrollo la ruta además compila la
+     primera vez que se visita: un `waitForTimeout` fijo mide la velocidad del
+     compilador y no si la pantalla trae lo que promete. */
+  await page
+    .locator("body")
+    .filter({ hasText: esperado })
+    .first()
+    .waitFor({ timeout: 30_000 })
+    .catch(() => {});
   const t = await texto();
   await comprobar(area, "carga con contenido real", async () => esperado.test(t) && t.length > 200);
   await comprobar(area, "sin «undefined» ni «[object» a la vista", async () =>

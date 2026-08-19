@@ -63,9 +63,9 @@ function copyDePago(lang: Lang, plan: PlanType): PagoDirectoDict {
       savings: t.planes.anual.savings(formatUsd(PRICES.annual.savingsUsd)),
       detail: t.planes.anual.detail(formatUsd(PRICES.annual.monthlyEquivalentUsd)),
     },
-    monederos: t.monederos,
-    campos: t.campos,
     cta: t.cta(importe),
+    despues: t.despues,
+    errorPasarela: t.errorPasarela,
     legal: t.legal,
     resumen: {
       title: t.resumen.title,

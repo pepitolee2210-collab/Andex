@@ -20,29 +20,28 @@
  * consentimiento se registra con `TERMS_VERSION` al crear la cuenta.
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Lock } from "lucide-react";
-import { ROUTES, isDemoMode } from "@/lib/config";
+import { Check, Eye, EyeOff, Lock } from "lucide-react";
+import { PRICES, ROUTES, isDemoMode } from "@/lib/config";
 import { getDictionary } from "@/lib/i18n";
 import type { Lang } from "@/lib/types";
-import { cn, isValidEmail } from "@/lib/utils";
+import { cn, formatUsd, isValidEmail } from "@/lib/utils";
 import {
   MIN_PASSWORD_LENGTH,
   signInWithMagicLink,
   signUpWithPassword,
 } from "@/lib/auth/client";
-import { Glyph, KitButton, KitNotice, ScreenHeader } from "@/components/ui/kit";
 import { toast } from "@/components/ui/toaster";
-import { CheckboxField } from "./checkbox-field";
-import { FormAlert } from "./form-alert";
-import { KitField, KIT_INPUT_CLASS } from "./kit-field";
 import { MagicLinkSent } from "./magic-link-sent";
-import { OrDivider } from "./or-divider";
 import { focusField } from "./focus";
 import { getDataStore } from "@/lib/data";
-import { borrarPagoPendiente, leerPagoPendiente } from "@/lib/pago-pendiente";
+import {
+  borrarPagoPendiente,
+  leerPagoPendiente,
+  type PagoPendiente,
+} from "@/lib/pago-pendiente";
 
 const FIELD_IDS = {
   firstName: "registro-nombre",
@@ -76,7 +75,10 @@ function LegalLink({ href, label }: { href: string; label: string }) {
       // El clic en el enlace no debe marcar/desmarcar la casilla que lo
       // envuelve: aceptar y leer son dos acciones distintas.
       onClick={(event) => event.stopPropagation()}
-      className="font-semibold text-teal-deep underline underline-offset-4"
+      /* `--teal-100` y no `--teal-deep`: el teal profundo está pensado para
+         superficie clara y sobre este navy medía 2.28:1 — reprobado. Lo cazó
+         el verificador visual fotografiando el fondo real, no la revisión. */
+      className="font-semibold text-[color:var(--teal-100)] underline underline-offset-4"
     >
       {label}
     </Link>
@@ -90,6 +92,29 @@ export function RegistroForm({ lang }: { lang: Lang }) {
 
   const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
+  /**
+   * EL COBRO QUE ESPERA, si lo hay. Decide toda la pantalla.
+   *
+   * Se lee en un efecto y NO en el inicializador del estado, aunque sea una
+   * línea más: `localStorage` no existe durante el render del servidor, así
+   * que el servidor pintaría siempre «sin pago» y el cliente «con pago» —
+   * dos árboles distintos, y React lo canta como desajuste de hidratación.
+   * Leyéndolo tras montar, ambos empiezan igual y la credencial entra
+   * después.
+   *
+   * De paso precarga el correo que pagó: la pantalla anterior prometió que
+   * la cuenta se crea «con ese mismo correo». Se puede cambiar —nadie queda
+   * atrapado en una errata de la pasarela—, pero el camino de menor
+   * resistencia es el que cumple la promesa.
+   */
+  const [pendiente, setPendiente] = useState<PagoPendiente | null>(null);
+
+  useEffect(() => {
+    const cobro = leerPagoPendiente();
+    if (!cobro) return;
+    setPendiente(cobro);
+    if (cobro.email) setEmail((actual) => actual || cobro.email!);
+  }, []);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -226,177 +251,449 @@ export function RegistroForm({ lang }: { lang: Lang }) {
     );
   }
 
+  const c = t.credencial;
+
+  /** El importe de lo que se pagó, del catálogo de precios y no del copy. */
+  const importe = pendiente
+    ? formatUsd(
+        pendiente.plan === "annual" ? PRICES.annual.usd : PRICES.monthly.usd,
+      )
+    : null;
+
+  /**
+   * La fecha de alta, en la zona del navegador.
+   *
+   * Sale de `cobradoEn`, que es cuando la pasarela cobró. Se pinta con
+   * `Intl` y no a mano: «19 · 08 · 2026» y «08 · 19 · 2026» son la misma
+   * fecha y dos días distintos según quién lo lea.
+   */
+  const alta = pendiente
+    ? new Intl.DateTimeFormat(lang === "en" ? "en-US" : "es-MX", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      }).format(new Date(pendiente.cobradoEn))
+    : null;
+
   return (
-    /**
-     * El armazón de `/registro` envuelve la pantalla en una tarjeta blanca
-     * con relleno propio. El diseño pone la lista agrupada sobre el fondo de
-     * página, no sobre otra tarjeta, así que aquí se anula ese relleno y se
-     * repinta el fondo. Lo correcto sería tocar el layout, pero está fuera
-     * del alcance de esta pasada (ver informe).
-     */
-    <div className="-m-5 flex flex-col rounded-xl bg-page p-5 sm:-m-8 sm:p-8">
-      <ScreenHeader title={t.registro.title} sub={t.registro.subtitle} />
+    <main
+      id="contenido"
+      className="relative isolate min-h-dvh w-full overflow-hidden bg-navy-deep text-[color:var(--text-on-invert)]"
+    >
+      <div aria-hidden="true" className="hero-fondo -z-10">
+        <span className="masa-1" />
+        <span className="masa-2" />
+      </div>
 
-      <form noValidate onSubmit={handleSubmit} className="flex flex-col">
-        {/* Los tres datos, en una sola lista: un dato por fila y su nota
-            justo debajo. */}
-        <div className="ax-group mt-5">
-          <KitField
-            id={FIELD_IDS.firstName}
-            label={dict.wizard.step1.firstName.label}
-            error={errors.firstName}
-          >
-            <input
+      {/* En escritorio la credencial se va a su propia columna: es lo que se
+          compró, no un encabezado del formulario. En móvil va arriba, que es
+          lo primero que hay que ver al volver de pagar en otro dominio. */}
+      <div className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-8 px-5 py-7 sm:px-6 sm:py-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,23rem)] lg:gap-16 lg:py-16">
+        <div className="lg:order-2">
+          <div className="flex items-center justify-between gap-4 lg:hidden">
+            <span className="font-heading text-h3 font-bold tracking-tight">
+              {dict.common.brand.name}
+            </span>
+            {pendiente ? (
+              <span className="font-mono text-caption tracking-[0.04em] text-[color:var(--text-on-invert-quiet)]">
+                {c.paso}
+              </span>
+            ) : null}
+          </div>
+
+          {/* ── LA CREDENCIAL ──
+              Sólo cuando hay un cobro esperando. Sin él esto sería una
+              tarjeta de socio de nadie. */}
+          {pendiente && importe ? (
+            <div className="credencial mt-5 rounded-lg border border-[color:var(--hairline-on-invert)] p-5 sm:p-6 lg:mt-0">
+              <div className="relative flex items-start justify-between gap-4">
+                <div>
+                  <p className="font-mono text-caption uppercase tracking-[0.1em] text-[color:var(--teal-200)]">
+                    {c.label}
+                  </p>
+                  <p className="mt-1 font-heading text-h2 text-[color:var(--text-on-invert)]">
+                    {c.plan[pendiente.plan]}
+                  </p>
+                </div>
+                <span aria-hidden="true" className="shrink-0">
+                  <svg width="34" height="34" viewBox="0 0 40 40" fill="none">
+                    <path
+                      d="M6 30 C 12 8, 28 8, 34 30"
+                      stroke="var(--teal-500)"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                    />
+                    <circle cx="20" cy="20.5" r="3.2" fill="var(--amber-500)" />
+                  </svg>
+                </span>
+              </div>
+
+              <div className="relative mt-11 flex items-end justify-between gap-4">
+                <div>
+                  <p className="font-mono text-caption uppercase tracking-[0.08em] text-[color:var(--text-on-invert-quiet)]">
+                    {c.desde}
+                  </p>
+                  <p className="mt-1 font-mono text-body tabular-nums text-[color:var(--text-on-invert)]">
+                    {alta}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="font-mono text-caption uppercase tracking-[0.08em] text-[color:var(--text-on-invert-quiet)]">
+                    {c.piloto}
+                  </p>
+                  <p className="mt-1 font-mono text-body text-[color:var(--text-on-invert)]">
+                    {c.pilotoValor}
+                  </p>
+                </div>
+              </div>
+
+              <div className="relative mt-6 flex flex-wrap items-center gap-x-3 gap-y-1.5 border-t border-[color:var(--hairline-on-invert-soft)] pt-4">
+                <span
+                  aria-hidden="true"
+                  className="flex size-[22px] items-center justify-center rounded-full bg-[color:var(--teal-500)] text-[color:var(--navy-950)]"
+                >
+                  <Check className="size-3.5" strokeWidth={3.5} />
+                </span>
+                <span className="text-label font-bold text-[color:var(--text-on-invert)]">
+                  {c.pagada(importe)}
+                </span>
+                <span className="ml-auto text-caption text-[color:var(--text-on-invert-quiet)]">
+                  {c.recibo}
+                </span>
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        {/* ── La cuenta ── */}
+        <div className="lg:order-1">
+          <div className="hidden items-center justify-between gap-4 lg:flex">
+            <span className="font-heading text-h3 font-bold tracking-tight">
+              {dict.common.brand.name}
+            </span>
+            {pendiente ? (
+              <span className="font-mono text-caption tracking-[0.04em] text-[color:var(--text-on-invert-quiet)]">
+                {c.paso}
+              </span>
+            ) : null}
+          </div>
+
+          <h1 className="mt-7 font-heading text-h1 leading-[1.06] text-[color:var(--text-on-invert)] lg:mt-9 lg:text-display">
+            {pendiente ? c.heading : t.registro.title}
+          </h1>
+          <p className="mt-3 max-w-[46ch] text-body leading-[1.5] text-[color:var(--text-on-invert-quiet)]">
+            {pendiente ? c.lead : t.registro.subtitle}
+          </p>
+
+          <form noValidate onSubmit={handleSubmit} className="mt-7 flex flex-col gap-4">
+            <CampoOscuro
               id={FIELD_IDS.firstName}
-              type="text"
-              className={cn(KIT_INPUT_CLASS, "w-full")}
-              placeholder={dict.wizard.step1.firstName.placeholder}
-              value={firstName}
-              onChange={(event) => setFirstName(event.target.value)}
-              autoComplete="given-name"
-              autoCapitalize="words"
-              enterKeyHint="next"
-              maxLength={100}
-              aria-required="true"
-              aria-invalid={errors.firstName ? true : undefined}
-              aria-describedby={
-                errors.firstName ? `${FIELD_IDS.firstName}-hint` : undefined
-              }
-            />
-          </KitField>
-
-          <KitField
-            id={FIELD_IDS.email}
-            label={t.shared.emailLabel}
-            hint={dict.wizard.step1.email.help}
-            error={errors.email}
-          >
-            <input
-              id={FIELD_IDS.email}
-              type="email"
-              inputMode="email"
-              className={cn(KIT_INPUT_CLASS, "w-full")}
-              placeholder={t.shared.emailPlaceholder}
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              autoComplete="email"
-              autoCapitalize="none"
-              autoCorrect="off"
-              spellCheck={false}
-              enterKeyHint="next"
-              maxLength={254}
-              aria-required="true"
-              aria-invalid={errors.email ? true : undefined}
-              aria-describedby={`${FIELD_IDS.email}-hint`}
-            />
-          </KitField>
-
-          <KitField
-            id={FIELD_IDS.password}
-            label={t.shared.passwordLabel}
-            hint={t.shared.passwordHelp}
-            error={errors.password}
-            action={
-              /* Icono y no texto: «Mostrar contraseña» son 19 caracteres que
-                 se comen la mitad de la fila y dejan el valor recortado. */
-              <button
-                type="button"
-                onClick={() => setShowPassword((current) => !current)}
-                aria-pressed={showPassword}
-                aria-label={
-                  showPassword ? t.shared.passwordHide : t.shared.passwordShow
+              label={dict.wizard.step1.firstName.label}
+              error={errors.firstName}
+            >
+              <input
+                id={FIELD_IDS.firstName}
+                type="text"
+                className={CAMPO_OSCURO}
+                placeholder={dict.wizard.step1.firstName.placeholder}
+                value={firstName}
+                onChange={(event) => setFirstName(event.target.value)}
+                autoComplete="given-name"
+                autoCapitalize="words"
+                enterKeyHint="next"
+                maxLength={100}
+                aria-required="true"
+                aria-invalid={errors.firstName ? true : undefined}
+                aria-describedby={
+                  errors.firstName ? `${FIELD_IDS.firstName}-error` : undefined
                 }
-                className="ax-iconbtn -my-3 shrink-0"
-              >
-                <Glyph
-                  name={showPassword ? "eye-off" : "eye"}
-                  icon={showPassword ? EyeOff : Eye}
-                />
-              </button>
-            }
-          >
-            <input
+              />
+            </CampoOscuro>
+
+            <CampoOscuro
+              id={FIELD_IDS.email}
+              label={t.shared.emailLabel}
+              /* El distintivo sólo aparece si el correo VINO del pago. Si el
+                 usuario lo cambia, deja de ser verdad y se va. */
+              distintivo={
+                pendiente?.email && email === pendiente.email
+                  ? c.correoDelPago
+                  : undefined
+              }
+              hint={dict.wizard.step1.email.help}
+              error={errors.email}
+            >
+              <input
+                id={FIELD_IDS.email}
+                type="email"
+                inputMode="email"
+                className={CAMPO_OSCURO}
+                placeholder={t.shared.emailPlaceholder}
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                autoComplete="email"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                enterKeyHint="next"
+                maxLength={254}
+                aria-required="true"
+                aria-invalid={errors.email ? true : undefined}
+                aria-describedby={`${FIELD_IDS.email}-hint`}
+              />
+            </CampoOscuro>
+
+            <CampoOscuro
               id={FIELD_IDS.password}
-              type={showPassword ? "text" : "password"}
-              className={cn(KIT_INPUT_CLASS, "w-full")}
-              placeholder={t.shared.passwordPlaceholder}
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              autoComplete="new-password"
-              enterKeyHint="done"
-              aria-required="true"
-              aria-invalid={errors.password ? true : undefined}
-              aria-describedby={`${FIELD_IDS.password}-hint`}
-            />
-          </KitField>
+              label={t.shared.passwordLabel}
+              hint={t.shared.passwordHelp}
+              error={errors.password}
+            >
+              {/* La caja la pinta el ENVOLTORIO, no el `input`: el ojo de
+                  mostrar/ocultar vive dentro del mismo marco que el texto, y
+                  si el borde fuera del input el botón quedaría fuera de la
+                  caja. El input se queda desnudo dentro. */}
+              <span className={cn(CAMPO_OSCURO, "flex items-center gap-2 py-0 pr-2")}>
+                <input
+                  id={FIELD_IDS.password}
+                  type={showPassword ? "text" : "password"}
+                  className="min-w-0 flex-1 border-0 bg-transparent px-0 text-body text-[color:var(--text-on-invert)] outline-none placeholder:text-[color:var(--text-on-invert-quiet)]"
+                  placeholder={t.shared.passwordPlaceholder}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  autoComplete="new-password"
+                  enterKeyHint="done"
+                  aria-required="true"
+                  aria-invalid={errors.password ? true : undefined}
+                  aria-describedby={`${FIELD_IDS.password}-hint`}
+                />
+                {/* Icono y no texto: «Mostrar contraseña» son 19 caracteres
+                    que se comen media fila y recortan el valor. */}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((current) => !current)}
+                  aria-pressed={showPassword}
+                  aria-label={
+                    showPassword ? t.shared.passwordHide : t.shared.passwordShow
+                  }
+                  className="-mr-2 flex size-11 shrink-0 items-center justify-center rounded-sm text-[color:var(--text-on-invert-quiet)] transition-colors hover:text-[color:var(--text-on-invert)]"
+                >
+                  {showPassword ? (
+                    <EyeOff aria-hidden="true" className="size-5" />
+                  ) : (
+                    <Eye aria-hidden="true" className="size-5" />
+                  )}
+                </button>
+              </span>
+            </CampoOscuro>
+
+            {/* ── Consentimiento ──
+                Llega SIN marcar y se registra con su versión al crear la
+                cuenta (§3.4.6). El de marketing es opt-in aparte: meterlo en
+                el mismo sí sería consentimiento fabricado. */}
+            <div className="mt-2 flex flex-col gap-3">
+              <Casilla
+                id={FIELD_IDS.terms}
+                checked={acceptedTerms}
+                onChange={(checked) => {
+                  setAcceptedTerms(checked);
+                  if (checked) setTermsError(undefined);
+                }}
+                error={termsError}
+              >
+                {t.registro.termsPrefix}{" "}
+                <LegalLink href={ROUTES.terminos} label={t.registro.termsLink} />{" "}
+                {t.registro.termsMiddle}{" "}
+                <LegalLink href={ROUTES.privacidad} label={t.registro.privacyLink} />.
+              </Casilla>
+
+              <Casilla
+                id="registro-marketing"
+                checked={wantsMarketing}
+                onChange={setWantsMarketing}
+              >
+                {t.registro.marketingOptIn}
+              </Casilla>
+            </div>
+
+            {formError ? (
+              <p
+                role="alert"
+                className="text-label leading-[1.45] text-[color:var(--text-on-glass-amber)]"
+              >
+                {formError}
+              </p>
+            ) : null}
+
+            <button
+              type="submit"
+              disabled={pending !== "none"}
+              className="ax-btn btn-accent btn-lg wide brillo mt-2"
+            >
+              {pending === "signup"
+                ? t.shared.submitting
+                : pendiente
+                  ? c.submit
+                  : t.registro.submit}
+            </button>
+
+            {/* La promesa y su límite, en la misma frase. Regla del proyecto:
+                este público ya oyó «nivel bancario» de quien lo estafó. */}
+            <p className="flex items-start gap-2 text-caption leading-[1.5] text-[color:var(--text-on-invert-quiet)]">
+              <Lock aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
+              <span>{t.registro.vaultNotice}</span>
+            </p>
+          </form>
+
+          {/* La vía sin contraseña se queda, pero de segunda: después de
+              pagar, dos formas de crear la cuenta con el mismo peso parten la
+              atención en el peor momento. */}
+          <p className="mt-6 border-t border-[color:var(--hairline-on-invert-soft)] pt-5 text-label text-[color:var(--text-on-invert-quiet)]">
+            <button
+              type="button"
+              onClick={handleMagicLink}
+              disabled={pending !== "none"}
+              className="min-h-11 text-left font-semibold text-[color:var(--teal-200)] underline decoration-[color:var(--hairline-on-invert)] underline-offset-4 transition-colors hover:text-[color:var(--teal-100)] disabled:opacity-50"
+            >
+              {pending === "magic" ? t.shared.submitting : t.registro.magicLink}
+            </button>
+          </p>
+
+          <p className="mt-1 text-label text-[color:var(--text-on-invert-quiet)]">
+            {t.registro.haveAccount}{" "}
+            <Link
+              href={ROUTES.login}
+              className="font-semibold text-[color:var(--teal-200)] underline underline-offset-4"
+            >
+              {t.registro.haveAccountLink}
+            </Link>
+          </p>
         </div>
+      </div>
+    </main>
+  );
+}
 
-        {/* El consentimiento, con su salida al lado. */}
-        <div className="mt-5">
-          <CheckboxField
-            id={FIELD_IDS.terms}
-            checked={acceptedTerms}
-            onChange={(checked) => {
-              setAcceptedTerms(checked);
-              if (checked) setTermsError(undefined);
-            }}
-            required
-            error={termsError}
-            meta={t.registro.termsMeta}
-          >
-            {t.registro.termsPrefix}{" "}
-            <LegalLink href={ROUTES.terminos} label={t.registro.termsLink} />{" "}
-            {t.registro.termsMiddle}{" "}
-            <LegalLink href={ROUTES.privacidad} label={t.registro.privacyLink} />.
-          </CheckboxField>
+/** Clases del campo sobre navy. Una sola vez: tres campos, un solo aspecto. */
+const CAMPO_OSCURO =
+  "h-14 w-full rounded-sm border border-[color:var(--hairline-on-invert)] bg-[color:var(--navy-950)]/60 px-4 text-body text-[color:var(--text-on-invert)] placeholder:text-[color:var(--text-on-invert-quiet)] focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[color:var(--focus-ring)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]";
 
-          <CheckboxField
-            id="registro-marketing"
-            checked={wantsMarketing}
-            onChange={setWantsMarketing}
-            meta={t.registro.marketingMeta}
-          >
-            {t.registro.marketingOptIn}
-          </CheckboxField>
-        </div>
+/**
+ * Un campo del registro sobre fondo invertido.
+ *
+ * No se reutiliza `KitField` porque aquel está hecho para superficie clara
+ * —etiqueta en `text-ink`, que es navy— y aquí desaparecería. La estructura
+ * es la misma: etiqueta, campo, y debajo la nota o el error, nunca los dos.
+ */
+function CampoOscuro({
+  id,
+  label,
+  distintivo,
+  hint,
+  error,
+  children,
+}: {
+  id: string;
+  label: string;
+  distintivo?: string;
+  hint?: string;
+  error?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <label htmlFor={id} className="flex flex-col gap-2">
+      <span className="flex items-center justify-between gap-3">
+        <span className="font-mono text-caption uppercase tracking-[0.08em] text-[color:var(--text-on-invert-quiet)]">
+          {label}
+        </span>
+        {distintivo ? (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-[color:var(--accent-wash-invert)] px-2.5 py-1 text-caption font-bold text-[color:var(--teal-100)]">
+            <Check aria-hidden="true" className="size-3" strokeWidth={3} />
+            {distintivo}
+          </span>
+        ) : null}
+      </span>
 
-        <FormAlert message={formError} />
+      {children}
 
-        {/* La acción y, pegado a ella, el límite de lo que prometemos. */}
-        <div className="mt-8 flex flex-col gap-3">
-          <KitButton type="submit" wide disabled={pending !== "none"}>
-            {pending === "signup" ? t.shared.submitting : t.registro.submit}
-          </KitButton>
-
-          <KitNotice iconName="lock" icon={Lock}>
-            {t.registro.vaultNotice}
-          </KitNotice>
-        </div>
-      </form>
-
-      {/* La vía sin contraseña y la salida a la sesión existente: no están en
-          el diseño, pero son funcionalidad nuestra y no pueden desaparecer. */}
-      <OrDivider label={t.shared.or} />
-
-      <KitButton
-        kind="ghost"
-        wide
-        onClick={handleMagicLink}
-        disabled={pending !== "none"}
-      >
-        {pending === "magic" ? t.shared.submitting : t.registro.magicLink}
-      </KitButton>
-      <p className="mt-2 text-caption text-muted">{t.registro.magicLinkHelp}</p>
-
-      <p className="mt-6 border-t border-line pt-5 text-body text-muted">
-        {t.registro.haveAccount}{" "}
-        <Link
-          href={ROUTES.login}
-          className="font-semibold text-teal-deep underline underline-offset-4"
+      {error ? (
+        <span
+          id={`${id}-error`}
+          role="alert"
+          className="text-caption font-semibold leading-[1.4] text-[color:var(--text-on-glass-amber)]"
         >
-          {t.registro.haveAccountLink}
-        </Link>
-      </p>
+          {error}
+        </span>
+      ) : hint ? (
+        <span
+          id={`${id}-hint`}
+          className="text-caption leading-[1.4] text-[color:var(--text-on-invert-quiet)]"
+        >
+          {hint}
+        </span>
+      ) : null}
+    </label>
+  );
+}
+
+/** Casilla sobre navy. El área táctil son los 44px completos, no el cuadro. */
+function Casilla({
+  id,
+  checked,
+  onChange,
+  error,
+  children,
+}: {
+  id: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  error?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label htmlFor={id} className="flex cursor-pointer items-start gap-3">
+        <span className="relative flex size-11 shrink-0 items-center justify-center">
+          <input
+            id={id}
+            type="checkbox"
+            checked={checked}
+            onChange={(event) => onChange(event.target.checked)}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `${id}-error` : undefined}
+            /* `z-10`: el cuadro pintado es un hermano POSTERIOR —tiene que
+               serlo para que `peer-focus-visible` funcione— y sin esto se
+               pinta encima y se come el toque. El input transparente debe
+               quedar arriba; es él quien recibe el dedo. */
+            className="peer absolute inset-0 z-10 cursor-pointer opacity-0"
+          />
+          <span
+            aria-hidden="true"
+            className={cn(
+              "flex size-6 items-center justify-center rounded-xs border transition-colors",
+              checked
+                ? "border-[color:var(--teal-500)] bg-[color:var(--teal-500)] text-[color:var(--navy-950)]"
+                : "border-[color:var(--hairline-on-invert)] bg-[color:var(--navy-950)]/60",
+              error && !checked && "border-[color:var(--text-on-glass-amber)]",
+              "peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[color:var(--focus-ring)]",
+            )}
+          >
+            {checked ? <Check className="size-4" strokeWidth={3.5} /> : null}
+          </span>
+        </span>
+        <span className="min-w-0 pt-2.5 text-label leading-[1.45] text-[color:var(--text-on-invert)]">
+          {children}
+        </span>
+      </label>
+      {error ? (
+        <p
+          id={`${id}-error`}
+          role="alert"
+          className="ml-14 text-caption font-semibold text-[color:var(--text-on-glass-amber)]"
+        >
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }

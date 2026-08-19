@@ -1,41 +1,41 @@
 "use client";
 
-import { useCallback, useId, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useId, useState } from "react";
 import Link from "next/link";
 import { Check, Lock } from "lucide-react";
 
 import { PasosEmbudo } from "./pasos-embudo";
 import { ROUTES } from "@/lib/config";
-import { guardarPagoPendiente } from "@/lib/pago-pendiente";
 import type { PagoDirectoDict } from "@/lib/i18n/dictionaries/pago-directo";
 import type { PlanType } from "@/lib/types";
-import { cn, isValidEmail } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 /**
  * PASO 2 — EL PAGO, SIN CUENTA TODAVÍA.
  *
- * El embudo nuevo cobra antes de registrar. Eso obliga a tres cosas que el
- * muro anterior no necesitaba, porque llegaba con el usuario ya dentro:
+ * Aquí NO se pide nada. Ni correo ni tarjeta: esta pantalla sólo enseña los
+ * dos planes y manda a la caja de Stripe, que es quien pregunta el correo,
+ * quien pregunta la tarjeta y quien cobra.
  *
- *  1. **Recoger el correo aquí.** Es lo único que ata el cobro a una persona
- *     hasta que la cuenta exista, y es con lo que se crea después.
- *  2. **Decir que la cuenta viene después.** Sin esa frase, pagar sin
- *     registrarse se lee como haber tirado el dinero.
- *  3. **Anotar el pago.** `lib/pago-pendiente.ts` lo guarda con su caducidad,
- *     para que quien cierre la pestaña pueda volver y terminar.
+ * ── Por qué se dejó de pedir el correo aquí ──
  *
- * ── El orden de los medios de pago no es estético ──
+ * Lo pedíamos porque el cobro ocurre antes de que exista la cuenta y hacía
+ * falta algo que atara el pago a una persona. Pero preguntarlo dos veces
+ * —una nuestra y otra de Stripe— es un formulario de más en el punto donde
+ * más gente se cae, y encima obligaba a validar y a explicar por qué lo
+ * pedíamos. Ahora lo recoge Stripe una sola vez y nosotros lo leemos DEL
+ * LADO DEL SERVIDOR al volver, en `/pago/confirmado`. El correo no viaja
+ * nunca por la URL.
  *
- * Apple Pay y Google Pay van ARRIBA, antes de la tarjeta, porque en un
- * teléfono son un toque contra doce campos — y ahí es donde se cae la gente.
- * §3.4.5 los pide primero por lo mismo.
+ * ── Y la tarjeta, menos todavía ──
  *
- * ── Los campos de tarjeta ──
+ * Con la caja alojada de Stripe, el número de tarjeta no pasa ni cerca de
+ * nuestro dominio. Es la forma más estrecha posible del alcance de PCI DSS y
+ * es regla dura del proyecto: ANDEX no toca datos de tarjeta.
  *
- * Son de Stripe Elements. En modo demo se pintan como marcadores inertes:
- * NO hay ningún `<input>` propio para el número, porque uno metería el
- * producto en el alcance de PCI DSS. Es regla dura del proyecto.
+ * Los monederos —Apple Pay, Google Pay— tampoco se pintan aquí: los ofrece
+ * la propia caja de Stripe según el dispositivo, que sabe cuál está
+ * disponible mejor que nosotros.
  */
 
 export type PagoScreenProps = {
@@ -62,38 +62,41 @@ export function PagoScreen({
   demoAviso,
   className,
 }: PagoScreenProps) {
-  const router = useRouter();
   const [plan, setPlan] = useState<PlanType>(planInicial);
-  const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
-  const campoCorreo = useRef<HTMLInputElement>(null);
   const idError = useId();
 
   const anual = plan === "annual";
 
-  const pagar = useCallback(() => {
+  /**
+   * Al pulsar, el servidor abre la sesión de pago y devuelve a dónde ir.
+   *
+   * El plan viaja en el cuerpo del POST y no en la URL. Es una preferencia
+   * comercial, no un dato de la persona, pero el hábito de no meter estado
+   * del usuario en una dirección se mantiene también cuando es inofensivo:
+   * la excepción de hoy es la costumbre de mañana.
+   */
+  const pagar = useCallback(async () => {
     if (enviando) return;
-
-    /* EL CORREO ES OBLIGATORIO, y no por higiene de formulario.
-       Aquí se cobra ANTES de que exista la cuenta: sin correo el cobro queda
-       huérfano —nadie puede vincularlo a nadie, ni avisar a quien pagó si
-       cierra la pestaña antes de registrarse—. Cobrar sin él sería quedarse
-       con el dinero de alguien a quien no se puede encontrar. */
-    const limpio = email.trim();
-    if (!isValidEmail(limpio)) {
-      setError(t.campos.emailError);
-      campoCorreo.current?.focus();
-      return;
-    }
-
-    setError(null);
     setEnviando(true);
-    /* En producción esto es la vuelta de Stripe. En demo se anota igual: el
-       resto del embudo no distingue, que es justo lo que se quiere probar. */
-    guardarPagoPendiente({ plan, email: limpio, cobradoEn: Date.now() });
-    router.push(ROUTES.registro);
-  }, [enviando, plan, email, router, t.campos.emailError]);
+    setError(null);
+    try {
+      const r = await fetch("/api/checkout/directo", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ plan }),
+      });
+      const datos = (await r.json()) as { url?: string; error?: string };
+      if (!r.ok || !datos.url) throw new Error(datos.error ?? "sin destino");
+      /* `assign` y no `router.push`: la caja de Stripe está en OTRO dominio,
+         y el enrutador de Next sólo sabe navegar dentro de éste. */
+      window.location.assign(datos.url);
+    } catch {
+      setEnviando(false);
+      setError(t.errorPasarela);
+    }
+  }, [enviando, plan, t.errorPasarela]);
 
   return (
     <main
@@ -164,78 +167,32 @@ export function PagoScreen({
             />
           </fieldset>
 
-          {/* Los monederos primero: un toque contra doce campos. */}
-          <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <button type="button" className="ax-btn btn-onInvert btn-lg wide" onClick={pagar}>
-              {t.monederos.apple}
-            </button>
-            <button type="button" className="ax-btn btn-onInvert btn-lg wide" onClick={pagar}>
-              {t.monederos.google}
-            </button>
-          </div>
-
-          <div className="my-6 flex items-center gap-4">
-            <span aria-hidden="true" className="h-px flex-1 bg-[color:var(--hairline-on-invert-soft)]" />
-            <span className="text-caption text-[color:var(--text-on-invert-quiet)]">
-              {t.monederos.divider}
-            </span>
-            <span aria-hidden="true" className="h-px flex-1 bg-[color:var(--hairline-on-invert-soft)]" />
-          </div>
-
-          {/* El correo SÍ es nuestro: con él se crea la cuenta después. */}
-          <label className="block">
-            <span className="text-caption font-bold uppercase tracking-[0.18em] text-[color:var(--text-on-invert-quiet)]">
-              {t.campos.email}
-            </span>
-            <input
-              type="email"
-              inputMode="email"
-              autoComplete="email"
-              ref={campoCorreo}
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (error) setError(null);
-              }}
-              aria-invalid={error ? true : undefined}
-              aria-describedby={error ? idError : undefined}
-              placeholder={t.campos.emailPlaceholder}
-              className="mt-2 h-14 w-full rounded-lg border border-[color:var(--hairline-on-invert)] bg-[color:var(--navy-950)]/60 px-4 text-body text-[color:var(--text-on-invert)] placeholder:text-[color:var(--text-on-invert-quiet)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]"
-            />
-            <span className="mt-2 block text-caption text-[color:var(--text-on-invert-quiet)]">
-              {t.campos.emailHelp}
-            </span>
-          </label>
-          {error ? (
-            <p
-              id={idError}
-              role="alert"
-              className="mt-2 text-label leading-[1.45] text-[color:var(--text-on-glass-amber)]"
-            >
-              {error}
-            </p>
-          ) : null}
-
-          {/* La tarjeta la pinta Stripe Elements. Aquí no hay ningún input
-              propio: uno metería el producto en el alcance de PCI DSS. */}
-          <div className="mt-4">
-            <span className="text-caption font-bold uppercase tracking-[0.18em] text-[color:var(--text-on-invert-quiet)]">
-              {t.campos.tarjeta}
-            </span>
-            <div
-              aria-hidden="true"
-              className="mt-2 h-14 rounded-lg border border-[color:var(--hairline-on-invert)] bg-[color:var(--navy-950)]/60"
-            />
-          </div>
+          {/* Qué va a pasar al pulsar, dicho ANTES de pulsar. Se sale del
+              sitio hacia otro dominio, y quien no lo espera lo lee como que
+              algo se rompió — o peor, como que le sacaron de la página. */}
+          <p className="mt-8 text-body leading-[1.5] text-[color:var(--text-on-invert-quiet)]">
+            {t.despues}
+          </p>
 
           <button
             type="button"
             onClick={pagar}
             disabled={enviando}
-            className="ax-btn btn-accent btn-lg wide brillo mt-6"
+            aria-describedby={error ? idError : undefined}
+            className="ax-btn btn-accent btn-lg wide brillo mt-5"
           >
             {enviando ? t.procesando : t.cta}
           </button>
+
+          {error ? (
+            <p
+              id={idError}
+              role="alert"
+              className="mt-3 text-label leading-[1.45] text-[color:var(--text-on-glass-amber)]"
+            >
+              {error}
+            </p>
+          ) : null}
 
           <p className="mt-4 text-caption leading-[1.55] text-[color:var(--text-on-invert-quiet)]">
             {t.legal}

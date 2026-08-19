@@ -229,7 +229,7 @@ await page.locator('input[type="text"]').first().fill("María López");
 await page.locator('input[type="email"]').fill("verificacion@andex.test");
 await page.locator('input[type="password"]').first().fill("ClaveSegura123");
 await page.getByRole("checkbox").first().click();
-await page.getByRole("button", { name: /Crear mi cuenta/i }).click();
+await page.getByRole("button", { name: /Crear mi cuenta|Activar mi membres/i }).click();
 await page.waitForURL(/entrevista/, { timeout: 30000 }).catch(() => {});
 
 const paso = async () => {

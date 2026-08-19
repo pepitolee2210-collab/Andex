@@ -14,7 +14,7 @@ import type { PlanType } from "@/lib/types";
  *
  * ── Qué se guarda, y qué NO ──
  *
- * Sólo el plan, el correo y cuándo. Nada de tarjeta —ANDEX no la toca nunca,
+ * Sólo el plan, el correo (si la pasarela lo dio) y cuándo. Nada de tarjeta —ANDEX no la toca nunca,
  * es regla dura— y nada de estatus migratorio ni de las respuestas de la
  * entrevista. Si mañana alguien mira este `localStorage`, lo que encuentra es
  * lo mismo que hay en un recibo.
@@ -33,8 +33,16 @@ const CLAVE = "andex_pago_pendiente";
 /** Lo que se conserva entre el cobro y la creación de la cuenta. */
 export type PagoPendiente = {
   plan: PlanType;
-  /** El correo que recogió la pasarela. Es con lo que se crea la cuenta. */
-  email: string;
+  /**
+   * El correo que recogió la pasarela, si lo hubo.
+   *
+   * Puede faltar. Desde que el cobro entero ocurre en la caja alojada de
+   * Stripe, el correo se lee del lado del servidor al volver — y en modo
+   * demo no hay pasarela que lo recoja, así que no hay ninguno. Cuando
+   * viene, el registro lo precarga para que la cuenta se cree con el mismo
+   * correo que pagó, que es lo que la pantalla de pago prometió.
+   */
+  email: string | null;
   /** Marca de tiempo del cobro, en milisegundos. */
   cobradoEn: number;
 };
@@ -52,8 +60,7 @@ function esValido(valor: unknown): valor is PagoPendiente {
   const plan = r.plan;
   return (
     (plan === "monthly" || plan === "annual") &&
-    typeof r.email === "string" &&
-    r.email.trim().length > 0 &&
+    (r.email === null || typeof r.email === "string") &&
     typeof r.cobradoEn === "number" &&
     Number.isFinite(r.cobradoEn)
   );

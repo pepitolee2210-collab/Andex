@@ -253,6 +253,36 @@
      con el desenfoque y la sombra. Nunca se escribe la sombra en línea: de
      noche el token vale `none` y una a mano cancelaría el filete que la
      sustituye. */
+  /* La credencial: superficie con volumen, y el brillo del vidrio cruzándola
+     en diagonal como el holograma de una tarjeta de verdad. El brillo es un
+     pseudoelemento para que no ocupe un nodo del árbol ni pueda recibir
+     toques. */
+  .credencial {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(
+      158deg,
+      var(--credencial-inicio) 0%,
+      var(--navy-900) 52%,
+      var(--navy-950) 100%
+    );
+  }
+  .credencial::after {
+    content: "";
+    position: absolute;
+    top: -60%;
+    left: -40%;
+    width: 200%;
+    height: 220%;
+    pointer-events: none;
+    background: linear-gradient(
+      104deg,
+      transparent 40%,
+      var(--aurora-sheen) 49%,
+      transparent 57%
+    );
+  }
+
   .vidrio {
     background: var(--surface-on-invert);
     border: 1px solid var(--hairline-on-invert-soft);

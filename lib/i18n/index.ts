@@ -24,6 +24,7 @@ import type {
 import { common } from "./dictionaries/common";
 import { landing } from "./dictionaries/landing";
 import { bienvenida } from "./dictionaries/bienvenida";
+import { pagoConfirmado } from "./dictionaries/pago-confirmado";
 import { tour } from "./dictionaries/tour";
 import { boveda } from "./dictionaries/boveda";
 import { academia } from "./dictionaries/academia";
@@ -62,6 +63,7 @@ export type Dictionary = {
   common: (typeof common)[Lang];
   landing: (typeof landing)[Lang];
   bienvenida: (typeof bienvenida)[Lang];
+  pagoConfirmado: (typeof pagoConfirmado)[Lang];
   tour: (typeof tour)[Lang];
   boveda: (typeof boveda)[Lang];
   academia: (typeof academia)[Lang];
@@ -83,6 +85,7 @@ export function getDictionary(lang: Lang): Dictionary {
     common: common[lang],
     landing: landing[lang],
     bienvenida: bienvenida[lang],
+    pagoConfirmado: pagoConfirmado[lang],
     tour: tour[lang],
     boveda: boveda[lang],
     academia: academia[lang],

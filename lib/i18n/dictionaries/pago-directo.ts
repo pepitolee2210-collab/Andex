@@ -1,15 +1,15 @@
 /**
  * PAGO DIRECTO — paso 2 del embudo nuevo, y el que cambia de verdad.
  *
- * Aquí se cobra ANTES de que exista la cuenta. Eso obliga a decir dos cosas
- * que el muro anterior no tenía que decir, porque llegaba con el usuario ya
- * dentro:
+ * Aquí se cobra ANTES de que exista la cuenta, y el cobro entero ocurre en
+ * la caja alojada de Stripe: el correo y la tarjeta los pide Stripe, no
+ * nosotros. Esta pantalla sólo tiene que hacer dos cosas bien:
  *
- *  · que la cuenta se crea DESPUÉS, y con este mismo correo — si no, pagar
- *    sin registrarse se lee como haber perdido el dinero;
- *  · que el correo es la forma de recuperar el pago si alguien cierra la
- *    pestaña antes de terminar. Es el caso borde real del embudo, y callarlo
- *    no lo hace desaparecer.
+ *  · dejar clarísimo QUÉ se está comprando y por cuánto, antes de salir del
+ *    sitio;
+ *  · decir qué pasa después — que se vuelve aquí a crear la cuenta con ese
+ *    mismo correo—, porque salir hacia otro dominio y no ver una cuenta por
+ *    ningún lado se lee como haber tirado el dinero.
  */
 
 const es = {
@@ -31,20 +31,12 @@ const es = {
     selected: "Plan seleccionado",
   },
 
-  monederos: { apple: "Apple Pay", google: "Google Pay", divider: "o paga con tarjeta" },
-
-  campos: {
-    email: "Tu correo",
-    emailHelp: "Con este correo se crea tu cuenta en el siguiente paso.",
-    emailPlaceholder: "tucorreo@ejemplo.com",
-    /* Sin correo el cobro queda huérfano: nadie puede vincularlo a una cuenta
-       ni avisar a quien pagó. Por eso el error no dice sólo "revisa el
-       formato", dice para qué sirve. */
-    emailError: "Escribe tu correo: es con lo que se crea tu cuenta y lo único con lo que podemos encontrar tu pago.",
-    tarjeta: "Tarjeta",
-  },
-
-  cta: (importe: string) => `Pagar ${importe} y crear mi cuenta`,
+  cta: (importe: string) => `Continuar al pago seguro · ${importe}`,
+  /* Lo que pasa DESPUÉS de pagar, dicho antes de pagar. Sin esta frase,
+     salir de nuestro dominio hacia Stripe y no ver una cuenta por ningún
+     lado se lee como haber tirado el dinero. */
+  despues: "Stripe te pedirá tu correo y tu tarjeta. Al terminar vuelves aquí para crear tu cuenta con ese mismo correo.",
+  errorPasarela: "No pudimos abrir la pasarela de pago. Vuelve a intentarlo; no se te ha cobrado nada.",
   legal:
     "Al pagar aceptas los Términos de servicio y la renovación automática. Te avisamos 48 horas antes de cada cobro y cancelas en un clic.",
 
@@ -88,17 +80,9 @@ const en: typeof es = {
     selected: "Selected plan",
   },
 
-  monederos: { apple: "Apple Pay", google: "Google Pay", divider: "or pay by card" },
-
-  campos: {
-    email: "Your email",
-    emailHelp: "Your account is created with this email in the next step.",
-    emailPlaceholder: "you@example.com",
-    emailError: "Enter your email: it is what creates your account, and the only way we can find your payment.",
-    tarjeta: "Card",
-  },
-
-  cta: (importe: string) => `Pay ${importe} and create my account`,
+  cta: (importe: string) => `Continue to secure checkout · ${importe}`,
+  despues: "Stripe will ask for your email and your card. When you are done you come back here to create your account with that same email.",
+  errorPasarela: "We could not open the payment page. Try again; you have not been charged.",
   legal:
     "By paying you accept the Terms of service and automatic renewal. We tell you 48 hours before each charge and you cancel in one click.",
 
@@ -144,9 +128,9 @@ export type PagoDirectoDict = {
     savings: string;
     detail: string;
   };
-  monederos: typeof es.monederos;
-  campos: typeof es.campos;
   cta: string;
+  despues: string;
+  errorPasarela: string;
   legal: string;
   resumen: {
     title: string;
