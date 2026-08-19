@@ -35,7 +35,7 @@ import { useReducedMotion } from "motion/react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-/** Precio ya formateado por el diccionario: "$140 / año", "$14 / mes". */
+/** Precio ya formateado por el diccionario: "$250 / año", "$25 / mes". */
 type ParsedPrice = {
   prefix: string;
   suffix: string;
@@ -90,7 +90,7 @@ function onceInView(node: Element, run: () => void, threshold: number): () => vo
 }
 
 export type AnimatedPriceProps = {
-  /** Cadena final, p. ej. "$140 / año". */
+  /** Cadena final, p. ej. "$250 / año". */
   value: string;
   className?: string;
 };

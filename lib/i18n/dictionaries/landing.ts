@@ -13,7 +13,7 @@
  *     y el Anexo B exigen que venga de una fuente con fecha visible.
  *  3. NO hay urgencia inventada ni plazos que expiran (§3.4.1). La tarifa
  *     congelada sí se promete, porque está en §3.4.4 — pero sin cuenta atrás.
- *  4. El ahorro anual es el real: $28 sobre $168 (17%), no el 40% del brief.
+ *  4. El ahorro anual es el real: $50 sobre $300 (17%), no el 40% del brief.
  *  5. Los portales del gobierno se nombran como DESTINOS a los que guiamos,
  *     nunca como respaldos: §6 obliga a declarar que ANDEX no está afiliado
  *     a ninguna agencia gubernamental.
@@ -480,6 +480,99 @@ const es = {
   },
 
   // ── Reseñas ─────────────────────────────────────────────
+  // ── La ruta del inmigrante ──────────────────────────────
+  /**
+   * LAS OCHO PARADAS.
+   *
+   * Sustituye a la rejilla de módulos. La diferencia no es estética: una
+   * rejilla dice «aquí hay ocho cosas» y deja al visitante decidir por dónde
+   * empieza — que es exactamente la pregunta que trae sin responder. Una
+   * RUTA dice en qué orden, y ese orden es el producto.
+   *
+   * El orden lo puso Henry y es el de su propio camino: primero la gente,
+   * después los papeles, después el dinero que entra, y sólo al final el
+   * dinero que se pone a trabajar.
+   *
+   * ── Lo que NO se escribe aquí ──
+   *
+   * El rótulo de «se abre durante el piloto» no sale de este archivo: sale
+   * del catálogo de módulos. Si mañana Migraciones abre, el rótulo
+   * desaparece solo. Escribirlo a mano garantizaba que algún día diría lo
+   * contrario de lo que es verdad.
+   */
+  ruta: {
+    eyebrow: "El camino",
+    title: "La ruta del inmigrante",
+    subtitle:
+      "Ocho paradas, en el orden en que de verdad se resuelven. No tienes que recorrerlas todas ni en este orden — pero si no sabes por dónde empezar, empieza por arriba.",
+    /** Nombre accesible de la lista: sin él son ocho párrafos sueltos. */
+    listLabel: "Las ocho paradas de la ruta",
+    paradas: [
+      {
+        name: "Comunidad",
+        body: "Talleres en vivo con hora y sala, ferias de ayuda y servicios cerca de ti.",
+      },
+      {
+        name: "Migraciones",
+        body: "Visas, pasaportes, citas consulares y licencia de manejo, explicados paso a paso.",
+      },
+      {
+        name: "Educación financiera",
+        body: "Escuela de crédito, tu primer ITIN y el ahorro explicado sin letra pequeña.",
+      },
+      {
+        name: "Empleo",
+        body: "Empleos que coinciden con tu perfil, con aviso al celular en cuanto salen.",
+      },
+      {
+        name: "Inglés",
+        body: "Clases en vivo y nueve temarios de inglés laboral, cada uno con su manual.",
+      },
+      {
+        name: "Acreditación",
+        body: "Formación y simulador de examen para impuestos, seguros e inmobiliaria.",
+      },
+      {
+        name: "Creación de empresa",
+        body: "Tu LLC y tu EIN, y después el lanzamiento: marca, sitio y primeros clientes.",
+      },
+      {
+        name: "Inversión",
+        body: "Oportunidades con su riesgo delante y una persona a quien preguntar.",
+      },
+    ],
+    /**
+     * La Bóveda no es una parada: es lo que llevas encima en las ocho.
+     *
+     * Y dice lo que hace HOY. El cifrado en el propio teléfono es
+     * verificable; el aviso automático a los 90, 60, 30 y 7 días todavía no
+     * existe, así que aquí se habla de tener las fechas A LA VISTA, que es
+     * lo que la Bóveda sí hace.
+     */
+    boveda: {
+      label: "Y en todo el camino",
+      name: "Tu Bóveda",
+      body: "Tus documentos cifrados en tu propio teléfono —no salen de ahí, ni nosotros podemos verlos— y las fechas que vencen, a la vista.",
+    },
+    /**
+     * LA RUTA PERSONALIZADA — servicio aparte, no incluido en la membresía.
+     *
+     * El importe NO se escribe aquí (D17): llega desde `PRICES`. Y el aviso
+     * de que va aparte va en la propia tarjeta y no en una nota al pie:
+     * descubrir que algo no estaba incluido después de pagar es exactamente
+     * lo que este producto promete no hacer.
+     */
+    personalizada: {
+      label: "¿Prefieres que te la armen?",
+      name: "Ruta personalizada con Henry",
+      body: "Henry mira tu caso contigo y te dice por dónde empezar, qué puede esperar y qué no conviene tocar todavía. Sales con tu ruta escrita.",
+      aparte: "Pago único, aparte de la membresía.",
+      cta: "Escribir a Henry por WhatsApp",
+      /** Mensaje previo. Describe lo que se pide, NUNCA a la persona (§9). */
+      mensaje: "Hola Henry, quiero mi ruta personalizada de ANDEX.",
+    },
+  },
+
   reviews: {
     eyebrow: "Lo que dicen",
     title: "Todavía no hay reseñas, y no vamos a inventarlas",
@@ -529,14 +622,14 @@ const es = {
       tagline: "Para quien ya decidió quedarse.",
       /*
        * El documento maestro dice «AHORRO DIRECTO DEL 40% anual». Es falso y
-       * no se escribe: 14 × 12 = 168, y 168 − 140 = 28, que es un 17%. El
+       * no se escribe: 25 × 12 = 300, y 300 − 250 = 50, que es un 17%. El
        * 40% ya venía marcado como error en la cabecera de este archivo. Un
        * número inflado en la única cifra que el visitante puede comprobar
        * con una resta es la forma más rápida de perderlo.
        */
       features: [
         "Todo lo del plan mensual",
-        "Ahorras $28 al año: un 17% sobre pagar mes a mes",
+        "Ahorras $50 al año: un 17% sobre pagar mes a mes",
         "Tarifa congelada mientras mantengas tu membresía, aunque el precio suba para quien entre después",
         "Prioridad en las alertas de empleo",
       ],
@@ -656,7 +749,7 @@ const es = {
       },
       {
         q: "¿Por qué la membresía subirá de precio más adelante?",
-        a: "Porque van a entrar herramientas que hoy no existen. Cuando entren, la mensualidad subirá para quien se registre a partir de entonces. El plan anual de $140 congela tu tarifa mientras mantengas la membresía activa.",
+        a: "Porque van a entrar herramientas que hoy no existen. Cuando entren, la mensualidad subirá para quien se registre a partir de entonces. El plan anual de $250 congela tu tarifa mientras mantengas la membresía activa.",
       },
       {
         q: "¿Cómo funcionan las clases de inglés laboral en vivo?",
@@ -1054,6 +1147,61 @@ vision: {
     building: "Opening during the pilot",
   },
 
+  ruta: {
+    eyebrow: "The path",
+    title: "The immigrant's route",
+    subtitle:
+      "Eight stops, in the order things actually get solved. You do not have to walk all of them, or in this order — but if you do not know where to start, start at the top.",
+    listLabel: "The eight stops on the route",
+    paradas: [
+      {
+        name: "Community",
+        body: "Live workshops with a time and a room, help fairs and services near you.",
+      },
+      {
+        name: "Immigration",
+        body: "Visas, passports, consular appointments and your driver's license, step by step.",
+      },
+      {
+        name: "Financial education",
+        body: "Credit school, your first ITIN and saving explained without fine print.",
+      },
+      {
+        name: "Work",
+        body: "Jobs that match your profile, with an alert on your phone as soon as they open.",
+      },
+      {
+        name: "English",
+        body: "Live classes and nine workplace-English tracks, each one with its manual.",
+      },
+      {
+        name: "Accreditation",
+        body: "Training and an exam simulator for taxes, insurance and real estate.",
+      },
+      {
+        name: "Starting a business",
+        body: "Your LLC and your EIN, then the launch: brand, website and first customers.",
+      },
+      {
+        name: "Investing",
+        body: "Opportunities with their risk up front, and a person to ask.",
+      },
+    ],
+    boveda: {
+      label: "And with you the whole way",
+      name: "Your Vault",
+      body: "Your documents encrypted on your own phone — they never leave it, and we cannot see them — and the dates that expire, in plain sight.",
+    },
+    personalizada: {
+      label: "Would you rather someone built it for you?",
+      name: "A personal route with Henry",
+      body: "Henry goes through your case with you and tells you where to start, what can wait and what you should not touch yet. You leave with your route written down.",
+      aparte: "One-time payment, separate from the membership.",
+      cta: "Message Henry on WhatsApp",
+      mensaje: "Hi Henry, I would like my personal ANDEX route.",
+    },
+  },
+
   reviews: {
     eyebrow: "What people say",
     title: "There are no reviews yet, and we won't invent them",
@@ -1087,7 +1235,7 @@ vision: {
       tagline: "For those who already decided to stay.",
       features: [
         "Everything in the monthly plan",
-        "You save $28 a year: 17% versus paying month to month",
+        "You save $50 a year: 17% versus paying month to month",
         "Rate locked for as long as you keep your membership, even if the price goes up for people who join later",
         "Priority on job alerts",
       ],
@@ -1182,7 +1330,7 @@ vision: {
     items: [
       {
         q: "Why will the membership cost more later on?",
-        a: "Because tools that do not exist yet are coming. When they land, the monthly price will go up for people who sign up from then on. The $140 annual plan freezes your rate for as long as your membership stays active.",
+        a: "Because tools that do not exist yet are coming. When they land, the monthly price will go up for people who sign up from then on. The $250 annual plan freezes your rate for as long as your membership stays active.",
       },
       {
         q: "How do the live workplace English classes work?",

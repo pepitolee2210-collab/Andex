@@ -24,11 +24,30 @@ export const SESSION_KEYS = {
 
 /** §3.4.4 — Estrategia de precios y anclaje. USD only en v1 (§0.3). */
 export const PRICES = {
-  monthly: { usd: 14, stripeEnv: "STRIPE_PRICE_MONTHLY" },
+  monthly: { usd: 25, stripeEnv: "STRIPE_PRICE_MONTHLY" },
+  /**
+   * Ruta personalizada con Henry: una sesión uno a uno, APARTE de la
+   * membresía. No pasa por Stripe todavía — se anuncia aquí y se cobra
+   * fuera, en la conversación de WhatsApp.
+   */
+  rutaPersonalizada: { usd: 150 },
+  /**
+   * El anual son DIEZ mensualidades: 25 × 10 = 250. Dicho de otra forma,
+   * dos meses de regalo por pagar de una vez — la misma proporción que
+   * tenía a 14/140.
+   *
+   * Los otros dos números se derivan de ésos y no se eligen:
+   *   · equivalente mensual = 250 / 12 = 20.83
+   *   · ahorro              = 25 × 12 − 250 = 50
+   *
+   * El equivalente va al céntimo (20.83) y no redondeado a 20.80, que es
+   * como estaba el anterior: un céntimo de menos en la portada es un
+   * céntimo que no cuadra cuando alguien hace la división.
+   */
   annual: {
-    usd: 140,
-    monthlyEquivalentUsd: 11.6,
-    savingsUsd: 28,
+    usd: 250,
+    monthlyEquivalentUsd: 20.83,
+    savingsUsd: 50,
     stripeEnv: "STRIPE_PRICE_ANNUAL",
   },
 } as const;
@@ -42,6 +61,20 @@ export const PRICES = {
  * sección lo dice en vez de pintar un botón que abre un chat vacío.
  */
 export const WHATSAPP_INVERSIONES = process.env.NEXT_PUBLIC_WHATSAPP_INVERSIONES ?? "";
+
+/**
+ * WhatsApp de Henry, para la ruta personalizada de la portada.
+ *
+ * Variable PROPIA y no la de Inversiones aunque hoy pudieran coincidir: son
+ * dos conversaciones distintas con dos personas distintas al otro lado, y
+ * heredar el número silenciosamente mandaría a quien quiere su ruta al chat
+ * equivocado sin que nadie se entere.
+ *
+ * Si está vacía, la tarjeta de la ruta personalizada NO se pinta. Anunciar
+ * un servicio de 150 dólares con un botón que no abre nada es peor que no
+ * anunciarlo.
+ */
+export const WHATSAPP_HENRY = process.env.NEXT_PUBLIC_WHATSAPP_HENRY ?? "";
 
 /** Versión de términos registrada en user_consents (§3.4.6). */
 export const TERMS_VERSION = "v1-2026-08";

@@ -5,7 +5,7 @@ export function cn(...classes: Array<string | false | null | undefined>): string
   return classes.filter(Boolean).join(" ");
 }
 
-/** "$140" — USD sin decimales; con decimales solo si los hay ($11.60). */
+/** "$250" — USD sin decimales; con decimales solo si los hay ($20.83). */
 export function formatUsd(amount: number): string {
   return Number.isInteger(amount)
     ? `$${amount.toLocaleString("en-US")}`

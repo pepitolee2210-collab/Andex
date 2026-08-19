@@ -84,7 +84,7 @@ const es = {
        * La misma multiplicación que el anual, vista desde el otro lado.
        * No es un precio ni una amenaza: es lo que cuesta sostener el plan
        * mensual doce meses, y es la cifra con la que se compara el anual.
-       * Sin ella, la resta del "Ahorras $28" había que hacerla de cabeza.
+       * Sin ella, la resta del "Ahorras $50" había que hacerla de cabeza.
        */
       yearly: (amount: string) => `Son ${amount} al año`,
       select: "Elegir el plan mensual",

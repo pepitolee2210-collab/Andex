@@ -10,7 +10,7 @@
  * ║  ⚠️  TARIFA CONGELADA — PROMESA COMERCIAL VINCULANTE (§3.4.4, R2)    ║
  * ║                                                                      ║
  * ║  El sello del paywall dice, con estas palabras:                       ║
- * ║    "Pagas $140 mientras mantengas tu membresía, aunque el precio     ║
+ * ║    "Pagas $250 mientras mantengas tu membresía, aunque el precio     ║
  * ║     suba."                                                           ║
  * ║                                                                      ║
  * ║  Consecuencia técnica, no negociable:                                ║

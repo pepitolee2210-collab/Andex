@@ -62,7 +62,7 @@ import { AnimatedPrice, SavingsBadge } from "./pricing-figures";
 
 export type PricingPlanCopy = {
   name: string;
-  /** Cadena completa, p. ej. "$14 / mes". */
+  /** Cadena completa, p. ej. "$25 / mes". */
   price: string;
   tagline: string;
   features: readonly string[];

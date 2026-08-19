@@ -20,7 +20,7 @@ import { SectionHero } from "@/components/landing/section-hero";
 import { SectionTrustBar } from "@/components/landing/section-trust-bar";
 import { SectionFounder } from "@/components/landing/section-founder";
 import { SectionEnglish } from "@/components/landing/section-english";
-import { SectionShowcase } from "@/components/landing/section-showcase";
+import { SectionRuta } from "@/components/landing/section-ruta";
 import { SectionPricing } from "@/components/landing/section-pricing";
 import { SectionFaq } from "@/components/landing/section-faq";
 import { SectionClosing } from "@/components/landing/section-closing";
@@ -247,15 +247,13 @@ export default async function LandingPage({
 
         {/* ── S5 · Los siete módulos ── */}
         <SectionSeam to="navy-body" shape="arco" />
-        <SectionShowcase
-          copy={t.showcase}
-          modules={modules.map((m) => ({
-            id: m.id,
-            slug: m.slug,
-            name: m.titleInUs,
-            body: m.body,
-            features: m.features,
-          }))}
+        {/* La rejilla de siete módulos pasa a ser una RUTA de ocho paradas:
+            el visitante no llega preguntando qué hay, llega preguntando por
+            dónde empieza. `SectionShowcase` sigue en el repositorio. */}
+        <SectionRuta
+          copy={t.ruta}
+          ctaHref={ROUTES.bienvenida}
+          ctaLabel={t.showcase.explore}
         />
 
         {/* ── S6 · Inglés laboral en vivo ──
